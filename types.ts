@@ -9,6 +9,7 @@ export interface User {
   photoUrl?: string;
   ipAddress?: string;
   balance?: number;
+  lastSeen?: string;
 }
 
 export interface Wallet {
@@ -18,37 +19,37 @@ export interface Wallet {
 export enum TransactionType {
   CREDIT = 'Credit',
   DEBIT = 'Debit',
-  BONUS = 'Bonus'
+  BONUS = 'Bonus',
 }
 
 export enum TransactionStatus {
-  PENDING = 'Pending',
   COMPLETED = 'Completed',
-  FAILED = 'Failed'
+  PENDING = 'Pending',
+  FAILED = 'Failed',
 }
 
 export interface Transaction {
   id: string;
+  userId?: string;
   date: string;
   description: string;
   type: TransactionType;
   amount: number;
   status: TransactionStatus;
-  userId?: string;
 }
 
 export enum Operator {
   GP = 'GP',
   ROBI = 'Robi',
-  BANGLALINK = 'Banglalink',
   AIRTEL = 'Airtel',
-  TELETALK = 'Teletalk'
+  BANGLALINK = 'Banglalink',
+  TELETALK = 'Teletalk',
 }
 
 export enum OrderStatus {
   PENDING = 'Pending',
   COMPLETED = 'Completed',
-  REJECTED = 'Rejected'
+  REJECTED = 'Rejected',
 }
 
 export interface Order {
@@ -65,48 +66,84 @@ export interface Order {
   rejectionReason?: string;
 }
 
+export interface CallListOrder {
+  id: string;
+  userId: string;
+  date: string;
+  operator: Operator;
+  mobile: string;
+  duration: '3 Months' | '6 Months';
+  price: number;
+  status: OrderStatus;
+  rejectionReason?: string;
+  pdfUrl?: string;
+}
+
 export interface OrderDetails extends Order {
-    nidNumber: string;
-    customerName: string;
-    dateOfBirth: string;
+  nidNumber: string;
+  customerName: string;
+  dateOfBirth: string;
 }
 
-export interface PaymentMethod {
-    name: string; // e.g., "Bkash Personal"
-    type: 'Bkash' | 'Nagad' | 'Rocket';
-    number: string;
-    logoUrl?: string;
-}
-
-// For Admin Verification Panel
 export interface AdminTransaction {
   requestId: string;
   date: string;
   userId: string;
   transactionId: string;
   amount: number;
-  paymentMethod?: string;
+  paymentMethod: string;
+  status: 'Pending' | 'Approved' | 'Rejected';
+  rejectionReason?: string;
 }
 
-
-export enum Page {
-    DASHBOARD = 'DASHBOARD',
-    ADD_MONEY = 'ADD_MONEY',
-    BIOMETRIC_ORDER = 'BIOMETRIC_ORDER',
-    ORDER_HISTORY = 'ORDER_HISTORY',
-    TRANSACTION_HISTORY = 'TRANSACTION_HISTORY',
-    PROFILE = 'PROFILE',
-    // Admin pages
-    ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
-    USER_MANAGEMENT = 'USER_MANAGEMENT',
-    MANAGE_ORDERS = 'MANAGE_ORDERS',
-    ALL_TRANSACTIONS = 'ALL_TRANSACTIONS',
-    ADMIN_SETTINGS = 'ADMIN_SETTINGS',
-    ADMIN_RECHARGE = 'ADMIN_RECHARGE',
+export interface PaymentMethod {
+    name: string;
+    type: 'Bkash' | 'Nagad' | 'Rocket';
+    number: string;
+    logoUrl?: string;
 }
 
 export interface Settings {
     biometricOrderPrice: number;
     paymentMethods: PaymentMethod[];
-    notificationEmail?: string;
+    notificationEmail: string;
+    isOrderingEnabled: boolean;
+    isCallListOrderingEnabled: boolean;
+    headlineNotice: string;
+}
+
+export interface OrderHistoryItem {
+  id: string;
+  date: string;
+  price: number;
+  status: OrderStatus;
+  rejectionReason?: string;
+  type: 'Biometric' | 'Call List';
+  operator: Operator;
+  mobile: string;
+  // Biometric specific
+  pdfUrl?: string;
+  nidNumber?: string;
+  customerName?: string;
+  dateOfBirth?: string;
+  // Call List specific
+  duration?: '3 Months' | '6 Months';
+}
+
+export enum Page {
+    DASHBOARD = 'DASHBOARD',
+    ADD_MONEY = 'ADD_MONEY',
+    BIOMETRIC_ORDER = 'BIOMETRIC_ORDER',
+    CALL_LIST_ORDER = 'CALL_LIST_ORDER',
+    ORDER_HISTORY = 'ORDER_HISTORY',
+    TRANSACTION_HISTORY = 'TRANSACTION_HISTORY',
+    PROFILE = 'PROFILE',
+    // Admin
+    ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
+    USER_MANAGEMENT = 'USER_MANAGEMENT',
+    MANAGE_ORDERS = 'MANAGE_ORDERS',
+    MANAGE_CALL_LIST_ORDERS = 'MANAGE_CALL_LIST_ORDERS',
+    ALL_TRANSACTIONS = 'ALL_TRANSACTIONS',
+    ADMIN_SETTINGS = 'ADMIN_SETTINGS',
+    ADMIN_RECHARGE = 'ADMIN_RECHARGE',
 }

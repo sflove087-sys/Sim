@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { AdminTransaction, User } from '../../types';
-import { fetchPendingTransactions, approveTransaction, rejectTransaction, fetchAllUsers } from '../../services/api';
+// FIX: The function `fetchPendingTransactions` does not exist. It has been replaced with `fetchAllMoneyRequests`.
+import { fetchAllMoneyRequests, approveTransaction, rejectTransaction, fetchAllUsers } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Spinner from '../common/Spinner';
 import Modal from '../common/Modal';
@@ -23,11 +23,12 @@ const VerifyTransactions: React.FC = () => {
     const loadData = useCallback(async () => {
         setIsLoading(true);
         try {
+            // FIX: Replaced `fetchPendingTransactions` with `fetchAllMoneyRequests` and added filtering for pending transactions.
             const [transactionsData, usersData] = await Promise.all([
-                fetchPendingTransactions(),
+                fetchAllMoneyRequests(),
                 fetchAllUsers()
             ]);
-            setTransactions(transactionsData);
+            setTransactions(transactionsData.filter(tx => tx.status === 'Pending'));
             setUsers(usersData);
         } catch (error) {
             addToast('পেন্ডিং লেনদেন বা ইউজার লোড করা যায়নি।', 'error');

@@ -6,6 +6,7 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber } from '../../utils/formatters';
+import { EyeIcon } from '@heroicons/react/24/solid';
 
 const StatusBadge: React.FC<{ status: 'Active' | 'Blocked' }> = ({ status }) => {
     const isBlocked = status === 'Blocked';
@@ -15,10 +16,21 @@ const StatusBadge: React.FC<{ status: 'Active' | 'Blocked' }> = ({ status }) => 
                 ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
                 : 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300'
         }`}>
-            {isBlocked ? 'Blocked' : 'Active'}
+            {isBlocked ? 'ব্লকড' : 'একটিভ'}
         </span>
     );
 };
+
+// Helper to determine if a user is online
+const isOnline = (lastSeen?: string): boolean => {
+    if (!lastSeen) return false;
+    const lastSeenDate = new Date(lastSeen);
+    const now = new Date();
+    // Consider online if last seen was within the last 2 minutes
+    const twoMinutesInMillis = 2 * 60 * 1000;
+    return (now.getTime() - lastSeenDate.getTime()) < twoMinutesInMillis;
+};
+
 
 const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -28,22 +40,42 @@ const UserManagement: React.FC = () => {
     
     type ConfirmationState = { user: User; newStatus: 'Active' | 'Blocked' } | null;
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>(null);
+    
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
 
     const loadUsers = useCallback(async () => {
-        setIsLoading(true);
         try {
             const data = await fetchAllUsers();
             setUsers(data);
         } catch (error) {
-            addToast("ইউজার লোড করা যায়নি।", 'error');
-        } finally {
-            setIsLoading(false);
+            // Avoid showing toast on silent refresh failures
+            console.error("Failed to refresh user list:", error);
         }
-    }, [addToast]);
+    }, []);
 
     useEffect(() => {
-        loadUsers();
-    }, [loadUsers]);
+        const initialLoad = async () => {
+            setIsLoading(true);
+            try {
+                const data = await fetchAllUsers();
+                setUsers(data);
+            } catch (error) {
+                 addToast("ইউজার লোড করা যায়নি।", 'error');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        initialLoad();
+
+        const intervalId = setInterval(loadUsers, 30000); // Refresh every 30 seconds
+        return () => clearInterval(intervalId);
+    }, [addToast, loadUsers]);
+
+    const handleViewUser = (user: User) => {
+        setSelectedUser(user);
+        setIsUserDetailsModalOpen(true);
+    };
 
     const handleConfirmStatusUpdate = async () => {
         if (!confirmationState) return;
@@ -88,14 +120,38 @@ const UserManagement: React.FC = () => {
                     <tbody>
                         {users.map((user) => (
                             <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50">
-                                <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{user.name}</td>
+                                <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                    <div className="flex items-center space-x-2">
+                                        <div className="relative flex-shrink-0">
+                                            {user.photoUrl ? (
+                                                <img src={user.photoUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover"/>
+                                            ) : (
+                                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
+                                                    {user.name.charAt(0)}
+                                                </div>
+                                            )}
+                                            <span 
+                                                className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${isOnline(user.lastSeen) ? 'bg-green-500' : 'bg-red-500'}`} 
+                                                title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
+                                            />
+                                        </div>
+                                        <span>{user.name}</span>
+                                    </div>
+                                </td>
                                 <td className="px-6 py-4">{user.email}</td>
                                 <td className="px-6 py-4">{user.mobile}</td>
                                 <td className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
                                     {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
                                 </td>
                                 <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
-                                <td className="px-6 py-4">
+                                <td className="px-6 py-4 flex items-center space-x-2">
+                                     <button
+                                        onClick={() => handleViewUser(user)}
+                                        className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                                        title="ইউজারের বিবরণ দেখুন"
+                                    >
+                                        <EyeIcon className="h-5 w-5" />
+                                    </button>
                                     <button
                                         onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
                                         disabled={processingId === user.id}
@@ -132,6 +188,21 @@ const UserManagement: React.FC = () => {
                                 {confirmationState.newStatus === 'Blocked' ? 'হ্যাঁ, ব্লক করুন' : 'হ্যাঁ, আনব্লক করুন'}
                             </Button>
                         </div>
+                    </div>
+                )}
+            </Modal>
+
+            <Modal isOpen={isUserDetailsModalOpen} onClose={() => setIsUserDetailsModalOpen(false)} title="ইউজারের বিবরণ">
+                {selectedUser && (
+                    <div className="space-y-3 text-slate-600 dark:text-slate-300">
+                        <p><strong>নাম:</strong> {selectedUser.name}</p>
+                        <p><strong>ইউজার আইডি:</strong> <span className="font-mono text-sm">{selectedUser.id}</span></p>
+                        <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p>
+                        <p><strong>ইমেইল:</strong> {selectedUser.email}</p>
+                        <p><strong>ব্যালেন্স:</strong> ৳{toBengaliNumber(selectedUser.balance !== undefined ? selectedUser.balance.toFixed(2) : '0.00')}</p>
+                        <p><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedUser.status} /></p>
+                        <p><strong>আইপি ঠিকানা:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p>
+                        <p><strong>সর্বশেষ সক্রিয়:</strong> {selectedUser.lastSeen ? new Date(selectedUser.lastSeen).toLocaleString('bn-BD') : 'কখনো না'}</p>
                     </div>
                 )}
             </Modal>

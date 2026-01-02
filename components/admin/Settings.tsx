@@ -8,10 +8,28 @@ import Button from '../common/Button';
 import Spinner from '../common/Spinner';
 import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
+const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) => void; label: string }> = ({ enabled, onChange, label }) => (
+    <div className="flex items-center justify-between">
+        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <button
+            type="button"
+            onClick={() => onChange(!enabled)}
+            className={`${enabled ? 'bg-indigo-600' : 'bg-slate-300 dark:bg-slate-600'} relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-slate-900`}
+        >
+            <span className={`${enabled ? 'translate-x-6' : 'translate-x-1'} inline-block h-4 w-4 transform rounded-full bg-white transition-transform`} />
+        </button>
+    </div>
+);
+
+
 const Settings: React.FC = () => {
     const [price, setPrice] = useState(0);
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [notificationEmail, setNotificationEmail] = useState('');
+    const [isOrderingEnabled, setIsOrderingEnabled] = useState(true);
+    const [isCallListOrderingEnabled, setIsCallListOrderingEnabled] = useState(true);
+    const [headlineNotice, setHeadlineNotice] = useState('');
+
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
     const { addToast } = useToast();
@@ -25,6 +43,9 @@ const Settings: React.FC = () => {
             setPrice(data.biometricOrderPrice);
             setMethods(data.paymentMethods || []);
             setNotificationEmail(data.notificationEmail || '');
+            setIsOrderingEnabled(data.isOrderingEnabled ?? true);
+            setIsCallListOrderingEnabled(data.isCallListOrderingEnabled ?? true);
+            setHeadlineNotice(data.headlineNotice || '');
         } catch (error) {
             addToast('সেটিংস লোড করা যায়নি।', 'error');
         } finally {
@@ -63,7 +84,10 @@ const Settings: React.FC = () => {
         const settingsToSave: AppSettings = {
             biometricOrderPrice: price,
             paymentMethods: methods,
-            notificationEmail: notificationEmail
+            notificationEmail: notificationEmail,
+            isOrderingEnabled: isOrderingEnabled,
+            isCallListOrderingEnabled: isCallListOrderingEnabled,
+            headlineNotice: headlineNotice
         };
 
         setIsSaving(true);
@@ -86,6 +110,28 @@ const Settings: React.FC = () => {
         <div className="space-y-6 max-w-3xl mx-auto">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অ্যাপ সেটিংস</h1>
             <form onSubmit={handleSubmit} className="space-y-8">
+                
+                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
+                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300 border-b pb-3 mb-6 dark:border-slate-600">অ্যাপ নিয়ন্ত্রণ</h2>
+                    <div className="space-y-6">
+                        <ToggleSwitch label="বায়োমেট্রিক অর্ডার চালু/বন্ধ" enabled={isOrderingEnabled} onChange={setIsOrderingEnabled} />
+                        <ToggleSwitch label="কল লিস্ট অর্ডার চালু/বন্ধ" enabled={isCallListOrderingEnabled} onChange={setIsCallListOrderingEnabled} />
+                        <div>
+                            <label htmlFor="headlineNotice" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                হেডলাইন নোটিশ
+                            </label>
+                            <textarea
+                                id="headlineNotice"
+                                rows={3}
+                                value={headlineNotice}
+                                onChange={(e) => setHeadlineNotice(e.target.value)}
+                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                placeholder="অ্যাপের ড্যাশবোর্ডে দেখানোর জন্য একটি নোটিশ লিখুন... (খালি রাখলে কিছু দেখাবে না)"
+                            />
+                        </div>
+                    </div>
+                </div>
+
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                     <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300 border-b pb-3 mb-6 dark:border-slate-600">সাধারণ সেটিংস</h2>
                      <div className="space-y-4">

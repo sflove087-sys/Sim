@@ -3,43 +3,106 @@ import React, { useState } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { useToast } from '../../context/ToastContext';
+import { apiForgotPasswordRequest, apiResetPassword } from '../../services/api';
 
 interface ForgotPasswordProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
 }
 
 const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
-    const [email, setEmail] = useState('');
+    const [step, setStep] = useState<'request' | 'reset'>('request');
+    const [identifier, setIdentifier] = useState(''); // Stores the email/mobile
+    const [code, setCode] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleRequestSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const response = await apiForgotPasswordRequest(identifier);
+            addToast(response.message, 'success');
+            setStep('reset');
+        } catch (error) {
+            const err = error as Error;
+            addToast(err.message, 'error');
+        } finally {
             setIsLoading(false);
-            addToast(`পাসওয়ার্ড রিসেট লিংক ${email} এ পাঠানো হয়েছে।`, 'success');
+        }
+    };
+
+    const handleResetSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (newPassword !== confirmPassword) {
+            addToast('পাসওয়ার্ড দুটি মেলেনি।', 'error');
+            return;
+        }
+
+        const passwordErrors = [];
+        if (newPassword.length < 8) passwordErrors.push("কমপক্ষে ৮টি অক্ষর");
+        if (!/[A-Z]/.test(newPassword)) passwordErrors.push("একটি বড় হাতের অক্ষর (A-Z)");
+        if (!/[a-z]/.test(newPassword)) passwordErrors.push("একটি ছোট হাতের অক্ষর (a-z)");
+        if (!/[0-9]/.test(newPassword)) passwordErrors.push("একটি সংখ্যা (0-9)");
+
+        if (passwordErrors.length > 0) {
+            addToast(`নতুন পাসওয়ার্ডে অবশ্যই ${passwordErrors.join(', ')} থাকতে হবে।`, 'error');
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            const response = await apiResetPassword({ emailOrMobile: identifier, code, newPassword });
+            addToast(response.message, 'success');
             setView('login');
-        }, 1500);
+        } catch (error) {
+            const err = error as Error;
+            addToast(err.message, 'error');
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">পাসওয়ার্ড রিসেট</h2>
-            <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইল এড্রেস দিন, আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি লিংক পাঠাবো।</p>
-            <Input 
-                id="email" 
-                label="ইমেইল" 
-                type="email" 
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required 
-            />
-            <Button type="submit" isLoading={isLoading}>
-                লিংক পাঠান
-            </Button>
-            <div className="text-center">
+        <div>
+            {step === 'request' ? (
+                <form onSubmit={handleRequestSubmit} className="space-y-6">
+                    <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">পাসওয়ার্ড রিসেট</h2>
+                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
+                    <Input 
+                        id="identifier" 
+                        label="ইমেইল বা মোবাইল" 
+                        type="text" 
+                        value={identifier}
+                        onChange={e => setIdentifier(e.target.value)}
+                        placeholder="example@email.com অথবা 017..."
+                        required 
+                    />
+                    <Button type="submit" isLoading={isLoading}>
+                        রিসেট কোড পাঠান
+                    </Button>
+                </form>
+            ) : (
+                <form onSubmit={handleResetSubmit} className="space-y-4">
+                     <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">নতুন পাসওয়ার্ড সেট করুন</h2>
+                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইলে পাঠানো ৬-সংখ্যার কোড এবং নতুন পাসওয়ার্ড দিন।</p>
+                    <Input id="code" label="রিসেট কোড" type="text" value={code} onChange={e => setCode(e.target.value)} required />
+                    <div>
+                        <Input id="newPassword" label="নতুন পাসওয়ার্ড" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
+                           কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।
+                        </p>
+                    </div>
+                    <Input id="confirmPassword" label="পাসওয়ার্ড নিশ্চিত করুন" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                    <div className="pt-2">
+                        <Button type="submit" isLoading={isLoading}>
+                            পাসওয়ার্ড পরিবর্তন করুন
+                        </Button>
+                    </div>
+                </form>
+            )}
+            <div className="text-center mt-6">
                 <button
                     type="button"
                     onClick={() => setView('login')}
@@ -48,9 +111,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
                     লগইন পেজে ফিরে যান
                 </button>
             </div>
-        </form>
+        </div>
     );
 };
 
 export default ForgotPassword;
-   

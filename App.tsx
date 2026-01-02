@@ -7,6 +7,7 @@ import Layout from './components/common/Layout';
 import { User } from './types';
 import { apiLogout } from './services/api';
 import { WalletProvider } from './context/WalletContext';
+import { SettingsProvider } from './context/SettingsContext';
 
 function App() {
   const [user, setUser] = useState<User | null>(() => {
@@ -37,7 +38,9 @@ function App() {
             <div className="min-h-screen text-slate-800 dark:text-slate-200">
                 {user ? (
                     <WalletProvider>
-                        <Layout />
+                        <SettingsProvider>
+                            <Layout />
+                        </SettingsProvider>
                     </WalletProvider>
                 ) : <AuthPage />}
             </div>

@@ -1,10 +1,10 @@
 
-import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings } from '../types';
+import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem } from '../types';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqKp6ZPmXE--Pjoqn15nxFTiPReu0SCPMmqIVaVveyOXywu8NUo06KFs3BHOedMPyRkg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyogJp1OsDOObcXlpk_Wzzqi6C98NxUlLqgwQ3mmjGyG9TNiKisb1mlt7E9_6t8zOrEtg/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -61,13 +61,29 @@ export const apiLogout = () => {
     sessionStorage.removeItem('currentUser');
 };
 
+export const apiForgotPasswordRequest = async (emailOrMobile: string) => {
+    return callApi('forgotPasswordRequest', { emailOrMobile });
+};
+
+export const apiResetPassword = async (details: { emailOrMobile: string, code: string, newPassword: string }) => {
+    return callApi('resetPassword', details);
+};
+
+export const apiUpdateUserActivity = async () => {
+    return callApi('updateUserActivity');
+};
+
+
 // --- USER DATA ---
 export const fetchWallet = async (): Promise<Wallet> => callApi('fetchWallet');
 export const fetchTransactions = async (): Promise<Transaction[]> => callApi('fetchTransactions');
 export const fetchOrders = async (): Promise<Order[]> => {
-    // Backend now handles role-based data fetching, so we just call it.
-    // The userId of the logged-in user (admin or regular) will be sent by `callApi`.
+    // This is now mainly for the Admin Panel to fetch only BIOMETRIC orders.
+    // User-facing order history will use the new `fetchOrderHistory` function.
     return callApi('fetchOrders');
+};
+export const fetchOrderHistory = async (): Promise<OrderHistoryItem[]> => {
+    return callApi('fetchOrderHistoryForUser');
 };
 
 export const addMoneyRequest = async (transactionId: string, amount: number, paymentMethod: string) => {
@@ -78,19 +94,22 @@ export const createBiometricOrder = async (order: { operator: Operator, mobile: 
     return callApi('createBiometricOrder', { order });
 };
 
+export const createCallListOrder = async (order: { operator: Operator, mobile: string, duration: '3 Months' | '6 Months' }) => {
+    return callApi('createCallListOrder', { order });
+};
+
 export const fetchOrderDetails = async (orderId: string): Promise<OrderDetails> => {
-    // We call fetchOrders which returns all necessary details, even for a single user.
+    // This function might become obsolete or needs adjustment if we stop fetching single order details.
+    // For now, it still fetches from the main biometric orders list.
     const allOrders: Order[] = await callApi('fetchOrders'); 
     const baseOrder = allOrders.find(o => o.id === orderId);
     if (!baseOrder) throw new Error('অর্ডার খুঁজে পাওয়া যায়নি।');
     
-    // The baseOrder from fetchOrders now contains all the necessary details.
-    // We just need to ensure the fields exist and satisfy the OrderDetails type.
     return {
         ...baseOrder,
-        nidNumber: baseOrder.nidNumber || 'N/A', // Provide a fallback if empty
-        customerName: baseOrder.customerName || 'N/A', // Provide a fallback if empty
-        dateOfBirth: baseOrder.dateOfBirth || 'N/A', // Provide a fallback if empty
+        nidNumber: baseOrder.nidNumber || 'N/A',
+        customerName: baseOrder.customerName || 'N/A',
+        dateOfBirth: baseOrder.dateOfBirth || 'N/A',
     };
 };
 
@@ -111,16 +130,16 @@ export const uploadOrderPdf = async (orderId: string, pdfBase64: string, mimeTyp
     return callApi('uploadOrderPdf', { orderId, pdfBase64, mimeType });
 }
 
-export const fetchPendingTransactions = async (): Promise<AdminTransaction[]> => {
-    return callApi('fetchPendingTransactions');
+export const fetchAllMoneyRequests = async (): Promise<AdminTransaction[]> => {
+    return callApi('fetchAllMoneyRequests');
 };
 
 export const approveTransaction = async (requestId: string) => {
     return callApi('approveTransaction', { requestId });
 };
 
-export const rejectTransaction = async (requestId: string) => {
-    return callApi('rejectTransaction', { requestId });
+export const rejectTransaction = async (requestId: string, reason?: string) => {
+    return callApi('rejectTransaction', { requestId, reason });
 };
 
 export const updateOrderStatus = async (orderId: string, status: OrderStatus, reason?: string) => {
@@ -130,6 +149,18 @@ export const updateOrderStatus = async (orderId: string, status: OrderStatus, re
 export const updateOrderDetails = async (orderId: string, details: { nidNumber: string; customerName: string; dateOfBirth: string }) => {
     return callApi('updateOrderDetails', { orderId, details });
 }
+
+export const fetchCallListOrders = async (): Promise<CallListOrder[]> => {
+    return callApi('fetchCallListOrders');
+};
+
+export const uploadCallListOrderPdf = async (orderId: string, pdfBase64: string, mimeType: string) => {
+    return callApi('uploadCallListOrderPdf', { orderId, pdfBase64, mimeType });
+};
+
+export const updateCallListOrderStatus = async (orderId: string, status: OrderStatus, reason?: string) => {
+    return callApi('updateCallListOrderStatus', { orderId, status, reason });
+};
 
 export const updateUserStatus = async (userIdToUpdate: string, status: 'Active' | 'Blocked') => {
     return callApi('updateUserStatus', { userIdToUpdate, status });
