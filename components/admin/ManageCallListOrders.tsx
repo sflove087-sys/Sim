@@ -5,8 +5,8 @@ import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf 
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
-import { toBengaliNumber } from '../../utils/formatters';
-import { DocumentArrowUpIcon, LinkIcon } from '@heroicons/react/24/outline';
+import { toBengaliNumber, printPdf } from '../../utils/formatters';
+import { DocumentArrowUpIcon, LinkIcon, PrinterIcon } from '@heroicons/react/24/outline';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     const statusStyles = {
@@ -185,9 +185,14 @@ const ManageCallListOrders: React.FC = () => {
                                             <button onClick={() => handleOpenRejectModal(order)} className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md shadow transition">রিজেক্ট</button>
                                         </div>
                                     ) : order.status === OrderStatus.COMPLETED && order.pdfUrl ? (
-                                        <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-md shadow transition">
-                                            <LinkIcon className="h-4 w-4 mr-1"/> PDF দেখুন
-                                        </a>
+                                        <div className="flex items-center space-x-2">
+                                            <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-md shadow transition">
+                                                <LinkIcon className="h-4 w-4 mr-1"/> PDF দেখুন
+                                            </a>
+                                            <button onClick={() => order.pdfUrl && printPdf(order.pdfUrl)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 transition" title="প্রিন্ট করুন">
+                                                <PrinterIcon className="h-5 w-5"/>
+                                            </button>
+                                        </div>
                                     ) : (
                                         <span className="text-xs text-slate-400">N/A</span>
                                     )}

@@ -6,7 +6,8 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon } from '@heroicons/react/24/outline';
+import { printPdf } from '../../utils/formatters';
 
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
@@ -368,13 +369,17 @@ const ManageOrders: React.FC = () => {
                                 )}
 
                                 {selectedOrder.pdfUrl && (
-                                    <div className="mt-6">
-                                         <a href={selectedOrder.pdfUrl} target="_blank" rel="noopener noreferrer">
+                                    <div className="mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                                         <a href={selectedOrder.pdfUrl} target="_blank" rel="noopener noreferrer" className="w-full">
                                             <Button>
                                                 <ArrowDownTrayIcon className="h-5 w-5 mr-2"/>
                                                 PDF ডাউনলোড করুন
                                             </Button>
                                         </a>
+                                        <Button variant="secondary" onClick={() => selectedOrder.pdfUrl && printPdf(selectedOrder.pdfUrl)} className="w-full">
+                                            <PrinterIcon className="h-5 w-5 mr-2"/>
+                                            প্রিন্ট করুন
+                                        </Button>
                                     </div>
                                 )}
                             </div>

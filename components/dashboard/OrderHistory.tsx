@@ -4,9 +4,9 @@ import { OrderStatus, OrderHistoryItem } from '../../types';
 import { fetchOrderHistory } from '../../services/api';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
-import { EyeIcon, ArrowDownTrayIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, ArrowDownTrayIcon, PrinterIcon } from '@heroicons/react/24/solid';
 import { useToast } from '../../context/ToastContext';
-import { toBengaliNumber } from '../../utils/formatters';
+import { toBengaliNumber, printPdf } from '../../utils/formatters';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     const statusStyles = {
@@ -56,13 +56,17 @@ const OrderDetailsModal: React.FC<{details: OrderHistoryItem}> = ({ details }) =
         </div>
         
         {details.status === OrderStatus.COMPLETED && details.pdfUrl && (
-            <div className="mt-6">
-                <a href={details.pdfUrl} target="_blank" rel="noopener noreferrer">
+            <div className="mt-6 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                <a href={details.pdfUrl} target="_blank" rel="noopener noreferrer" className="w-full">
                     <Button>
                         <ArrowDownTrayIcon className="h-5 w-5 mr-2"/>
                         PDF ডাউনলোড করুন
                     </Button>
                 </a>
+                <Button variant="secondary" onClick={() => details.pdfUrl && printPdf(details.pdfUrl)} className="w-full">
+                    <PrinterIcon className="h-5 w-5 mr-2"/>
+                    প্রিন্ট করুন
+                </Button>
             </div>
         )}
          {details.type === 'Biometric' && details.status === OrderStatus.PENDING && (
