@@ -4,7 +4,7 @@ import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransact
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIYuCOsm_JUmodCN8VLLO8Nw7NGcIEcl7HUDxGtMz2DaWW5lJ9ZQxAgFxGVcg_qA63TQ/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxqKp6ZPmXE--Pjoqn15nxFTiPReu0SCPMmqIVaVveyOXywu8NUo06KFs3BHOedMPyRkg/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend

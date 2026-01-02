@@ -222,7 +222,15 @@ function handleFetchAllUsers(payload) {
   if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
 
   const usersData = usersSheet.getLastRow() > 1 ? usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 10).getValues() : [];
-  return usersData.map(mapUserRowToObject);
+  
+  const walletData = walletSheet.getLastRow() > 1 ? walletSheet.getRange(2, 1, walletSheet.getLastRow() - 1, 2).getValues() : [];
+  const walletMap = new Map(walletData.map(row => [row[0], row[1]]));
+
+  return usersData.map(row => {
+    const user = mapUserRowToObject(row);
+    user.balance = walletMap.get(user.id) || 0;
+    return user;
+  });
 }
 
 function handleFetchPendingTransactions() {

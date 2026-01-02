@@ -5,6 +5,7 @@ import { fetchAllUsers, updateUserStatus } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
+import { toBengaliNumber } from '../../utils/formatters';
 
 const StatusBadge: React.FC<{ status: 'Active' | 'Blocked' }> = ({ status }) => {
     const isBlocked = status === 'Blocked';
@@ -73,13 +74,13 @@ const UserManagement: React.FC = () => {
         <div className="space-y-6">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
+                <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                         <tr>
                             <th scope="col" className="px-6 py-3">নাম</th>
                             <th scope="col" className="px-6 py-3">ইমেইল</th>
                             <th scope="col" className="px-6 py-3">মোবাইল</th>
-                            <th scope="col" className="px-6 py-3">আইপি ঠিকানা</th>
+                            <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
                             <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
                             <th scope="col" className="px-6 py-3">একশন</th>
                         </tr>
@@ -90,7 +91,9 @@ const UserManagement: React.FC = () => {
                                 <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{user.name}</td>
                                 <td className="px-6 py-4">{user.email}</td>
                                 <td className="px-6 py-4">{user.mobile}</td>
-                                <td className="px-6 py-4 font-mono">{user.ipAddress || 'N/A'}</td>
+                                <td className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
+                                    {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
+                                </td>
                                 <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
                                 <td className="px-6 py-4">
                                     <button

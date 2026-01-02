@@ -8,6 +8,7 @@ export interface User {
   status: 'Active' | 'Blocked';
   photoUrl?: string;
   ipAddress?: string;
+  balance?: number;
 }
 
 export interface Wallet {
