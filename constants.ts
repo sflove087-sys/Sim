@@ -1,0 +1,3 @@
+
+export const PAYMENT_NUMBER = '01783289912';
+export const REGISTRATION_BONUS = 10;
