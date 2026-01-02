@@ -120,6 +120,7 @@ export default function Layout() {
         { page: Page.MANAGE_ORDERS, label: "বায়োমেট্রিক", icon: ClipboardDocumentCheckIcon },
         { page: Page.MANAGE_CALL_LIST_ORDERS, label: "কল লিস্ট", icon: PhoneIcon },
         { page: Page.ALL_TRANSACTIONS, label: "লেনদেন", icon: ArchiveBoxIcon },
+        { page: Page.ADMIN_SETTINGS, label: "সেটিংস", icon: WrenchScrewdriverIcon },
     ];
     
     const mobileNavItemsForUser: MobileNavItem[] = [
