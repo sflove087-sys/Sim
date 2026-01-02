@@ -1,6 +1,6 @@
 
 const SPREADSHEET_ID = "18rYrE70i5_HKqxXoABvtMbetFAt8bnRxNy0YIgmI5ZQ"; // আপনার Google Sheet ID এখানে দিন
-const ss = SpreadsheetApp.openById(SPREADSHEADSHEET_ID);
+const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 const usersSheet = ss.getSheetByName("Users");
 const walletSheet = ss.getSheetByName("Wallet");
 const transactionsSheet = ss.getSheetByName("Transactions");
@@ -34,7 +34,7 @@ function doPost(e) {
         'updateOrderDetails': handleUpdateOrderDetails, 'fetchAdminDashboardAnalytics': handleFetchAdminDashboardAnalytics,
         'updateUserStatus': handleUpdateUserStatus, 'fetchAllTransactions': handleFetchAllTransactions,
         'fetchSettings': handleFetchSettings, 'updateSettings': handleUpdateSettings,
-        'adminRecharge': handleAdminRecharge,
+        'adminRecharge': handleAdminRecharge, 'fetchAdminRecharges': handleFetchAdminRecharges,
       };
 
       if (actions[action]) {
@@ -284,13 +284,9 @@ function handleUpdateSettings(payload) {
     const rowIndex = settingsValues.findIndex(row => row[0] === key);
 
     if (rowIndex !== -1) {
-      // Key exists, update the value in column 2.
-      // rowIndex is 0-based, sheet ranges are 1-based.
       settingsSheet.getRange(rowIndex + 1, 2).setValue(valueToSave);
     } else {
-      // Key doesn't exist, add a new row for it.
       settingsSheet.appendRow([key, valueToSave]);
-      // Update our in-memory array to avoid duplicate appends in the same run
       settingsValues.push([key, valueToSave]);
     }
   }
@@ -314,19 +310,84 @@ function handleAdminRecharge(payload) {
     const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue();
     walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + numericAmount);
 
-    const transactionDescription = description || "অ্যাডমিন কর্তৃক রিচার্জ";
+    const transactionDescription = `অ্যাডমিন কর্তৃক: ${description || 'রিচার্জ'}`;
     transactionsSheet.appendRow(["tx" + Date.now(), userIdToRecharge, new Date().toISOString(), transactionDescription, "Credit", numericAmount, "Completed"]);
 
     return { message: `৳${numericAmount} সফলভাবে রিচার্জ করা হয়েছে।` };
 }
 
+function handleFetchAdminRecharges(payload) {
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
+  
+  const allTransactions = transactionsSheet.getDataRange().getValues().slice(1);
+  
+  const adminRecharges = allTransactions.filter(row => {
+    const type = row[4];
+    const description = row[3]; 
+    return type === 'Credit' && description.startsWith('অ্যাডমিন কর্তৃক:');
+  });
 
-// ... other admin handlers (approveTransaction, rejectTransaction, etc.) ...
+  return adminRecharges.map(row => ({ 
+      id: row[0], 
+      userId: row[1], 
+      date: new Date(row[2]).toLocaleDateString('bn-BD'), 
+      description: row[3], 
+      type: row[4], 
+      amount: row[5], 
+      status: row[6] 
+  })).reverse();
+}
+
 function handleUpdateUserStatus(payload) { const { userId, userIdToUpdate, status } = payload; if (!isAdmin(userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const validStatuses = ['Active', 'Blocked']; if (!userIdToUpdate || !status || validStatuses.indexOf(status) === -1) throw new Error("প্রয়োজনীয় তথ্য সঠিক নয়।"); const userRowIndex = findRow(usersSheet, userIdToUpdate, 1); if (userRowIndex === -1) throw new Error("ইউজারকে খুঁজে পাওয়া যায়নি।"); usersSheet.getRange(userRowIndex, 8).setValue(status); return { message: `ইউজারের স্ট্যাটাস সফলভাবে '${status}' করা হয়েছে।` }; }
 function handleApproveTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; if (requestRow[5] !== "Pending") throw new Error("এই অনুরোধটি ইতিমধ্যে প্রসেস করা হয়েছে।"); const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`); const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue(); walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + amount); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (অ্যাডমিন)", "Credit", amount, "Completed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Approved"); return { message: "লেনদেনটি সফলভাবে Approve করা হয়েছে।" }; }
 function handleRejectTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); if (adminTransactionsSheet.getRange(requestRowIndex, 6).getValue() !== "Pending") throw new Error("এই অনুরোধটি ইতিমধ্যে প্রসেস করা হয়েছে।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ করার অনুরোধ ব্যর্থ", "Credit", amount, "Failed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Rejected"); return { message: "লেনদেনটি Reject করা হয়েছে।" }; }
 function handleUploadOrderPdf(payload) { const { orderId, pdfBase64, mimeType } = payload; const pdfUrl = uploadFileToDrive(pdfBase64, mimeType, orderId, "Order PDFs"); const orderRowIndex = findRow(ordersSheet, orderId, 1); if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।"); ordersSheet.getRange(orderRowIndex, 8).setValue(pdfUrl); ordersSheet.getRange(orderRowIndex, 7).setValue("Completed"); return { message: "PDF সফলভাবে আপলোড এবং অর্ডার কমপ্লিট করা হয়েছে।", pdfUrl }; }
-function handleUpdateOrderStatus(payload) { if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const { orderId, status, reason } = payload; if (!orderId || !status) throw new Error("অর্ডার আইডি এবং স্ট্যাটাস আবশ্যক।"); if (["Pending", "Completed", "Rejected"].indexOf(status) === -1) throw new Error("অবৈধ স্ট্যাটাস।"); const orderRowIndex = findRow(ordersSheet, orderId, 1); if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।"); ordersSheet.getRange(orderRowIndex, 7).setValue(status); ordersSheet.getRange(orderRowIndex, 12).setValue(status === "Rejected" ? reason || "কারণ উল্লেখ করা হয়নি।" : ""); return { message: `অর্ডারের স্ট্যাটাস সফলভাবে "${status}" করা হয়েছে।` }; }
+
+function handleUpdateOrderStatus(payload) {
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।");
+  const { orderId, status, reason } = payload;
+  if (!orderId || !status) throw new Error("অর্ডার আইডি এবং স্ট্যাটাস আবশ্যক।");
+  if (["Pending", "Completed", "Rejected"].indexOf(status) === -1) throw new Error("অবৈধ স্ট্যাটাস।");
+
+  const orderRowIndex = findRow(ordersSheet, orderId, 1);
+  if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।");
+  
+  const orderData = ordersSheet.getRange(orderRowIndex, 1, 1, 12).getValues()[0];
+  const currentStatus = orderData[6];
+
+  // যদি স্ট্যাটাস 'Rejected' করা হয় এবং আগে থেকে 'Rejected' না থাকে
+  if (status === 'Rejected' && currentStatus !== 'Rejected') {
+    const orderUserId = orderData[1];
+    const orderPrice = parseFloat(orderData[5]);
+
+    // ব্যবহারকারীর ওয়ালেটে টাকা ফেরত দিন
+    const walletRowIndex = findRow(walletSheet, orderUserId, 1);
+    if (walletRowIndex !== -1) {
+      const currentBalance = parseFloat(walletSheet.getRange(walletRowIndex, 2).getValue());
+      walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + orderPrice);
+
+      // রিফান্ডের জন্য একটি লেনদেন তৈরি করুন
+      transactionsSheet.appendRow([
+        "tx" + Date.now(),
+        orderUserId,
+        new Date().toISOString(),
+        `অর্ডার (${orderId}) বাতিলের জন্য টাকা ফেরত`,
+        "Credit",
+        orderPrice,
+        "Completed"
+      ]);
+    } else {
+      Logger.log(`Critical Error: Wallet not found for user ${orderUserId} during refund for order ${orderId}.`);
+    }
+  }
+
+  // অর্ডারের স্ট্যাটাস এবং বাতিলের কারণ আপডেট করুন
+  ordersSheet.getRange(orderRowIndex, 7).setValue(status);
+  ordersSheet.getRange(orderRowIndex, 12).setValue(status === "Rejected" ? reason || "কারণ উল্লেখ করা হয়নি।" : "");
+  
+  return { message: `অর্ডারের স্ট্যাটাস সফলভাবে "${status}" করা হয়েছে।` };
+}
+
 function handleUpdateOrderDetails(payload) { if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const { orderId, details } = payload; if (!orderId || !details) throw new Error("অর্ডার আইডি এবং বিবরণ আবশ্যক।"); const { nidNumber, customerName, dateOfBirth } = details; const orderRowIndex = findRow(ordersSheet, orderId, 1); if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।"); ordersSheet.getRange(orderRowIndex, 9, 1, 3).setValues([[nidNumber || "", customerName || "", dateOfBirth || ""]]); return { message: 'অর্ডারের বিবরণ সফলভাবে আপডেট করা হয়েছে।' }; }
 function handleFetchAllTransactions(payload) { if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।"); return transactionsSheet.getDataRange().getValues().slice(1).map(row => ({ id: row[0], userId: row[1], date: new Date(row[2]).toLocaleDateString('bn-BD'), description: row[3], type: row[4], amount: row[5], status: row[6] })).reverse(); }
 

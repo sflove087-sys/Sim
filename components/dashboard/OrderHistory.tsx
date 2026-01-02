@@ -30,7 +30,7 @@ const OrderDetailsModal: React.FC<{details: OrderDetails, onClose: () => void}> 
         <div className="space-y-3 text-slate-600 dark:text-slate-300">
             <p><strong>নাম:</strong> {details.customerName || 'N/A'}</p>
             <p><strong>NID নাম্বার:</strong> {details.nidNumber || 'N/A'}</p>
-            <p><strong>জন্ম তারিখ:</strong> {details.dateOfBirth || 'N/A'}</p>
+            <p><strong>জন্ম তারিখ:</strong> {details.dateOfBirth ? new Date(details.dateOfBirth).toLocaleDateString('bn-BD') : 'N/A'}</p>
             <p><strong>মোবাইল:</strong> {details.mobile}</p>
             <p><strong>অপারেটর:</strong> {details.operator}</p>
             <hr className="dark:border-slate-600 my-2"/>

@@ -4,7 +4,7 @@ import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransact
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxXyTANmtqm-z6UORF94epbOwlZ7A0t7_BhjP1B-TXLjHqczmWcDt7otZnPB_Pa8jNnIg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwIYuCOsm_JUmodCN8VLLO8Nw7NGcIEcl7HUDxGtMz2DaWW5lJ9ZQxAgFxGVcg_qA63TQ/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -149,4 +149,8 @@ export const apiUpdateSettings = async (settings: Settings) => {
 
 export const apiAdminRecharge = async (userIdToRecharge: string, amount: number, description: string) => {
     return callApi('adminRecharge', { userIdToRecharge, amount, description });
+};
+
+export const apiFetchAdminRecharges = async (): Promise<Transaction[]> => {
+    return callApi('fetchAdminRecharges');
 };

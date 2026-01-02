@@ -10,16 +10,23 @@ import TransactionHistory from '../dashboard/TransactionHistory';
 import Profile from '../dashboard/Profile';
 import AdminDashboard from '../admin/AdminDashboard';
 import UserManagement from '../admin/UserManagement';
-import VerifyTransactions from '../admin/VerifyTransactions';
 import ManageOrders from '../admin/ManageOrders';
 import AllTransactions from '../admin/AllTransactions';
 import Settings from '../admin/Settings';
+import AdminRecharge from '../admin/AdminRecharge';
 import { useAuth } from '../../context/AuthContext';
 import { 
-    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon
+    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, CheckCircleIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon
 } from '@heroicons/react/24/outline';
 
-const userPages = {
+// Fix: Add type for page configuration objects to ensure strong typing for icons.
+type PageInfo = {
+    component: React.ComponentType<any>;
+    label: string;
+    icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+};
+
+const userPages: Record<string, PageInfo> = {
     [Page.DASHBOARD]: { component: Dashboard, label: 'ড্যাশবোর্ড', icon: HomeIcon },
     [Page.ADD_MONEY]: { component: AddMoney, label: 'টাকা যোগ করুন', icon: PlusCircleIcon },
     [Page.BIOMETRIC_ORDER]: { component: BiometricOrder, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon },
@@ -28,10 +35,10 @@ const userPages = {
     [Page.PROFILE]: { component: Profile, label: 'প্রোফাইল', icon: UserCircleIcon },
 };
 
-const adminPages = {
+const adminPages: Record<string, PageInfo> = {
     [Page.ADMIN_DASHBOARD]: { component: AdminDashboard, label: 'অ্যাডমিন ড্যাশবোর্ড', icon: Cog6ToothIcon },
     [Page.USER_MANAGEMENT]: { component: UserManagement, label: 'ইউজার ম্যানেজমেন্ট', icon: UsersIcon },
-    [Page.VERIFY_TRANSACTIONS]: { component: VerifyTransactions, label: 'লেনদেন যাচাই', icon: CheckCircleIcon },
+    [Page.ADMIN_RECHARGE]: { component: AdminRecharge, label: 'টাকা যোগ ও রিচার্জ', icon: CurrencyBangladeshiIcon },
     [Page.MANAGE_ORDERS]: { component: ManageOrders, label: 'অর্ডার ম্যানেজ', icon: ClipboardDocumentCheckIcon },
     [Page.ALL_TRANSACTIONS]: { component: AllTransactions, label: 'সকল লেনদেন', icon: ArchiveBoxIcon },
     [Page.ADMIN_SETTINGS]: { component: Settings, label: 'সেটিংস', icon: WrenchScrewdriverIcon },
@@ -54,7 +61,16 @@ export default function Layout() {
         return null; 
     }
 
-    const NavLink = ({ page, label, icon: Icon, isMobile = false } : {page: Page, label: string, icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, isMobile?: boolean}) => (
+    // Fix: Redefine NavLink as a proper React.FC to handle the 'key' prop correctly
+    // and to ensure strong typing from props.
+    type NavLinkProps = {
+        page: Page;
+        label: string;
+        icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+        isMobile?: boolean;
+    };
+
+    const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon, isMobile = false }) => (
         <button
             onClick={() => setActivePage(page)}
             className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-sm'} w-full p-2 rounded-lg transition-all duration-200 ${
@@ -68,15 +84,19 @@ export default function Layout() {
         </button>
     );
     
-    const mobileNavItemsForAdmin = [
+    // Fix: Strongly type mobile navigation items to prevent type inference issues.
+    type MobileNavItem = { page: Page; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; };
+
+    const mobileNavItemsForAdmin: MobileNavItem[] = [
         { page: Page.ADMIN_DASHBOARD, label: "ড্যাশবোর্ড", icon: Cog6ToothIcon },
         { page: Page.USER_MANAGEMENT, label: "ইউজার", icon: UsersIcon },
+        { page: Page.ADMIN_RECHARGE, label: "টাকা যোগ", icon: CurrencyBangladeshiIcon },
         { page: Page.MANAGE_ORDERS, label: "অর্ডার", icon: ClipboardDocumentCheckIcon },
         { page: Page.ALL_TRANSACTIONS, label: "লেনদেন", icon: ArchiveBoxIcon },
         { page: Page.ADMIN_SETTINGS, label: "সেটিংস", icon: WrenchScrewdriverIcon },
     ];
     
-    const mobileNavItemsForUser = [
+    const mobileNavItemsForUser: MobileNavItem[] = [
        { page: Page.DASHBOARD, label: "হোম", icon: HomeIcon },
        { page: Page.ADD_MONEY, label: "টাকা যোগ", icon: PlusCircleIcon },
        { page: Page.BIOMETRIC_ORDER, label: "অর্ডার", icon: ClipboardDocumentListIcon },

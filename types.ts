@@ -74,6 +74,7 @@ export interface PaymentMethod {
     name: string; // e.g., "Bkash Personal"
     type: 'Bkash' | 'Nagad' | 'Rocket';
     number: string;
+    logoUrl?: string;
 }
 
 // For Admin Verification Panel
@@ -97,10 +98,10 @@ export enum Page {
     // Admin pages
     ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
     USER_MANAGEMENT = 'USER_MANAGEMENT',
-    VERIFY_TRANSACTIONS = 'VERIFY_TRANSACTIONS',
     MANAGE_ORDERS = 'MANAGE_ORDERS',
     ALL_TRANSACTIONS = 'ALL_TRANSACTIONS',
     ADMIN_SETTINGS = 'ADMIN_SETTINGS',
+    ADMIN_RECHARGE = 'ADMIN_RECHARGE',
 }
 
 export interface Settings {

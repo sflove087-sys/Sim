@@ -16,7 +16,7 @@ const Settings: React.FC = () => {
     const [isSaving, setIsSaving] = useState(false);
     const { addToast } = useToast();
 
-    const [newMethod, setNewMethod] = useState({ name: '', type: 'Bkash' as 'Bkash' | 'Nagad' | 'Rocket', number: '' });
+    const [newMethod, setNewMethod] = useState({ name: '', type: 'Bkash' as 'Bkash' | 'Nagad' | 'Rocket', number: '', logoUrl: '' });
 
     const loadSettings = useCallback(async () => {
         setIsLoading(true);
@@ -51,7 +51,7 @@ const Settings: React.FC = () => {
             return;
         }
         setMethods(prev => [...prev, newMethod]);
-        setNewMethod({ name: '', type: 'Bkash', number: '' }); // Reset form
+        setNewMethod({ name: '', type: 'Bkash', number: '', logoUrl: '' }); // Reset form
     };
 
     const handleDeleteMethod = (indexToDelete: number) => {
@@ -115,9 +115,12 @@ const Settings: React.FC = () => {
                     
                     {methods.map((method, index) => (
                         <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700 rounded-lg">
-                            <div>
-                                <p className="font-semibold text-slate-800 dark:text-slate-200">{method.name} ({method.type})</p>
-                                <p className="text-sm font-mono text-slate-600 dark:text-slate-400">{method.number}</p>
+                            <div className="flex items-center space-x-4">
+                                {method.logoUrl && <img src={method.logoUrl} alt={method.name} className="h-10 w-10 rounded-md object-contain bg-white p-1 shadow" />}
+                                <div>
+                                    <p className="font-semibold text-slate-800 dark:text-slate-200">{method.name} ({method.type})</p>
+                                    <p className="text-sm font-mono text-slate-600 dark:text-slate-400">{method.number}</p>
+                                </div>
                             </div>
                             <button type="button" onClick={() => handleDeleteMethod(index)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
                                 <TrashIcon className="h-5 w-5" />
@@ -132,21 +135,24 @@ const Settings: React.FC = () => {
                             <Input id="new-name" name="name" label="পদ্ধতির নাম (যেমন: Bkash Personal)" value={newMethod.name} onChange={handleNewMethodChange} />
                             <Input id="new-number" name="number" label="একাউন্ট নম্বর" type="tel" value={newMethod.number} onChange={handleNewMethodChange} />
                         </div>
-                        <div>
-                            <label htmlFor="new-type" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                ধরন
-                            </label>
-                            <select
-                                id="new-type"
-                                name="type"
-                                value={newMethod.type}
-                                onChange={handleNewMethodChange}
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            >
-                                <option>Bkash</option>
-                                <option>Nagad</option>
-                                <option>Rocket</option>
-                            </select>
+                        <div className="space-y-4">
+                            <div>
+                                <label htmlFor="new-type" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                    ধরন
+                                </label>
+                                <select
+                                    id="new-type"
+                                    name="type"
+                                    value={newMethod.type}
+                                    onChange={handleNewMethodChange}
+                                    className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    <option>Bkash</option>
+                                    <option>Nagad</option>
+                                    <option>Rocket</option>
+                                </select>
+                            </div>
+                             <Input id="new-logoUrl" name="logoUrl" label="লোগো URL (ঐচ্ছিক)" value={newMethod.logoUrl} onChange={handleNewMethodChange} placeholder="https://.../logo.png" />
                         </div>
                         <Button type="button" variant="secondary" onClick={handleAddMethod}>
                             <PlusIcon className="h-5 w-5 mr-2" /> যোগ করুন

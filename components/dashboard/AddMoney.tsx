@@ -39,15 +39,6 @@ const AddMoney: React.FC = () => {
         addToast('নম্বর কপি করা হয়েছে!', 'success');
     };
     
-    const handleMethodChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedIndex = e.target.value;
-        if (selectedIndex) {
-            setSelectedMethod(paymentMethods[parseInt(selectedIndex)]);
-        } else {
-            setSelectedMethod(null);
-        }
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!selectedMethod) {
@@ -73,11 +64,6 @@ const AddMoney: React.FC = () => {
             setTransactionId('');
             setAmount('');
             setSelectedMethod(null);
-            
-            const selectElement = document.getElementById('paymentMethodSelect') as HTMLSelectElement;
-            if (selectElement) {
-                selectElement.value = "";
-            }
 
         } catch (error) {
             const err = error as Error;
@@ -102,54 +88,73 @@ const AddMoney: React.FC = () => {
                 {isLoadingMethods ? (
                     <div className="flex justify-center p-4"><Spinner /></div>
                 ) : paymentMethods.length > 0 ? (
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="paymentMethodSelect" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                                 পেমেন্ট পদ্ধতি বাছাই করুন
                             </label>
-                            <select
-                                id="paymentMethodSelect"
-                                onChange={handleMethodChange}
-                                defaultValue=""
-                                className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-                                required
-                            >
-                                <option value="" disabled>-- একটি পদ্ধতি বাছাই করুন --</option>
+                            <div className="space-y-3">
                                 {paymentMethods.map((method, index) => (
-                                    <option key={index} value={index}>
-                                        {method.name} ({method.type})
-                                    </option>
+                                    <div key={index}>
+                                        <input 
+                                            type="radio" 
+                                            id={`method-${index}`} 
+                                            name="paymentMethod" 
+                                            value={method.name} 
+                                            checked={selectedMethod === method}
+                                            onChange={() => setSelectedMethod(method)}
+                                            className="hidden peer"
+                                        />
+                                        <label 
+                                            htmlFor={`method-${index}`} 
+                                            className="flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-200 border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500 peer-checked:bg-indigo-50 dark:peer-checked:bg-slate-700 peer-checked:border-indigo-500 peer-checked:ring-2 peer-checked:ring-indigo-500"
+                                        >
+                                            {method.logoUrl && <img src={method.logoUrl} alt={method.name} className="h-8 w-12 object-contain mr-4"/>}
+                                            <div className="flex-grow">
+                                                <p className="font-semibold text-slate-800 dark:text-slate-200">{method.name}</p>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">{method.type}</p>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 transition ${selectedMethod === method ? 'bg-indigo-600 border-indigo-600' : 'border-slate-400'}`}></div>
+                                        </label>
+                                    </div>
                                 ))}
-                            </select>
+                            </div>
                         </div>
                         
                         {selectedMethod && (
-                             <div className="bg-slate-100 dark:bg-slate-700 p-3 rounded-lg flex items-center justify-between transition-all duration-300 animate-fade-in">
-                                <span className="font-mono text-xl text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                             <div className="bg-slate-100 dark:bg-slate-700 p-4 rounded-lg flex items-center justify-between transition-all duration-300 animate-fade-in">
+                                <div>
+                                    <span className="text-sm text-slate-600 dark:text-slate-400">টাকা পাঠান এই নম্বরে ({selectedMethod.name})</span>
+                                    <span className="block font-mono text-xl text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                                </div>
                                 <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="p-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="নম্বর কপি করুন">
                                     <ClipboardDocumentIcon className="h-6 w-6 text-slate-500 dark:text-slate-300" />
                                 </button>
                             </div>
                         )}
-
-                        <Input
-                            id="amount"
-                            label="টাকার পরিমাণ"
-                            type="number"
-                            value={amount}
-                            onChange={(e) => setAmount(e.target.value)}
-                            placeholder="যেমন: ৫০০"
-                            required
-                        />
-                        <Input
-                            id="transactionId"
-                            label="ট্রানজেকশন আইডি"
-                            type="text"
-                            value={transactionId}
-                            onChange={(e) => setTransactionId(e.target.value)}
-                            placeholder="যেমন: 9C7B4F2A1D"
-                            required
-                        />
+                        
+                        <div className="space-y-4 pt-2">
+                             <Input
+                                id="amount"
+                                label="টাকার পরিমাণ"
+                                type="number"
+                                value={amount}
+                                onChange={(e) => setAmount(e.target.value)}
+                                placeholder="যেমন: ৫০০"
+                                required
+                                disabled={!selectedMethod}
+                            />
+                            <Input
+                                id="transactionId"
+                                label="ট্রানজেকশন আইডি"
+                                type="text"
+                                value={transactionId}
+                                onChange={(e) => setTransactionId(e.target.value)}
+                                placeholder="যেমন: 9C7B4F2A1D"
+                                required
+                                disabled={!selectedMethod}
+                            />
+                        </div>
                         <Button type="submit" isLoading={isLoading} disabled={!selectedMethod}>
                             অনুরোধ পাঠান
                         </Button>

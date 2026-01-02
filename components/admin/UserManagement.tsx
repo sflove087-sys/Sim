@@ -1,12 +1,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types';
-import { fetchAllUsers, updateUserStatus, apiAdminRecharge } from '../../services/api';
+import { fetchAllUsers, updateUserStatus } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
-import Input from '../common/Input';
 import Button from '../common/Button';
-import { CurrencyBangladeshiIcon } from '@heroicons/react/24/outline';
 
 const StatusBadge: React.FC<{ status: 'Active' | 'Blocked' }> = ({ status }) => {
     const isBlocked = status === 'Blocked';
@@ -26,13 +24,9 @@ const UserManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const { addToast } = useToast();
-
-    // State for recharge modal
-    const [isRechargeModalOpen, setIsRechargeModalOpen] = useState(false);
-    const [selectedUserForRecharge, setSelectedUserForRecharge] = useState<User | null>(null);
-    const [rechargeAmount, setRechargeAmount] = useState('');
-    const [rechargeDescription, setRechargeDescription] = useState('');
-    const [isRecharging, setIsRecharging] = useState(false);
+    
+    type ConfirmationState = { user: User; newStatus: 'Active' | 'Blocked' } | null;
+    const [confirmationState, setConfirmationState] = useState<ConfirmationState>(null);
 
     const loadUsers = useCallback(async () => {
         setIsLoading(true);
@@ -50,17 +44,19 @@ const UserManagement: React.FC = () => {
         loadUsers();
     }, [loadUsers]);
 
-    const handleStatusUpdate = async (userId: string, newStatus: 'Active' | 'Blocked') => {
-        const actionText = newStatus === 'Blocked' ? 'ব্লক' : 'আনব্লক';
-        if (!window.confirm(`আপনি কি এই ইউজারকে ${actionText} করতে নিশ্চিত?`)) {
-            return;
-        }
+    const handleConfirmStatusUpdate = async () => {
+        if (!confirmationState) return;
 
-        setProcessingId(userId);
+        const { user, newStatus } = confirmationState;
+        const actionText = newStatus === 'Blocked' ? 'ব্লক' : 'আনব্লক';
+
+        setProcessingId(user.id);
+        setConfirmationState(null); 
+
         try {
-            await updateUserStatus(userId, newStatus);
+            await updateUserStatus(user.id, newStatus);
             addToast(`ইউজার সফলভাবে ${actionText} করা হয়েছে।`, 'success');
-            loadUsers(); // Refresh the list
+            loadUsers(); 
         } catch (error) {
             const err = error as Error;
             addToast(err.message || `ইউজার ${actionText} করা যায়নি।`, 'error');
@@ -68,40 +64,6 @@ const UserManagement: React.FC = () => {
             setProcessingId(null);
         }
     };
-
-    const handleOpenRechargeModal = (user: User) => {
-        setSelectedUserForRecharge(user);
-        setIsRechargeModalOpen(true);
-    };
-
-    const handleCloseRechargeModal = () => {
-        setIsRechargeModalOpen(false);
-        setSelectedUserForRecharge(null);
-        setRechargeAmount('');
-        setRechargeDescription('');
-    };
-    
-    const handleRechargeSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        const amount = parseFloat(rechargeAmount);
-        if (!selectedUserForRecharge || isNaN(amount) || amount <= 0) {
-            addToast('অনুগ্রহ করে সঠিক টাকার পরিমাণ দিন।', 'error');
-            return;
-        }
-        
-        setIsRecharging(true);
-        try {
-            const response = await apiAdminRecharge(selectedUserForRecharge.id, amount, rechargeDescription);
-            addToast(response.message, 'success');
-            handleCloseRechargeModal();
-        } catch (error) {
-            const err = error as Error;
-            addToast(err.message || 'রিচার্জ করা যায়নি।', 'error');
-        } finally {
-            setIsRecharging(false);
-        }
-    };
-
 
     if (isLoading) {
         return <div className="text-center p-10">ইউজার লোড হচ্ছে...</div>;
@@ -130,22 +92,15 @@ const UserManagement: React.FC = () => {
                                 <td className="px-6 py-4">{user.mobile}</td>
                                 <td className="px-6 py-4 font-mono">{user.ipAddress || 'N/A'}</td>
                                 <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
-                                <td className="px-6 py-4 flex items-center space-x-4">
+                                <td className="px-6 py-4">
                                     <button
-                                        onClick={() => handleStatusUpdate(user.id, user.status === 'Active' ? 'Blocked' : 'Active')}
+                                        onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
                                         disabled={processingId === user.id}
                                         className={`font-medium disabled:opacity-50 disabled:cursor-wait ${
                                             user.status === 'Active' ? 'text-red-600 hover:underline dark:text-red-500' : 'text-green-600 hover:underline dark:text-green-500'
                                         }`}
                                     >
-                                        {processingId === user.id ? 'প্রসেসিং...' : (user.status === 'Active' ? 'Block' : 'Unblock')}
-                                    </button>
-                                     <button
-                                        onClick={() => handleOpenRechargeModal(user)}
-                                        className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50"
-                                        title="রিচার্জ করুন"
-                                    >
-                                        <CurrencyBangladeshiIcon className="h-5 w-5" />
+                                        {processingId === user.id ? 'প্রসেসিং...' : (user.status === 'Active' ? 'ব্লক করুন' : 'আনব্লক করুন')}
                                     </button>
                                 </td>
                             </tr>
@@ -153,36 +108,29 @@ const UserManagement: React.FC = () => {
                     </tbody>
                 </table>
             </div>
-
-            {/* Recharge Modal */}
-            <Modal isOpen={isRechargeModalOpen} onClose={handleCloseRechargeModal} title={`রিচার্জ করুন: ${selectedUserForRecharge?.name}`}>
-                <form onSubmit={handleRechargeSubmit} className="space-y-4">
-                    <Input
-                        id="rechargeAmount"
-                        label="টাকার পরিমাণ"
-                        type="number"
-                        value={rechargeAmount}
-                        onChange={(e) => setRechargeAmount(e.target.value)}
-                        placeholder="যেমন: ৫০০"
-                        required
-                    />
-                    <Input
-                        id="rechargeDescription"
-                        label="বিবরণ (ঐচ্ছিক)"
-                        type="text"
-                        value={rechargeDescription}
-                        onChange={(e) => setRechargeDescription(e.target.value)}
-                        placeholder="যেমন: বোনাস, রিফান্ড, ইত্যাদি"
-                    />
-                    <div className="flex space-x-3 pt-4">
-                        <Button type="button" variant="secondary" onClick={handleCloseRechargeModal} className="w-1/2">
-                            বাতিল
-                        </Button>
-                        <Button type="submit" isLoading={isRecharging} className="w-1/2">
-                            রিচার্জ করুন
-                        </Button>
+            
+            <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="স্ট্যাটাস পরিবর্তন নিশ্চিত করুন">
+                {confirmationState && (
+                    <div className="space-y-4">
+                        <p className="text-slate-600 dark:text-slate-300">
+                            আপনি কি সত্যিই ব্যবহারকারী <strong>{confirmationState.user.name}</strong> কে <strong>{confirmationState.newStatus === 'Blocked' ? 'ব্লক' : 'আনব্লক'}</strong> করতে চান?
+                        </p>
+                        <div className="flex space-x-3 pt-4">
+                            <Button type="button" variant="secondary" onClick={() => setConfirmationState(null)} className="w-1/2">
+                                ফিরে যান
+                            </Button>
+                            <Button 
+                                type="button" 
+                                variant={confirmationState.newStatus === 'Blocked' ? 'danger' : 'primary'} 
+                                onClick={handleConfirmStatusUpdate} 
+                                isLoading={processingId === confirmationState.user.id}
+                                className="w-1/2"
+                            >
+                                {confirmationState.newStatus === 'Blocked' ? 'হ্যাঁ, ব্লক করুন' : 'হ্যাঁ, আনব্লক করুন'}
+                            </Button>
+                        </div>
                     </div>
-                </form>
+                )}
             </Modal>
         </div>
     );

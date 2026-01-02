@@ -79,10 +79,11 @@ const ManageOrders: React.FC = () => {
 
     const handleViewDetails = (order: Order) => {
         setSelectedOrder(order);
+        const dobForInput = order.dateOfBirth ? order.dateOfBirth.split('T')[0] : '';
         setEditableDetails({
             nidNumber: order.nidNumber || '',
             customerName: order.customerName || '',
-            dateOfBirth: order.dateOfBirth || '',
+            dateOfBirth: dobForInput,
         });
         setIsDetailsModalOpen(true);
     };
@@ -350,7 +351,7 @@ const ManageOrders: React.FC = () => {
                                 
                                 <p><strong>নাম:</strong> {selectedOrder.customerName || 'N/A'}</p>
                                 <p><strong>NID নাম্বার:</strong> {selectedOrder.nidNumber || 'N/A'}</p>
-                                <p><strong>জন্ম তারিখ:</strong> {selectedOrder.dateOfBirth || 'N/A'}</p>
+                                <p><strong>জন্ম তারিখ:</strong> {selectedOrder.dateOfBirth ? new Date(selectedOrder.dateOfBirth).toLocaleDateString('bn-BD') : 'N/A'}</p>
                                 <p><strong>মোবাইল:</strong> {selectedOrder.mobile}</p>
                                 <p><strong>অপারেটর:</strong> {selectedOrder.operator}</p>
 
