@@ -92,11 +92,13 @@ export interface AdminTransaction {
   transactionId: string;
   amount: number;
   paymentMethod: string;
-  status: 'Pending' | 'Approved' | 'Rejected';
+  senderNumber?: string;
+  status: 'Pending' | 'Approved' | 'Rejected' | 'Verifying';
   rejectionReason?: string;
   verificationStatus?: 'Verified' | 'Mismatch' | 'Not Found' | 'Duplicate';
   smsAmount?: number;
   smsCompany?: string;
+  smsSenderNumber?: string;
 }
 
 export interface PaymentMethod {
@@ -108,6 +110,8 @@ export interface PaymentMethod {
 
 export interface Settings {
     biometricOrderPrice: number;
+    callListPrice3Months: number;
+    callListPrice6Months: number;
     paymentMethods: PaymentMethod[];
     notificationEmail: string;
     isOrderingEnabled: boolean;
@@ -120,6 +124,12 @@ export interface AdminDashboardAnalytics {
   pendingOrders: number;
   completedOrders: number;
   totalRevenue: number;
+}
+
+export interface AdminChartData {
+  labels: string[];
+  signupData: number[];
+  orderData: number[];
 }
 
 export interface OrderHistoryItem {
@@ -151,9 +161,9 @@ export enum Page {
     // Admin
     ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
     USER_MANAGEMENT = 'USER_MANAGEMENT',
+    RECHARGE_REQUESTS = 'RECHARGE_REQUESTS',
     MANAGE_ORDERS = 'MANAGE_ORDERS',
     MANAGE_CALL_LIST_ORDERS = 'MANAGE_CALL_LIST_ORDERS',
     ALL_TRANSACTIONS = 'ALL_TRANSACTIONS',
     ADMIN_SETTINGS = 'ADMIN_SETTINGS',
-    ADMIN_RECHARGE = 'ADMIN_RECHARGE',
 }

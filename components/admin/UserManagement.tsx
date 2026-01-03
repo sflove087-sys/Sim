@@ -6,7 +6,11 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber } from '../../utils/formatters';
-import { EyeIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import Pagination from '../common/Pagination';
+import Spinner from '../common/Spinner';
+
+const PAGE_SIZE = 10;
 
 const StatusBadge: React.FC<{ status: 'Active' | 'Blocked' }> = ({ status }) => {
     const isBlocked = status === 'Blocked';
@@ -37,6 +41,11 @@ const UserManagement: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [processingId, setProcessingId] = useState<string | null>(null);
     const { addToast } = useToast();
+
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalUsers, setTotalUsers] = useState(0);
+    const totalPages = Math.ceil(totalUsers / PAGE_SIZE);
     
     type ConfirmationState = { user: User; newStatus: 'Active' | 'Blocked' } | null;
     const [confirmationState, setConfirmationState] = useState<ConfirmationState>(null);
@@ -44,33 +53,22 @@ const UserManagement: React.FC = () => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
 
-    const loadUsers = useCallback(async () => {
+    const loadUsers = useCallback(async (isRefresh: boolean = false) => {
+        if (!isRefresh) setIsLoading(true);
         try {
-            const data = await fetchAllUsers();
+            const { users: data, total } = await fetchAllUsers(currentPage, PAGE_SIZE);
             setUsers(data);
+            setTotalUsers(total);
         } catch (error) {
-            // Avoid showing toast on silent refresh failures
-            console.error("Failed to refresh user list:", error);
+             addToast("ইউজার লোড করা যায়নি।", 'error');
+        } finally {
+            setIsLoading(false);
         }
-    }, []);
+    }, [addToast, currentPage]);
 
     useEffect(() => {
-        const initialLoad = async () => {
-            setIsLoading(true);
-            try {
-                const data = await fetchAllUsers();
-                setUsers(data);
-            } catch (error) {
-                 addToast("ইউজার লোড করা যায়নি।", 'error');
-            } finally {
-                setIsLoading(false);
-            }
-        };
-        initialLoad();
-
-        const intervalId = setInterval(loadUsers, 30000); // Refresh every 30 seconds
-        return () => clearInterval(intervalId);
-    }, [addToast, loadUsers]);
+        loadUsers();
+    }, [loadUsers, currentPage]);
 
     const handleViewUser = (user: User) => {
         setSelectedUser(user);
@@ -89,7 +87,7 @@ const UserManagement: React.FC = () => {
         try {
             await updateUserStatus(user.id, newStatus);
             addToast(`ইউজার সফলভাবে ${actionText} করা হয়েছে।`, 'success');
-            loadUsers(); 
+            loadUsers(true); 
         } catch (error) {
             const err = error as Error;
             addToast(err.message || `ইউজার ${actionText} করা যায়নি।`, 'error');
@@ -98,74 +96,85 @@ const UserManagement: React.FC = () => {
         }
     };
 
-    if (isLoading) {
-        return <div className="text-center p-10">ইউজার লোড হচ্ছে...</div>;
-    }
-
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
-                    <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">নাম</th>
-                            <th scope="col" className="px-6 py-3">ইমেইল</th>
-                            <th scope="col" className="px-6 py-3">মোবাইল</th>
-                            <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
-                            <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                            <th scope="col" className="px-6 py-3">একশন</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {users.map((user) => (
-                            <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50">
-                                <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                    <div className="flex items-center space-x-2">
-                                        <div className="relative flex-shrink-0">
-                                            {user.photoUrl ? (
-                                                <img src={user.photoUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover"/>
-                                            ) : (
-                                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
-                                                    {user.name.charAt(0)}
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
+                <button 
+                    onClick={() => loadUsers(true)}
+                    className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    title="তালিকা রিফ্রেশ করুন"
+                    disabled={isLoading}
+                >
+                    <ArrowPathIcon className={`h-6 w-6 ${isLoading ? 'animate-spin' : ''}`} />
+                </button>
+            </div>
+            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
+                <div className="overflow-x-auto">
+                    {isLoading ? ( <div className="flex justify-center items-center p-20"><Spinner size="lg"/></div> ) : (
+                        <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
+                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
+                                <tr>
+                                    <th scope="col" className="px-6 py-3">নাম</th>
+                                    <th scope="col" className="px-6 py-3">ইমেইল</th>
+                                    <th scope="col" className="px-6 py-3">মোবাইল</th>
+                                    <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
+                                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
+                                    <th scope="col" className="px-6 py-3">একশন</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {users.map((user) => (
+                                    <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50">
+                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                            <div className="flex items-center space-x-2">
+                                                <div className="relative flex-shrink-0">
+                                                    {user.photoUrl ? (
+                                                        <img src={user.photoUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover"/>
+                                                    ) : (
+                                                        <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
+                                                            {user.name.charAt(0)}
+                                                        </div>
+                                                    )}
+                                                    <span 
+                                                        className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${isOnline(user.lastSeen) ? 'bg-green-500' : 'bg-red-500'}`} 
+                                                        title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
+                                                    />
                                                 </div>
-                                            )}
-                                            <span 
-                                                className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${isOnline(user.lastSeen) ? 'bg-green-500' : 'bg-red-500'}`} 
-                                                title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
-                                            />
-                                        </div>
-                                        <span>{user.name}</span>
-                                    </div>
-                                </td>
-                                <td className="px-6 py-4">{user.email}</td>
-                                <td className="px-6 py-4">{user.mobile}</td>
-                                <td className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
-                                    {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
-                                </td>
-                                <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
-                                <td className="px-6 py-4 flex items-center space-x-2">
-                                     <button
-                                        onClick={() => handleViewUser(user)}
-                                        className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
-                                        title="ইউজারের বিবরণ দেখুন"
-                                    >
-                                        <EyeIcon className="h-5 w-5" />
-                                    </button>
-                                    <button
-                                        onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
-                                        disabled={processingId === user.id}
-                                        className={`font-medium disabled:opacity-50 disabled:cursor-wait ${
-                                            user.status === 'Active' ? 'text-red-600 hover:underline dark:text-red-500' : 'text-green-600 hover:underline dark:text-green-500'
-                                        }`}
-                                    >
-                                        {processingId === user.id ? 'প্রসেসিং...' : (user.status === 'Active' ? 'ব্লক করুন' : 'আনব্লক করুন')}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+                                                <span>{user.name}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4">{user.email}</td>
+                                        <td className="px-6 py-4">{user.mobile}</td>
+                                        <td className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
+                                            {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
+                                        </td>
+                                        <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
+                                        <td className="px-6 py-4 flex items-center space-x-2">
+                                            <button
+                                                onClick={() => handleViewUser(user)}
+                                                className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                                                title="ইউজারের বিবরণ দেখুন"
+                                            >
+                                                <EyeIcon className="h-5 w-5" />
+                                            </button>
+                                            <button
+                                                onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
+                                                disabled={processingId === user.id}
+                                                className={`font-medium disabled:opacity-50 disabled:cursor-wait ${
+                                                    user.status === 'Active' ? 'text-red-600 hover:underline dark:text-red-500' : 'text-green-600 hover:underline dark:text-green-500'
+                                                }`}
+                                            >
+                                                {processingId === user.id ? 'প্রসেসিং...' : (user.status === 'Active' ? 'ব্লক করুন' : 'আনব্লক করুন')}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    )}
+                </div>
+                 {!isLoading && totalUsers > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
             </div>
             
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="স্ট্যাটাস পরিবর্তন নিশ্চিত করুন">

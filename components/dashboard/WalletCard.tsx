@@ -1,15 +1,32 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useWallet } from '../../context/WalletContext';
 import { toBengaliNumber } from '../../utils/formatters';
 
 const WalletCard: React.FC = () => {
   const { wallet, isLoading, refreshWallet } = useWallet();
-  const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [isBalanceVisible, setIsBalanceVisible] = useState(() => {
+    try {
+      const savedVisibility = localStorage.getItem('isBalanceVisible');
+      // Default to true if nothing is saved
+      return savedVisibility !== null ? JSON.parse(savedVisibility) : true;
+    } catch (error) {
+        console.warn('Could not read balance visibility from localStorage', error);
+        return true;
+    }
+  });
+
+  useEffect(() => {
+    try {
+        localStorage.setItem('isBalanceVisible', JSON.stringify(isBalanceVisible));
+    } catch (error) {
+        console.warn('Could not save balance visibility to localStorage', error);
+    }
+  }, [isBalanceVisible]);
 
   const toggleVisibility = () => {
-    setIsBalanceVisible(!isBalanceVisible);
+    setIsBalanceVisible(prev => !prev);
   };
 
   return (

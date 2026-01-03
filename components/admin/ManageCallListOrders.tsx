@@ -1,12 +1,12 @@
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CallListOrder, OrderStatus } from '../../types';
 import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber, printPdf } from '../../utils/formatters';
-import { DocumentArrowUpIcon, LinkIcon, PrinterIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     const statusStyles = {
@@ -37,6 +37,7 @@ const ManageCallListOrders: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
     const { addToast } = useToast();
 
     const loadOrders = useCallback(async () => {
@@ -54,6 +55,17 @@ const ManageCallListOrders: React.FC = () => {
     useEffect(() => {
         loadOrders();
     }, [loadOrders]);
+
+    const filteredOrders = useMemo(() => {
+        if (!searchTerm.trim()) {
+            return orders;
+        }
+        const lowercasedFilter = searchTerm.toLowerCase();
+        return orders.filter(order =>
+            order.mobile.toLowerCase().includes(lowercasedFilter) ||
+            order.userId.toLowerCase().includes(lowercasedFilter)
+        );
+    }, [orders, searchTerm]);
 
     const handleOpenRejectModal = (order: CallListOrder) => {
         setSelectedOrder(order);
@@ -150,6 +162,20 @@ const ManageCallListOrders: React.FC = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার ম্যানেজমেন্ট</h1>
+            
+            <div className="relative max-w-sm">
+                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                    type="text"
+                    placeholder="মোবাইল বা ইউজার আইডি দিয়ে খুঁজুন..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                />
+            </div>
+            
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
                 <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
@@ -165,7 +191,7 @@ const ManageCallListOrders: React.FC = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {orders.map((order) => (
+                        {filteredOrders.map((order) => (
                             <tr key={order.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
                                 <td className="px-6 py-4">{new Date(order.date).toLocaleDateString('bn-BD')}</td>
                                 <td className="px-6 py-4 font-mono">{order.id}</td>
@@ -201,7 +227,7 @@ const ManageCallListOrders: React.FC = () => {
                         ))}
                     </tbody>
                 </table>
-                 {orders.length === 0 && <p className="text-center p-6 text-slate-500">কোনো অর্ডার পাওয়া যায়নি।</p>}
+                 {filteredOrders.length === 0 && <p className="text-center p-6 text-slate-500">{searchTerm ? 'আপনার অনুসন্ধানের সাথে মেলে এমন কোনো অর্ডার পাওয়া যায়নি।' : 'কোনো অর্ডার পাওয়া যায়নি।'}</p>}
             </div>
 
             <Modal isOpen={isRejectModalOpen} onClose={handleCloseRejectModal} title={`অর্ডার বাতিল করুন: ${selectedOrder?.id}`}>

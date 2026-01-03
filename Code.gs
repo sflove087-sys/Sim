@@ -39,8 +39,10 @@ function doPost(e) {
         'fetchAllUsers': handleFetchAllUsers, 
         'fetchAllMoneyRequests': handleFetchAllMoneyRequests, // Replaces fetchPendingTransactions
         'approveTransaction': handleApproveTransaction, 'rejectTransaction': handleRejectTransaction,
+        'reverifyTransaction': handleReverifyTransaction,
         'uploadOrderPdf': handleUploadOrderPdf, 'updateOrderStatus': handleUpdateOrderStatus,
         'updateOrderDetails': handleUpdateOrderDetails, 'fetchAdminDashboardAnalytics': handleFetchAdminDashboardAnalytics,
+        'fetchChartData': handleFetchChartData,
         'updateUserStatus': handleUpdateUserStatus, 'fetchAllTransactions': handleFetchAllTransactions,
         'fetchSettings': handleFetchSettings, 'updateSettings': handleUpdateSettings,
         'adminRecharge': handleAdminRecharge, 'fetchAdminRecharges': handleFetchAdminRecharges,
@@ -78,6 +80,8 @@ function getSetting(key) {
         // Provide default values for critical settings if they are not found or empty
         if (key === 'paymentMethods') return '[]'; 
         if (key === 'biometricOrderPrice') return '350';
+        if (key === 'callListPrice3Months') return '900';
+        if (key === 'callListPrice6Months') return '1500';
         if (key === 'notificationEmail') return '';
         if (key === 'isOrderingEnabled') return 'true';
         if (key === 'isCallListOrderingEnabled') return 'true';
@@ -223,40 +227,28 @@ function handleFetchWallet(payload) {
 }
 
 function handleAddMoneyRequest(payload) {
-  const { userId, transactionId, amount, paymentMethod } = payload;
+  const { userId, transactionId, amount, paymentMethod, senderNumber } = payload;
   const numericAmount = parseFloat(amount);
   const trimmedTransactionId = transactionId ? transactionId.toString().trim() : '';
+  const trimmedSenderNumber = senderNumber ? senderNumber.toString().trim() : '';
 
-  // 1. Validation
-  if (!trimmedTransactionId || !amount || isNaN(numericAmount) || numericAmount <= 0 || !paymentMethod) {
+  if (!trimmedTransactionId || !amount || isNaN(numericAmount) || numericAmount <= 0 || !paymentMethod || !trimmedSenderNumber || trimmedSenderNumber.length !== 4) {
      throw new Error("অনুগ্রহ করে সকল তথ্য সঠিকভাবে পূরণ করুন।");
   }
 
-  // 2. Stricter duplicate check: has this TxnID ever been submitted?
   if (findRow(adminTransactionsSheet, trimmedTransactionId, 4) !== -1) {
     throw new Error("এই ট্রানজেকশন আইডিটি ইতিমধ্যে ব্যবহার করা হয়েছে।");
   }
 
-  // 3. Check against SMS sheet
-  const smsMap = new Map();
-  if (smsSheet && smsSheet.getLastRow() > 1) {
-    const smsData = smsSheet.getRange(2, 1, smsSheet.getLastRow() - 1, 5).getValues();
-    for (const row of smsData) {
-      const txId = row[1] ? row[1].toString().trim() : '';
-      const company = row[3] ? row[3].toString().trim() : ''; // Assuming Col D is company
-      const smsAmount = parseFloat(row[4]);
-      if (txId && company && !isNaN(smsAmount)) {
-        smsMap.set(txId, { amount: smsAmount, company: company }); // Store company
-      }
-    }
-  }
-
+  const smsMap = getSmsMap();
   const smsEntry = smsMap.get(trimmedTransactionId);
-  const requestedCompany = (paymentMethod || '').split(' ')[0];
 
-  // 4. Auto-approve if verified (amount AND company match)
-  if (smsEntry && smsEntry.amount === numericAmount && smsEntry.company.toLowerCase() === requestedCompany.toLowerCase()) {
-    // Verified! Auto-approve.
+  const isMatch = smsEntry &&
+                  smsEntry.amount === numericAmount &&
+                  smsEntry.senderNumber && smsEntry.senderNumber.endsWith(trimmedSenderNumber);
+
+
+  if (isMatch) {
     const walletRowIndex = findRow(walletSheet, userId, 1);
     if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`);
     
@@ -266,19 +258,17 @@ function handleAddMoneyRequest(payload) {
     transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (স্বয়ংক্রিয়)", "Credit", numericAmount, "Completed"]);
     
     const requestId = "req" + Date.now();
-    adminTransactionsSheet.appendRow([requestId, new Date().toISOString(), userId, trimmedTransactionId, numericAmount, "Approved", paymentMethod, "Auto-approved by system"]);
+    adminTransactionsSheet.appendRow([requestId, new Date().toISOString(), userId, trimmedTransactionId, numericAmount, "Approved", paymentMethod, trimmedSenderNumber, "Auto-approved by system"]);
 
     return { message: "আপনার টাকা যোগ করার অনুরোধটি স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে।" };
   } else {
-    // Not found or mismatch, create a pending request for admin review
+    // Start verification process
     const requestId = "req" + Date.now();
-    adminTransactionsSheet.appendRow([requestId, new Date().toISOString(), userId, trimmedTransactionId, numericAmount, "Pending", paymentMethod, ""]);
+    const now = new Date().toISOString();
+    // New row format includes SenderNumber, and shifts other columns
+    adminTransactionsSheet.appendRow([requestId, now, userId, trimmedTransactionId, numericAmount, "Verifying", paymentMethod, trimmedSenderNumber, "", now, 0]);
   
-    const subject = `নতুন টাকা যোগ করার অনুরোধ: ৳${amount}`;
-    const body = `একজন ব্যবহারকারী টাকা যোগ করার জন্য একটি নতুন অনুরোধ জমা দিয়েছেন।<br><br><b>ব্যবহারকারী আইডি:</b> ${userId}<br><b>টাকার পরিমাণ:</b> ৳${amount}<br><b>পেমেন্ট পদ্ধতি:</b> ${paymentMethod}<br><b>ট্রানজেকশন আইডি:</b> ${transactionId}<br><b>তারিখ:</b> ${new Date().toLocaleString('bn-BD')}<br><br>অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে অনুরোধটি যাচাই করুন।`;
-    sendNotificationEmail(subject, body);
-
-    return { message: "আপনার অনুরোধটি পর্যালোচনার জন্য পাঠানো হয়েছে।" };
+    return { message: "আপনার অনুরোধটি যাচাই করা হচ্ছে। ৫ মিনিটের মধ্যে ব্যালেন্স আপডেট না হলে সাপোর্টে যোগাযোগ করুন।" };
   }
 }
 
@@ -324,7 +314,10 @@ function handleCreateCallListOrder(payload) {
     if (!operator || !mobile || !duration) throw new Error("অনুগ্রহ করে সকল তথ্য পূরণ করুন।");
     if(!callListOrdersSheet) throw new Error("CallListOrders sheet not found. Please create it.");
 
-    const prices = { '3 Months': 900, '6 Months': 1500 };
+    const prices = { 
+        '3 Months': Number(getSetting('callListPrice3Months')), 
+        '6 Months': Number(getSetting('callListPrice6Months'))
+    };
     const price = prices[duration];
     if (!price) throw new Error("অবৈধ মেয়াদ নির্বাচন করা হয়েছে।");
 
@@ -375,7 +368,7 @@ function handleFetchTransactions(payload) {
     .map(row => ({ id: row[0], date: new Date(row[2]), description: row[3], type: row[4], amount: row[5], status: row[6] }));
 
   const pendingAddMoneyRequests = adminTransactionsSheet.getDataRange().getValues().slice(1)
-    .filter(row => row[2] === userId && row[5] === "Pending")
+    .filter(row => row[2] === userId && (row[5] === "Pending" || row[5] === "Verifying"))
     .map(row => ({ id: row[0], date: new Date(row[1]), description: "টাকা যোগ করার অনুরোধ", type: "Credit", amount: row[4], status: "Pending" }));
   
   const allTransactions = [...completedTransactions, ...pendingAddMoneyRequests];
@@ -436,16 +429,27 @@ function handleFetchOrderHistoryForUser(payload) {
 function handleFetchAllUsers(payload) {
   if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
 
+  const { page = 1, pageSize = 10 } = payload;
+  const pageNum = parseInt(page);
+  const pageSizeNum = parseInt(pageSize);
+
   const usersData = usersSheet.getLastRow() > 1 ? usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 11).getValues() : [];
   
   const walletData = walletSheet.getLastRow() > 1 ? walletSheet.getRange(2, 1, walletSheet.getLastRow() - 1, 2).getValues() : [];
   const walletMap = new Map(walletData.map(row => [row[0], row[1]]));
 
-  return usersData.map(row => {
+  const allUsers = usersData.map(row => {
     const user = mapUserRowToObject(row);
     user.balance = walletMap.get(user.id) || 0;
     return user;
-  });
+  }).reverse(); // Show newest users first
+
+  const total = allUsers.length;
+  const startIndex = (pageNum - 1) * pageSizeNum;
+  const endIndex = startIndex + pageSizeNum;
+  const paginatedUsers = allUsers.slice(startIndex, endIndex);
+
+  return { users: paginatedUsers, total: total };
 }
 
 function handleFetchAllMoneyRequests() {
@@ -453,20 +457,9 @@ function handleFetchAllMoneyRequests() {
     Logger.log("Warning: 'sms' sheet not found. Verification will be skipped.");
   }
   
-  const smsMap = new Map();
-  if (smsSheet && smsSheet.getLastRow() > 1) {
-    const smsData = smsSheet.getRange(2, 1, smsSheet.getLastRow() - 1, 5).getValues();
-    for (const row of smsData) {
-      const txId = row[1] ? row[1].toString().trim() : '';
-      const company = row[3] ? row[3].toString().trim() : ''; // Assuming Col D is company
-      const amount = parseFloat(row[4]);
-      if (txId && company && !isNaN(amount)) {
-        smsMap.set(txId, { amount: amount, company: company }); // Store company
-      }
-    }
-  }
+  const smsMap = getSmsMap();
 
-  const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 8).getValues() : [];
+  const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 11).getValues() : [];
   
   const approvedTxIds = new Set();
   for (const row of allRequestsData) {
@@ -484,25 +477,37 @@ function handleFetchAllMoneyRequests() {
       amount: parseFloat(row[4]),
       status: row[5] || 'Pending',
       paymentMethod: row[6] || 'N/A',
-      rejectionReason: row[7] || '',
+      senderNumber: row[7] || '',
+      rejectionReason: row[8] || '',
       verificationStatus: null,
       smsAmount: null,
-      smsCompany: null
+      smsCompany: null,
+      smsSenderNumber: null
     };
 
-    if (request.status === 'Pending') {
+    if (request.status === 'Pending' || request.status === 'Verifying') {
+      const smsEntry = smsMap.get(request.transactionId);
       if (approvedTxIds.has(request.transactionId)) {
         request.verificationStatus = 'Duplicate';
       } else if (smsMap.has(request.transactionId)) {
-        const smsEntry = smsMap.get(request.transactionId);
-        const requestedCompany = (request.paymentMethod || '').split(' ')[0];
+        const senderNumberMatch = smsEntry.senderNumber && request.senderNumber && smsEntry.senderNumber.endsWith(request.senderNumber);
 
-        if (smsEntry.amount === request.amount && smsEntry.company.toLowerCase() === requestedCompany.toLowerCase()) {
-          request.verificationStatus = 'Verified';
+        if (smsEntry.amount === request.amount && senderNumberMatch) {
+            request.verificationStatus = 'Verified';
+            // Auto-approve if verified
+            try {
+                handleApproveTransaction({ requestId: request.requestId });
+                request.status = 'Approved'; // Update status for immediate UI feedback
+                approvedTxIds.add(request.transactionId); // Add to set to prevent duplicate processing in same run
+                Logger.log('Transaction ' + request.transactionId + ' auto-approved during fetch.');
+            } catch (e) {
+                Logger.log('Auto-approval failed during fetch for requestId ' + request.requestId + ': ' + e.toString());
+            }
         } else {
           request.verificationStatus = 'Mismatch';
           request.smsAmount = smsEntry.amount;
           request.smsCompany = smsEntry.company;
+          request.smsSenderNumber = smsEntry.senderNumber;
         }
       } else {
         request.verificationStatus = 'Not Found';
@@ -550,6 +555,85 @@ function handleFetchAdminDashboardAnalytics(payload) {
     };
 }
 
+function handleFetchChartData(payload) {
+  if (!isAdmin(payload.userId)) {
+    throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
+  }
+
+  const today = new Date();
+  const labels = [];
+  const signupData = [];
+  const orderData = [];
+  
+  const dailySignupCounts = {};
+  const dailyOrderCounts = {};
+
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const dateString = Utilities.formatDate(date, "GMT+6", "d MMM");
+    const dateKey = Utilities.formatDate(date, "GMT+6", "yyyy-MM-dd");
+    labels.push(dateString);
+    dailySignupCounts[dateKey] = 0;
+    dailyOrderCounts[dateKey] = 0;
+  }
+
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
+
+  // Process Users
+  if (usersSheet.getLastRow() > 1) {
+    const usersData = usersSheet.getRange(2, 7, usersSheet.getLastRow() - 1, 1).getValues();
+    usersData.forEach(row => {
+      const signupDate = new Date(row[0]);
+      if (signupDate >= sevenDaysAgo) {
+        const dateKey = Utilities.formatDate(signupDate, "GMT+6", "yyyy-MM-dd");
+        if (dailySignupCounts.hasOwnProperty(dateKey)) {
+          dailySignupCounts[dateKey]++;
+        }
+      }
+    });
+  }
+
+  // Process Biometric Orders
+  if (ordersSheet.getLastRow() > 1) {
+    const biometricOrdersData = ordersSheet.getRange(2, 3, ordersSheet.getLastRow() - 1, 5).getValues();
+    biometricOrdersData.forEach(row => {
+      const orderDate = new Date(row[0]);
+      const status = row[4];
+      if (status === 'Completed' && orderDate >= sevenDaysAgo) {
+        const dateKey = Utilities.formatDate(orderDate, "GMT+6", "yyyy-MM-dd");
+        if (dailyOrderCounts.hasOwnProperty(dateKey)) {
+          dailyOrderCounts[dateKey]++;
+        }
+      }
+    });
+  }
+  
+  // Process Call List Orders
+  if (callListOrdersSheet && callListOrdersSheet.getLastRow() > 1) {
+    const callListOrdersData = callListOrdersSheet.getRange(2, 3, callListOrdersSheet.getLastRow() - 1, 6).getValues();
+    callListOrdersData.forEach(row => {
+      const orderDate = new Date(row[0]);
+      const status = row[5];
+       if (status === 'Completed' && orderDate >= sevenDaysAgo) {
+        const dateKey = Utilities.formatDate(orderDate, "GMT+6", "yyyy-MM-dd");
+        if (dailyOrderCounts.hasOwnProperty(dateKey)) {
+          dailyOrderCounts[dateKey]++;
+        }
+      }
+    });
+  }
+
+  Object.keys(dailySignupCounts).sort().forEach(key => {
+    signupData.push(dailySignupCounts[key]);
+    orderData.push(dailyOrderCounts[key]);
+  });
+  
+  return { labels, signupData, orderData };
+}
+
 
 function handleFetchSettings() {
     const methodsString = getSetting('paymentMethods');
@@ -561,9 +645,25 @@ function handleFetchSettings() {
         paymentMethods = [];
     }
 
+    const normalizedMethods = paymentMethods.map(method => {
+      if (method && typeof method.type === 'string') {
+        const lowerType = method.type.toLowerCase();
+        if (lowerType === 'bkash') {
+          method.type = 'Bkash';
+        } else if (lowerType === 'nagad') {
+          method.type = 'Nagad';
+        } else if (lowerType === 'rocket') {
+          method.type = 'Rocket';
+        }
+      }
+      return method;
+    });
+
     return {
       biometricOrderPrice: Number(getSetting('biometricOrderPrice')),
-      paymentMethods: paymentMethods,
+      callListPrice3Months: Number(getSetting('callListPrice3Months')),
+      callListPrice6Months: Number(getSetting('callListPrice6Months')),
+      paymentMethods: normalizedMethods,
       notificationEmail: getSetting('notificationEmail'),
       isOrderingEnabled: getSetting('isOrderingEnabled') == true,
       isCallListOrderingEnabled: getSetting('isCallListOrderingEnabled') == true,
@@ -631,7 +731,7 @@ function handleFetchAdminRecharges(payload) {
 }
 
 function handleUpdateUserStatus(payload) { const { userId, userIdToUpdate, status } = payload; if (!isAdmin(userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const validStatuses = ['Active', 'Blocked']; if (!userIdToUpdate || !status || validStatuses.indexOf(status) === -1) throw new Error("প্রয়োজনীয় তথ্য সঠিক নয়।"); const userRowIndex = findRow(usersSheet, userIdToUpdate, 1); if (userRowIndex === -1) throw new Error("ইউজারকে খুঁজে পাওয়া যায়নি।"); usersSheet.getRange(userRowIndex, 8).setValue(status); return { message: `ইউজারের স্ট্যাটাস সফলভাবে '${status}' করা হয়েছে।` }; }
-function handleApproveTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; if (requestRow[5] !== "Pending") throw new Error("এই অনুরোধটি ইতিমধ্যে প্রসেস করা হয়েছে।"); const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`); const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue(); walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + amount); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (অ্যাডমিন)", "Credit", amount, "Completed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Approved"); return { message: "লেনদেনটি সফলভাবে Approve করা হয়েছে।" }; }
+function handleApproveTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; if (requestRow[5] === "Approved") throw new Error("এই অনুরোধটি ইতিমধ্যে অনুমোদিত হয়েছে।"); const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`); const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue(); walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + amount); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (অ্যাডমিন)", "Credit", amount, "Completed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Approved"); return { message: "লেনদেনটি সফলভাবে Approve করা হয়েছে।" }; }
 
 function handleRejectTransaction(payload) { 
     const { requestId, reason } = payload; 
@@ -639,7 +739,10 @@ function handleRejectTransaction(payload) {
     if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); 
     
     const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0];
-    if (requestRow[5] !== "Pending") throw new Error("এই অনুরোধটি ইতিমধ্যে প্রসেস করা হয়েছে।"); 
+    const currentStatus = requestRow[5];
+    if (currentStatus !== "Pending" && currentStatus !== "Verifying") {
+      throw new Error("এই অনুরোধটি ইতিমধ্যে প্রসেস করা হয়েছে।");
+    } 
 
     const userId = requestRow[2]; 
     const amount = parseFloat(requestRow[4]); 
@@ -648,9 +751,53 @@ function handleRejectTransaction(payload) {
     transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), txDescription, "Credit", amount, "Failed"]); 
     
     adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Rejected");
-    adminTransactionsSheet.getRange(requestRowIndex, 8).setValue(reason || "");
+    adminTransactionsSheet.getRange(requestRowIndex, 9).setValue(reason || ""); // Column I for rejectionReason
     
     return { message: "লেনদেনটি Reject করা হয়েছে।" }; 
+}
+
+function handleReverifyTransaction(payload) {
+  const { requestId } = payload;
+  const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1);
+  if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।");
+
+  const headers = adminTransactionsSheet.getRange(1, 1, 1, adminTransactionsSheet.getLastColumn()).getValues()[0];
+  const requestRowData = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, headers.length).getValues()[0];
+  const requestObj = headers.reduce((obj, header, i) => {
+    obj[header] = requestRowData[i];
+    return obj;
+  }, {});
+
+  const { transactionId, amount, paymentMethod, status, senderNumber } = requestObj;
+
+  // 1. Check for duplicates
+  const approvedTxIds = new Set();
+  const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, headers.indexOf('status') + 1).getValues() : [];
+  for (const row of allRequestsData) {
+      if (row[headers.indexOf('status')] === 'Approved' && row[headers.indexOf('transactionId')]) {
+          approvedTxIds.add(row[headers.indexOf('transactionId')].toString().trim());
+      }
+  }
+
+  if (approvedTxIds.has(transactionId.toString().trim())) {
+    return { newStatus: status, verificationStatus: 'Duplicate' };
+  }
+  
+  // 2. Check against SMS list
+  const smsMap = getSmsMap();
+  const smsEntry = smsMap.get(transactionId.toString().trim());
+  const isMatch = smsEntry &&
+                  smsEntry.amount === parseFloat(amount) &&
+                  smsEntry.senderNumber && senderNumber && smsEntry.senderNumber.endsWith(senderNumber);
+
+  if (isMatch) {
+    handleApproveTransaction({ requestId });
+    return { newStatus: 'Approved', verificationStatus: 'Verified' };
+  } else if (smsEntry) {
+    return { newStatus: status, verificationStatus: 'Mismatch', smsAmount: smsEntry.amount, smsCompany: smsEntry.company, smsSenderNumber: smsEntry.senderNumber };
+  } else {
+    return { newStatus: status, verificationStatus: 'Not Found' };
+  }
 }
 
 function handleUploadOrderPdf(payload) { const { orderId, pdfBase64, mimeType } = payload; const pdfUrl = uploadFileToDrive(pdfBase64, mimeType, orderId, "Order PDFs"); const orderRowIndex = findRow(ordersSheet, orderId, 1); if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।"); ordersSheet.getRange(orderRowIndex, 8).setValue(pdfUrl); ordersSheet.getRange(orderRowIndex, 7).setValue("Completed"); return { message: "PDF সফলভাবে আপলোড এবং অর্ডার কমপ্লিট করা হয়েছে।", pdfUrl }; }
@@ -686,7 +833,32 @@ function handleUpdateOrderStatus(payload) {
 }
 
 function handleUpdateOrderDetails(payload) { if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const { orderId, details } = payload; if (!orderId || !details) throw new Error("অর্ডার আইডি এবং বিবরণ আবশ্যক।"); const { nidNumber, customerName, dateOfBirth } = details; const orderRowIndex = findRow(ordersSheet, orderId, 1); if (orderRowIndex === -1) throw new Error("অর্ডারটি খুঁজে পাওয়া যায়নি।"); ordersSheet.getRange(orderRowIndex, 9, 1, 3).setValues([[nidNumber || "", customerName || "", dateOfBirth || ""]]); return { message: 'অর্ডারের বিবরণ সফলভাবে আপডেট করা হয়েছে।' }; }
-function handleFetchAllTransactions(payload) { if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।"); return transactionsSheet.getDataRange().getValues().slice(1).map(row => ({ id: row[0], userId: row[1], date: new Date(row[2]).toLocaleDateString('bn-BD'), description: row[3], type: row[4], amount: row[5], status: row[6] })).reverse(); }
+function handleFetchAllTransactions(payload) { 
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।"); 
+
+  const { page = 1, pageSize = 15 } = payload;
+  const pageNum = parseInt(page);
+  const pageSizeNum = parseInt(pageSize);
+
+  const allTransactionsData = transactionsSheet.getDataRange().getValues().slice(1).reverse(); // Newest first
+
+  const total = allTransactionsData.length;
+  const startIndex = (pageNum - 1) * pageSizeNum;
+  const endIndex = startIndex + pageSizeNum;
+  const paginatedData = allTransactionsData.slice(startIndex, endIndex);
+
+  const transactions = paginatedData.map(row => ({ 
+    id: row[0], 
+    userId: row[1], 
+    date: new Date(row[2]).toLocaleDateString('bn-BD'), 
+    description: row[3], 
+    type: row[4], 
+    amount: row[5], 
+    status: row[6] 
+  }));
+
+  return { transactions: transactions, total: total };
+}
 
 function handleFetchCallListOrders(payload) {
   if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
@@ -760,6 +932,119 @@ function sendNotificationEmail(subject, body) {
   }
 }
 
-// --- Time-based Triggers ---
+// --- Time-based Triggers & Auto-Verification ---
+function autoRejectTransaction(rowIndex, userId, amount, txId) {
+  const reason = 'স্বয়ংক্রিয় যাচাইকরণে লেনদেনটি খুঁজে পাওয়া যায়নি।';
+  adminTransactionsSheet.getRange(rowIndex, 6).setValue("Rejected"); // Column F: status
+  adminTransactionsSheet.getRange(rowIndex, 9).setValue(reason);     // Column I: rejectionReason
+  
+  const txDescription = `টাকা যোগ করার অনুরোধ ব্যর্থ (TxnID: ${txId})`;
+  transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), txDescription, "Credit", amount, "Failed"]);
+}
+
+function getSmsMap() {
+    const smsMap = new Map();
+    if (smsSheet && smsSheet.getLastRow() > 1) {
+        const smsData = smsSheet.getRange(2, 1, smsSheet.getLastRow() - 1, 5).getValues();
+        for (const row of smsData) {
+            const txId = row[1] ? row[1].toString().trim() : '';
+            const senderNumber = row[2] ? row[2].toString().trim() : '';
+            const company = row[3] ? row[3].toString().trim() : '';
+            const amount = parseFloat(row[4]);
+            if (txId && company && !isNaN(amount)) {
+                smsMap.set(txId, { amount: amount, company: company, senderNumber: senderNumber });
+            }
+        }
+    }
+    return smsMap;
+}
+
+function processPendingAndVerifyingPayments() {
+  const lock = LockService.getScriptLock();
+  if (!lock.tryLock(30000)) {
+    Logger.log('Could not obtain lock for processPendingAndVerifyingPayments.');
+    return;
+  }
+  try {
+    if (!adminTransactionsSheet || adminTransactionsSheet.getLastRow() < 2) return;
+
+    const headers = adminTransactionsSheet.getRange(1, 1, 1, adminTransactionsSheet.getLastColumn()).getValues()[0];
+    const statusColIndex = headers.indexOf('status');
+    const attemptsColIndex = headers.indexOf('VerificationAttempts');
+    
+    if (statusColIndex === -1 || attemptsColIndex === -1) {
+      Logger.log("Required columns ('status', 'VerificationAttempts') not found in AdminTransactions sheet.");
+      return;
+    }
+    const dataRange = adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, adminTransactionsSheet.getLastColumn());
+    const allData = dataRange.getValues();
+    const smsMap = getSmsMap();
+
+    const txIdColIndex = headers.indexOf('transactionId');
+    const amountColIndex = headers.indexOf('amount');
+    const paymentMethodColIndex = headers.indexOf('paymentMethod');
+    const userIdColIndex = headers.indexOf('userId');
+    const requestIdColIndex = headers.indexOf('requestId');
+    const senderNumberColIndex = headers.indexOf('senderNumber');
+
+    for (let i = 0; i < allData.length; i++) {
+      const row = allData[i];
+      const currentStatus = row[statusColIndex];
+
+      if (currentStatus === 'Verifying' || currentStatus === 'Pending') {
+        const rowIndex = i + 2;
+        const attempts = parseInt(row[attemptsColIndex]) || 0;
+        
+        const txId = row[txIdColIndex] ? row[txIdColIndex].toString().trim() : '';
+        const amount = parseFloat(row[amountColIndex]);
+        const senderNumber = row[senderNumberColIndex] ? row[senderNumberColIndex].toString().trim() : '';
+        
+        const smsEntry = smsMap.get(txId);
+
+        const isMatch = smsEntry &&
+                        smsEntry.amount === amount &&
+                        smsEntry.senderNumber && senderNumber && smsEntry.senderNumber.endsWith(senderNumber);
+
+        if (isMatch) {
+          const requestId = row[requestIdColIndex];
+          handleApproveTransaction({ requestId });
+          Logger.log(`Transaction ${txId} auto-approved. Original status: ${currentStatus}.`);
+        } else {
+          if (currentStatus === 'Pending') {
+            adminTransactionsSheet.getRange(rowIndex, statusColIndex + 1).setValue('Verifying');
+            adminTransactionsSheet.getRange(rowIndex, attemptsColIndex + 1).setValue(1);
+            Logger.log(`Transaction ${txId} moved from Pending to Verifying (Attempt 1).`);
+          } else { // It was already 'Verifying'
+            if (attempts >= 4) { // 0, 1, 2, 3, 4 are 5 attempts. Fail after the 5th attempt.
+              const userId = row[userIdColIndex];
+              autoRejectTransaction(rowIndex, userId, amount, txId);
+              Logger.log(`Transaction ${txId} auto-rejected after ${attempts + 1} attempts.`);
+            } else {
+              adminTransactionsSheet.getRange(rowIndex, attemptsColIndex + 1).setValue(attempts + 1);
+            }
+          }
+        }
+      }
+    }
+  } catch(e) {
+    Logger.log("Error in processPendingAndVerifyingPayments trigger: " + e.toString());
+  } finally {
+    lock.releaseLock();
+  }
+}
+
 function autoCancelOldOrders() { const lock = LockService.getScriptLock(); lock.waitLock(30000); try { const ordersData = ordersSheet.getDataRange().getValues(); const now = new Date(); const timeout = ORDER_TIMEOUT_MINUTES * 60 * 1000; for (let i = 1; i < ordersData.length; i++) { const orderRow = ordersData[i]; if (orderRow[6] === "Pending" && (now.getTime() - new Date(orderRow[2]).getTime() > timeout)) { const [orderId, userId, , , , orderPrice] = orderRow; const rowIndex = i + 1; ordersSheet.getRange(rowIndex, 7).setValue("Rejected"); ordersSheet.getRange(rowIndex, 12).setValue("সময়সীমা শেষ হওয়ায় অর্ডারটি স্বয়ংক্রিয়ভাবে বাতিল হয়েছে।"); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex !== -1) { const newBalance = parseFloat(walletSheet.getRange(walletRowIndex, 2).getValue()) + parseFloat(orderPrice); walletSheet.getRange(walletRowIndex, 2).setValue(newBalance); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), `অর্ডার (${orderId}) বাতিলের জন্য টাকা ফেরত`, "Credit", orderPrice, "Completed"]); Logger.log(`Order ${orderId} for user ${userId} auto-cancelled and refunded.`); } else { Logger.log(`Could not find wallet for user ${userId} to refund order ${orderId}.`); } } } } catch (error) { Logger.log(`Error in autoCancelOldOrders: ${error}`); } finally { lock.releaseLock(); } }
-function createTimeBasedTriggers() { ScriptApp.getProjectTriggers().forEach(trigger => trigger.getHandlerFunction() === "autoCancelOldOrders" && ScriptApp.deleteTrigger(trigger)); ScriptApp.newTrigger("autoCancelOldOrders").timeBased().everyMinutes(5).create(); Logger.log("Time-based trigger for autoCancelOldOrders created successfully."); }
+
+function createTimeBasedTriggers() { 
+  // Delete existing triggers to avoid duplicates
+  ScriptApp.getProjectTriggers().forEach(trigger => {
+    const handler = trigger.getHandlerFunction();
+    if (handler === "autoCancelOldOrders" || handler === "checkVerifyingPayments" || handler === "processPendingAndVerifyingPayments") {
+      ScriptApp.deleteTrigger(trigger);
+    }
+  });
+
+  ScriptApp.newTrigger("autoCancelOldOrders").timeBased().everyMinutes(5).create();
+  ScriptApp.newTrigger("processPendingAndVerifyingPayments").timeBased().everyMinutes(1).create();
+  Logger.log("Time-based triggers created successfully."); 
+}

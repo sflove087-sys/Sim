@@ -8,10 +8,12 @@ import { useWallet } from '../../context/WalletContext';
 import { ClipboardDocumentIcon, WalletIcon, BanknotesIcon, CheckCircleIcon, ArrowLeftIcon } from '@heroicons/react/24/solid';
 import { PaymentMethod } from '../../types';
 import Spinner from '../common/Spinner';
+import LoadingModal from '../common/LoadingModal';
 
 const AddMoney: React.FC = () => {
     const [transactionId, setTransactionId] = useState('');
     const [amount, setAmount] = useState('');
+    const [senderNumber, setSenderNumber] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [paymentMethods, setPaymentMethods] = useState<PaymentMethod[]>([]);
     const [selectedMethod, setSelectedMethod] = useState<PaymentMethod | null>(null);
@@ -45,8 +47,12 @@ const AddMoney: React.FC = () => {
             addToast('অনুগ্রহ করে একটি পেমেন্ট পদ্ধতি বাছাই করুন।', 'error');
             return;
         }
-        if (!transactionId || !amount) {
+        if (!transactionId || !amount || !senderNumber) {
             addToast('অনুগ্রহ করে সকল তথ্য পূরণ করুন।', 'error');
+            return;
+        }
+        if (senderNumber.length !== 4) {
+             addToast('প্রেরকের নম্বরের শেষ ৪টি সংখ্যা দিন।', 'error');
             return;
         }
         const numericAmount = parseFloat(amount);
@@ -58,11 +64,12 @@ const AddMoney: React.FC = () => {
         setIsLoading(true);
         try {
             const methodString = `${selectedMethod.name} (${selectedMethod.number})`;
-            const response = await addMoneyRequest(transactionId, numericAmount, methodString);
+            const response = await addMoneyRequest(transactionId, numericAmount, methodString, senderNumber);
             addToast(response.message, 'success');
             refreshWallet();
             setTransactionId('');
             setAmount('');
+            setSenderNumber('');
             setSelectedMethod(null);
 
         } catch (error) {
@@ -77,6 +84,7 @@ const AddMoney: React.FC = () => {
 
     return (
         <div className="max-w-3xl mx-auto space-y-6">
+            <LoadingModal isOpen={isLoading} />
              <style>{`
                 @keyframes fade-in-slide-down {
                     0% { opacity: 0; transform: translateY(-10px); }
@@ -107,7 +115,7 @@ const AddMoney: React.FC = () => {
 
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                 {isLoadingMethods ? (
-                    <div className="flex justify-center p-8"><Spinner size="lg" /></div>
+                    <div className="flex justify-center p-8"><Spinner size="lg" colorClass="border-indigo-500" /></div>
                 ) : paymentMethods.length > 0 ? (
                     <>
                         {!selectedMethod ? (
@@ -153,6 +161,7 @@ const AddMoney: React.FC = () => {
                                             কপি
                                         </button>
                                     </div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">শুধুমাত্র 'Send Money' অপশন ব্যবহার করুন। রেফারেন্সে কিছু লেখার প্রয়োজন নেই।</p>
                                 </div>
                                 
                                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -165,6 +174,16 @@ const AddMoney: React.FC = () => {
                                         placeholder="আপনি কত টাকা পাঠিয়েছেন?"
                                         required
                                     />
+                                     <Input
+                                        id="senderNumber"
+                                        label="প্রেরক নম্বর (শেষ ৪ ডিজিট)"
+                                        type="tel"
+                                        value={senderNumber}
+                                        onChange={(e) => setSenderNumber(e.target.value)}
+                                        placeholder="যে নম্বর থেকে টাকা পাঠিয়েছেন তার শেষ ৪টি সংখ্যা"
+                                        maxLength={4}
+                                        required
+                                    />
                                     <Input
                                         id="transactionId"
                                         label="ট্রানজেকশন আইডি (TxnID)"
@@ -175,7 +194,7 @@ const AddMoney: React.FC = () => {
                                         required
                                     />
                                     <div className="pt-2">
-                                        <Button type="submit" isLoading={isLoading}>
+                                        <Button type="submit" disabled={isLoading}>
                                             অনুরোধ জমা দিন
                                         </Button>
                                     </div>

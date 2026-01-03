@@ -1,10 +1,10 @@
 
-import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics } from '../types';
+import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData } from '../types';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZbr-QxvIdU45AUVGTJONPspZfUcUDHvtbM45NiWKqZIhsiHjAT1IYLJfz5fy1XdPv8A/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoTfG_FMUli5_iY8YwGwELlNe2pYUZym0W7twkGWH-khRID5PHx_gf8pVwlagbJj57Mw/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -88,8 +88,8 @@ export const fetchOrderHistory = async (): Promise<OrderHistoryItem[]> => {
     return callApi('fetchOrderHistoryForUser');
 };
 
-export const addMoneyRequest = async (transactionId: string, amount: number, paymentMethod: string) => {
-    return callApi('addMoneyRequest', { transactionId, amount, paymentMethod });
+export const addMoneyRequest = async (transactionId: string, amount: number, paymentMethod: string, senderNumber: string) => {
+    return callApi('addMoneyRequest', { transactionId, amount, paymentMethod, senderNumber });
 };
 
 export const createBiometricOrder = async (order: { operator: Operator, mobile: string }) => {
@@ -121,11 +121,15 @@ export const apiUpdateProfile = async (details: { name: string, photoBase64?: st
 
 
 // --- Admin Functions ---
-export const fetchAllUsers = async (): Promise<User[]> => {
-    return callApi('fetchAllUsers'); 
+export const fetchAllUsers = async (page: number, pageSize: number): Promise<{ users: User[], total: number }> => {
+    return callApi('fetchAllUsers', { page, pageSize }); 
 };
 export const fetchAdminDashboardAnalytics = async (): Promise<AdminDashboardAnalytics> => {
     return callApi('fetchAdminDashboardAnalytics');
+};
+
+export const apiFetchChartData = async (): Promise<AdminChartData> => {
+    return callApi('fetchChartData');
 };
 
 export const uploadOrderPdf = async (orderId: string, pdfBase64: string, mimeType: string) => {
@@ -142,6 +146,10 @@ export const approveTransaction = async (requestId: string) => {
 
 export const rejectTransaction = async (requestId: string, reason?: string) => {
     return callApi('rejectTransaction', { requestId, reason });
+};
+
+export const apiReverifyTransaction = async (requestId: string): Promise<{ newStatus: string, verificationStatus: string, smsAmount?: number, smsCompany?: string }> => {
+    return callApi('reverifyTransaction', { requestId });
 };
 
 export const updateOrderStatus = async (orderId: string, status: OrderStatus, reason?: string) => {
@@ -168,8 +176,8 @@ export const updateUserStatus = async (userIdToUpdate: string, status: 'Active' 
     return callApi('updateUserStatus', { userIdToUpdate, status });
 };
 
-export const fetchAllTransactions = async (): Promise<Transaction[]> => {
-    return callApi('fetchAllTransactions');
+export const fetchAllTransactions = async (page: number, pageSize: number): Promise<{ transactions: Transaction[], total: number }> => {
+    return callApi('fetchAllTransactions', { page, pageSize });
 };
 
 export const apiFetchSettings = async (): Promise<Settings> => {

@@ -15,12 +15,13 @@ import ManageOrders from '../admin/ManageOrders';
 import ManageCallListOrders from '../admin/ManageCallListOrders';
 import AllTransactions from '../admin/AllTransactions';
 import Settings from '../admin/Settings';
-import AdminRecharge from '../admin/AdminRecharge';
+import RechargeRequests from '../admin/RechargeRequests';
 import { useAuth } from '../../context/AuthContext';
 import { apiUpdateUserActivity } from '../../services/api';
 import { 
-    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon
+    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon
 } from '@heroicons/react/24/outline';
+import { XMarkIcon } from '@heroicons/react/24/outline';
 
 // Fix: Add type for page configuration objects to ensure strong typing for icons.
 type PageInfo = {
@@ -42,7 +43,7 @@ const userPages: Record<string, PageInfo> = {
 const adminPages: Record<string, PageInfo> = {
     [Page.ADMIN_DASHBOARD]: { component: AdminDashboard, label: 'অ্যাডমিন ড্যাশবোর্ড', icon: Cog6ToothIcon },
     [Page.USER_MANAGEMENT]: { component: UserManagement, label: 'ইউজার ম্যানেজমেন্ট', icon: UsersIcon },
-    [Page.ADMIN_RECHARGE]: { component: AdminRecharge, label: 'টাকা যোগ ও রিচার্জ', icon: CurrencyBangladeshiIcon },
+    [Page.RECHARGE_REQUESTS]: { component: RechargeRequests, label: 'টাকা যোগের অনুরোধ', icon: BanknotesIcon },
     [Page.MANAGE_ORDERS]: { component: ManageOrders, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentCheckIcon },
     [Page.MANAGE_CALL_LIST_ORDERS]: { component: ManageCallListOrders, label: 'কল লিস্ট অর্ডার', icon: PhoneIcon },
     [Page.ALL_TRANSACTIONS]: { component: AllTransactions, label: 'সকল লেনদেন', icon: ArchiveBoxIcon },
@@ -55,6 +56,7 @@ export default function Layout() {
     
     const initialPage = isAdmin ? Page.ADMIN_DASHBOARD : Page.DASHBOARD;
     const [activePage, setActivePage] = useState<Page>(initialPage);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
     useEffect(() => {
         // This effect runs only for logged-in users because Layout is only rendered for them.
@@ -98,7 +100,10 @@ export default function Layout() {
 
     const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon, isMobile = false }) => (
         <button
-            onClick={() => setActivePage(page)}
+            onClick={() => {
+                setActivePage(page);
+                setIsMobileMenuOpen(false);
+            }}
             className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-sm'} w-full p-2 rounded-lg transition-all duration-200 ${
                 activePage === page
                     ? 'bg-indigo-600 text-white shadow-lg'
@@ -116,11 +121,9 @@ export default function Layout() {
     const mobileNavItemsForAdmin: MobileNavItem[] = [
         { page: Page.ADMIN_DASHBOARD, label: "ড্যাশবোর্ড", icon: Cog6ToothIcon },
         { page: Page.USER_MANAGEMENT, label: "ইউজার", icon: UsersIcon },
-        { page: Page.ADMIN_RECHARGE, label: "টাকা যোগ", icon: CurrencyBangladeshiIcon },
+        { page: Page.RECHARGE_REQUESTS, label: "অনুরোধ", icon: BanknotesIcon },
         { page: Page.MANAGE_ORDERS, label: "বায়োমেট্রিক", icon: ClipboardDocumentCheckIcon },
         { page: Page.MANAGE_CALL_LIST_ORDERS, label: "কল লিস্ট", icon: PhoneIcon },
-        { page: Page.ALL_TRANSACTIONS, label: "লেনদেন", icon: ArchiveBoxIcon },
-        { page: Page.ADMIN_SETTINGS, label: "সেটিংস", icon: WrenchScrewdriverIcon },
     ];
     
     const mobileNavItemsForUser: MobileNavItem[] = [
@@ -133,31 +136,49 @@ export default function Layout() {
 
     const mobileNavItems = isAdmin ? mobileNavItemsForAdmin : mobileNavItemsForUser;
 
+    const SidebarContent = () => (
+        <>
+            <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
+                <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                    {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সার্ভিস'}
+                </h1>
+                <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1 -mr-2 text-slate-500 dark:text-slate-400">
+                    <XMarkIcon className="h-6 w-6" />
+                </button>
+            </div>
+            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+                {navItems.map(([pageKey, { label, icon }]) => (
+                    <NavLink key={pageKey} page={pageKey as Page} label={label} icon={icon} />
+                ))}
+                 <button
+                    onClick={logout}
+                    className="flex items-center space-x-3 text-sm w-full p-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                >
+                    <ArrowLeftOnRectangleIcon className="h-6 w-6" />
+                    <span>লগআউট</span>
+                </button>
+            </nav>
+        </>
+    );
+
     return (
         <div className="flex h-screen bg-slate-100 dark:bg-slate-900">
             {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 shadow-lg transition-all duration-300">
-                <div className="flex items-center justify-center h-16 border-b dark:border-slate-700">
-                    <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
-                         {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সার্ভিস'}
-                    </h1>
-                </div>
-                <nav className="flex-1 p-4 space-y-2">
-                    {navItems.map(([pageKey, { label, icon }]) => (
-                        <NavLink key={pageKey} page={pageKey as Page} label={label} icon={icon} />
-                    ))}
-                     <button
-                        onClick={logout}
-                        className="flex items-center space-x-3 text-sm w-full p-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50"
-                    >
-                        <ArrowLeftOnRectangleIcon className="h-6 w-6" />
-                        <span>লগআউট</span>
-                    </button>
-                </nav>
+                <SidebarContent />
+            </aside>
+            
+            {/* Mobile slide-in Sidebar */}
+            <div 
+                className={`fixed inset-0 bg-black/50 z-40 transition-opacity md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                onClick={() => setIsMobileMenuOpen(false)}
+            ></div>
+            <aside className={`fixed top-0 left-0 h-full z-50 w-64 bg-white dark:bg-slate-800 shadow-lg flex flex-col transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <SidebarContent />
             </aside>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onMenuClick={() => { /* Mobile menu toggle logic here */ }} />
+                <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
                     <PageComponent setActivePage={setActivePage} />
                 </main>

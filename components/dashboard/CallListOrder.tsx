@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
 import { Operator } from '../../types';
@@ -13,11 +13,6 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 
 type Duration = '3 Months' | '6 Months';
 
-const prices: Record<Duration, number> = {
-    '3 Months': 900,
-    '6 Months': 1500,
-};
-
 const CallListOrder: React.FC = () => {
     const [operator, setOperator] = useState<Operator>(Operator.GP);
     const [mobile, setMobile] = useState('');
@@ -26,6 +21,11 @@ const CallListOrder: React.FC = () => {
     const { addToast } = useToast();
     const { wallet, refreshWallet } = useWallet();
     const { settings, isLoading: isSettingsLoading } = useSettings();
+
+    const prices = useMemo(() => ({
+        '3 Months': settings?.callListPrice3Months || 900,
+        '6 Months': settings?.callListPrice6Months || 1500,
+    }), [settings]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

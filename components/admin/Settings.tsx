@@ -24,6 +24,8 @@ const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) =>
 
 const Settings: React.FC = () => {
     const [price, setPrice] = useState(0);
+    const [callListPrice3Months, setCallListPrice3Months] = useState(0);
+    const [callListPrice6Months, setCallListPrice6Months] = useState(0);
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [notificationEmail, setNotificationEmail] = useState('');
     const [isOrderingEnabled, setIsOrderingEnabled] = useState(true);
@@ -41,6 +43,8 @@ const Settings: React.FC = () => {
         try {
             const data = await apiFetchSettings();
             setPrice(data.biometricOrderPrice);
+            setCallListPrice3Months(data.callListPrice3Months || 900);
+            setCallListPrice6Months(data.callListPrice6Months || 1500);
             setMethods(data.paymentMethods || []);
             setNotificationEmail(data.notificationEmail || '');
             setIsOrderingEnabled(data.isOrderingEnabled ?? true);
@@ -56,10 +60,6 @@ const Settings: React.FC = () => {
     useEffect(() => {
         loadSettings();
     }, [loadSettings]);
-
-    const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPrice(Number(e.target.value));
-    };
 
     const handleNewMethodChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -83,6 +83,8 @@ const Settings: React.FC = () => {
         e.preventDefault();
         const settingsToSave: AppSettings = {
             biometricOrderPrice: price,
+            callListPrice3Months: callListPrice3Months,
+            callListPrice6Months: callListPrice6Months,
             paymentMethods: methods,
             notificationEmail: notificationEmail,
             isOrderingEnabled: isOrderingEnabled,
@@ -141,7 +143,25 @@ const Settings: React.FC = () => {
                             label="বায়োমেট্রিক অর্ডার মূল্য (৳)"
                             type="number"
                             value={price}
-                            onChange={handlePriceChange}
+                            onChange={(e) => setPrice(Number(e.target.value))}
+                            required
+                        />
+                         <Input
+                            id="callListPrice3Months"
+                            name="callListPrice3Months"
+                            label="কল লিস্ট ৩ মাস মূল্য (৳)"
+                            type="number"
+                            value={callListPrice3Months}
+                            onChange={(e) => setCallListPrice3Months(Number(e.target.value))}
+                            required
+                        />
+                         <Input
+                            id="callListPrice6Months"
+                            name="callListPrice6Months"
+                            label="কল লিস্ট ৬ মাস মূল্য (৳)"
+                            type="number"
+                            value={callListPrice6Months}
+                            onChange={(e) => setCallListPrice6Months(Number(e.target.value))}
                             required
                         />
                         <Input

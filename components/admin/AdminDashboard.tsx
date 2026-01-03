@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { UsersIcon, ClipboardDocumentListIcon, CheckCircleIcon, CurrencyBangladeshiIcon } from '@heroicons/react/24/solid';
-import { fetchAdminDashboardAnalytics } from '../../services/api';
+import { fetchAdminDashboardAnalytics, apiFetchChartData } from '../../services/api';
 import { toBengaliNumber } from '../../utils/formatters';
-import { AdminDashboardAnalytics } from '../../types';
+import { AdminDashboardAnalytics, AdminChartData } from '../../types';
+import AnalyticsChart from './AnalyticsChart';
 
 const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, title: string, value: string | number, color: string, isLoading: boolean }) => (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg flex items-center space-x-4">
@@ -23,28 +24,34 @@ const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React
 
 const AdminDashboard: React.FC = () => {
     const [stats, setStats] = useState<AdminDashboardAnalytics | null>(null);
+    const [chartData, setChartData] = useState<AdminChartData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        const loadStats = async () => {
+        const loadDashboardData = async () => {
             setIsLoading(true);
             setError(null);
             try {
-                const data = await fetchAdminDashboardAnalytics();
-                setStats(data);
+                // Fetch stats and chart data in parallel for faster loading
+                const [statsData, chartData] = await Promise.all([
+                    fetchAdminDashboardAnalytics(),
+                    apiFetchChartData()
+                ]);
+                setStats(statsData);
+                setChartData(chartData);
             } catch (error) {
-                console.error('Failed to load admin stats', error);
+                console.error('Failed to load admin dashboard data', error);
                 setError('ড্যাশবোর্ডের তথ্য লোড করা যায়নি। অনুগ্রহ করে পৃষ্ঠাটি রিফ্রেশ করুন।');
             } finally {
                 setIsLoading(false);
             }
         };
-        loadStats();
+        loadDashboardData();
     }, []);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-6">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অ্যাডমিন ড্যাশবোর্ড</h1>
             
             {error && (
@@ -60,7 +67,8 @@ const AdminDashboard: React.FC = () => {
                 <StatCard icon={CheckCircleIcon} title="কমপ্লিট অর্ডার" value={toBengaliNumber(stats?.completedOrders ?? 0)} color="bg-green-500" isLoading={isLoading} />
                 <StatCard icon={CurrencyBangladeshiIcon} title="মোট আয়" value={`৳${toBengaliNumber(stats?.totalRevenue ?? 0)}`} color="bg-indigo-500" isLoading={isLoading} />
             </div>
-             {/* Additional charts or tables can go here */}
+
+            <AnalyticsChart data={chartData} isLoading={isLoading} />
         </div>
     );
 };

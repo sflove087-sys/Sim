@@ -64,10 +64,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
                     <button
                         key={item.page}
                         onClick={() => setActivePage(item.page)}
-                        className="flex flex-col items-center justify-center p-4 md:p-6 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
+                        className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
                     >
-                        <div className={`p-4 rounded-full ${item.color} text-white mb-3`}>
-                            <item.icon className="h-8 w-8" />
+                        <div className={`p-3 rounded-full ${item.color} text-white mb-2`}>
+                            <item.icon className="h-6 w-6" />
                         </div>
                         <span className="font-semibold text-center text-slate-700 dark:text-slate-300">{item.label}</span>
                     </button>
