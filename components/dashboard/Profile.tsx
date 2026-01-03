@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { UserCircleIcon, EnvelopeIcon, PhoneIcon, CameraIcon } from '@heroicons/react/24/solid';
@@ -6,6 +5,7 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import { useToast } from '../../context/ToastContext';
 import { apiUpdateProfile } from '../../services/api';
+import LoadingModal from '../common/LoadingModal';
 
 const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -69,6 +69,7 @@ const Profile: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
+            <LoadingModal isOpen={isSaving} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">প্রোফাইল</h1>
             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
                 <div className="relative w-32 h-32 mx-auto mb-4">

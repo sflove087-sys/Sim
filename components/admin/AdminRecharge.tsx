@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { User, Transaction } from '../../types';
 import { 
@@ -11,6 +10,7 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import Spinner from '../common/Spinner';
 import { toBengaliNumber } from '../../utils/formatters';
+import LoadingModal from '../common/LoadingModal';
 
 const AdminRecharge: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -70,6 +70,7 @@ const AdminRecharge: React.FC = () => {
     
     return (
         <div className="space-y-8">
+            <LoadingModal isOpen={isSubmitting} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">সরাসরি রিচার্জ</h1>
             
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg max-w-2xl mx-auto">

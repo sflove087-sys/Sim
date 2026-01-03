@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Page } from '../../types';
 import Dashboard from '../dashboard/Dashboard';
@@ -14,7 +13,7 @@ import UserManagement from '../admin/UserManagement';
 import ManageOrders from '../admin/ManageOrders';
 import ManageCallListOrders from '../admin/ManageCallListOrders';
 import AllTransactions from '../admin/AllTransactions';
-import Settings from '../admin/Settings';
+import Settings from '../auth/Settings';
 import RechargeRequests from '../admin/RechargeRequests';
 import { useAuth } from '../../context/AuthContext';
 import { apiUpdateUserActivity } from '../../services/api';

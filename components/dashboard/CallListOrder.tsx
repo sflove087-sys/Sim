@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -10,6 +9,7 @@ import { toBengaliNumber } from '../../utils/formatters';
 import { useSettings } from '../../context/SettingsContext';
 import Spinner from '../common/Spinner';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import LoadingModal from '../common/LoadingModal';
 
 type Duration = '3 Months' | '6 Months';
 
@@ -78,6 +78,7 @@ const CallListOrder: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
+            <LoadingModal isOpen={isLoading} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                 <form onSubmit={handleSubmit} className="space-y-6">

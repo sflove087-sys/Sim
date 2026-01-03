@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -9,6 +8,7 @@ import { useWallet } from '../../context/WalletContext';
 import { useSettings } from '../../context/SettingsContext';
 import Spinner from '../common/Spinner';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
+import LoadingModal from '../common/LoadingModal';
 
 const BiometricOrder: React.FC = () => {
     const [operator, setOperator] = useState<Operator>(Operator.GP);
@@ -63,6 +63,7 @@ const BiometricOrder: React.FC = () => {
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
+            <LoadingModal isOpen={isLoading} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">বায়োমেট্রিক অর্ডার</h1>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                 <div className="text-center bg-indigo-50 dark:bg-slate-700 p-4 rounded-lg mb-6">

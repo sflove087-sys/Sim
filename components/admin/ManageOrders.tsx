@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Order, OrderStatus } from '../../types';
 import { fetchOrders, uploadOrderPdf, updateOrderStatus, updateOrderDetails } from '../../services/api';
@@ -8,6 +7,7 @@ import Button from '../common/Button';
 import Input from '../common/Input';
 import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon } from '@heroicons/react/24/outline';
 import { printPdf } from '../../utils/formatters';
+import LoadingModal from '../common/LoadingModal';
 
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
@@ -212,6 +212,7 @@ const ManageOrders: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            <LoadingModal isOpen={isUploading || isSaving} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অর্ডার ম্যানেজ করুন</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
                 <table className="w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">

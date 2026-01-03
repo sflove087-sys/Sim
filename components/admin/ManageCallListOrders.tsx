@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { CallListOrder, OrderStatus } from '../../types';
 import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf } from '../../services/api';
@@ -7,6 +6,7 @@ import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber, printPdf } from '../../utils/formatters';
 import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import LoadingModal from '../common/LoadingModal';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     const statusStyles = {
@@ -161,6 +161,7 @@ const ManageCallListOrders: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            <LoadingModal isOpen={isUploading} />
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার ম্যানেজমেন্ট</h1>
             
             <div className="relative max-w-sm">
