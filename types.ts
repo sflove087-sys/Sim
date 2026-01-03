@@ -94,6 +94,9 @@ export interface AdminTransaction {
   paymentMethod: string;
   status: 'Pending' | 'Approved' | 'Rejected';
   rejectionReason?: string;
+  verificationStatus?: 'Verified' | 'Mismatch' | 'Not Found' | 'Duplicate';
+  smsAmount?: number;
+  smsCompany?: string;
 }
 
 export interface PaymentMethod {
@@ -110,6 +113,13 @@ export interface Settings {
     isOrderingEnabled: boolean;
     isCallListOrderingEnabled: boolean;
     headlineNotice: string;
+}
+
+export interface AdminDashboardAnalytics {
+  totalUsers: number;
+  pendingOrders: number;
+  completedOrders: number;
+  totalRevenue: number;
 }
 
 export interface OrderHistoryItem {

@@ -36,6 +36,37 @@ const StatusBadge: React.FC<{ status: RequestStatus }> = ({ status }) => {
     );
 };
 
+const VerificationStatusBadge: React.FC<{ status?: 'Verified' | 'Mismatch' | 'Not Found' | 'Duplicate'; smsAmount?: number; smsCompany?: string; }> = ({ status, smsAmount, smsCompany }) => {
+    if (!status) return <span className="text-xs text-slate-400">N/A</span>;
+
+    const statusInfo = {
+        Verified: { text: 'ভেরিফাইড', color: 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300', tooltip: 'লেনদেনটি SMS তালিকার সাথে মিলেছে।' },
+        Mismatch: { text: 'অমিল', color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300', tooltip: '' }, // Tooltip will be generated
+        'Not Found': { text: 'পাওয়া যায়নি', color: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300', tooltip: 'এই ট্রানজেকশন আইডি SMS তালিকায় পাওয়া যায়নি।' },
+        Duplicate: { text: 'ব্যবহৃত', color: 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300', tooltip: 'এই ট্রানজেকশন আইডিটি ইতিমধ্যে অনুমোদিত হয়েছে।' },
+    };
+
+    const info = statusInfo[status];
+    if (!info) return null;
+
+    if (status === 'Mismatch') {
+        const details = [];
+        if (smsAmount !== undefined) details.push(`SMS পরিমাণ: ৳${toBengaliNumber(smsAmount)}`);
+        if (smsCompany) details.push(`SMS কোম্পানি: ${smsCompany}`);
+        info.tooltip = details.length > 0 ? `অমিল (${details.join(', ')})` : 'তথ্যে অমিল রয়েছে।';
+    }
+
+    return (
+        <span 
+            className={`px-2 py-1 text-xs font-medium rounded-full relative group ${info.color}`}
+            title={info.tooltip}
+        >
+            {info.text}
+        </span>
+    );
+};
+
+
 const AdminRecharge: React.FC = () => {
     // State for direct recharge
     const [users, setUsers] = useState<User[]>([]);
@@ -211,6 +242,7 @@ const AdminRecharge: React.FC = () => {
                                     <th scope="col" className="px-6 py-3">পরিমাণ</th>
                                     <th scope="col" className="px-6 py-3">পদ্ধতি</th>
                                     <th scope="col" className="px-6 py-3">TXN ID</th>
+                                    <th scope="col" className="px-6 py-3">SMS যাচাই</th>
                                     <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
                                     <th scope="col" className="px-6 py-3">একশন</th>
                                 </tr>
@@ -226,11 +258,12 @@ const AdminRecharge: React.FC = () => {
                                         <td className="px-6 py-4 font-semibold">৳{toBengaliNumber(tx.amount)}</td>
                                         <td className="px-6 py-4">{tx.paymentMethod}</td>
                                         <td className="px-6 py-4 font-mono">{tx.transactionId}</td>
+                                        <td className="px-6 py-4"><VerificationStatusBadge status={tx.verificationStatus} smsAmount={tx.smsAmount} smsCompany={tx.smsCompany} /></td>
                                         <td className="px-6 py-4"><StatusBadge status={tx.status} /></td>
                                         <td className="px-6 py-4">
                                             {tx.status === 'Pending' ? (
                                                 <div className="flex space-x-2">
-                                                    <button onClick={() => openConfirmationModal('approve', tx)} disabled={!!processingId} className="font-medium text-green-600 dark:text-green-500 hover:underline disabled:opacity-50">Approve</button>
+                                                    <button onClick={() => openConfirmationModal('approve', tx)} disabled={!!processingId || tx.verificationStatus === 'Duplicate'} className={`font-medium text-green-600 dark:text-green-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline ${tx.verificationStatus === 'Verified' ? 'font-bold' : ''}`} title={tx.verificationStatus === 'Duplicate' ? 'এই লেনদেনটি ইতিমধ্যে ব্যবহৃত হয়েছে।' : 'অনুমোদন করুন'}>Approve</button>
                                                     <button onClick={() => openConfirmationModal('reject', tx)} disabled={!!processingId} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50">Reject</button>
                                                 </div>
                                             ) : tx.status === 'Rejected' && tx.rejectionReason ? (
@@ -280,6 +313,13 @@ const AdminRecharge: React.FC = () => {
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="অনুরোধ নিশ্চিত করুন">
                 {confirmationState && (
                     <div className="space-y-4">
+                         {confirmationState.tx.verificationStatus === 'Mismatch' && confirmationState.action === 'approve' && (
+                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-sm">
+                                <p className="font-bold">সতর্কতা: পরিমাণ অমিল!</p>
+                                <p>ব্যবহারকারীর অনুরোধ: ৳{toBengaliNumber(confirmationState.tx.amount)}</p>
+                                <p>SMS অনুযায়ী পরিমাণ: ৳{toBengaliNumber(confirmationState.tx.smsAmount || 0)}</p>
+                            </div>
+                        )}
                          <p className="text-slate-600 dark:text-slate-300">আপনি কি <strong>{getUserName(confirmationState.tx.userId)}</strong> এর <strong>৳{toBengaliNumber(confirmationState.tx.amount)}</strong> টাকার অনুরোধটি <strong>{confirmationState.action === 'approve' ? 'অনুমোদন' : 'বাতিল'}</strong> করতে নিশ্চিত?</p>
                          {confirmationState.action === 'reject' && (
                              <div>

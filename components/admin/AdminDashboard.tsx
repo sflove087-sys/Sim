@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { UsersIcon, ClipboardDocumentListIcon, CheckCircleIcon, CurrencyBangladeshiIcon } from '@heroicons/react/24/solid';
 import { fetchAdminDashboardAnalytics } from '../../services/api';
 import { toBengaliNumber } from '../../utils/formatters';
+import { AdminDashboardAnalytics } from '../../types';
 
 const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, title: string, value: string | number, color: string, isLoading: boolean }) => (
     <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg flex items-center space-x-4">
@@ -21,17 +22,20 @@ const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React
 );
 
 const AdminDashboard: React.FC = () => {
-    const [stats, setStats] = useState<any | null>(null);
+    const [stats, setStats] = useState<AdminDashboardAnalytics | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const loadStats = async () => {
             setIsLoading(true);
+            setError(null);
             try {
                 const data = await fetchAdminDashboardAnalytics();
                 setStats(data);
             } catch (error) {
                 console.error('Failed to load admin stats', error);
+                setError('ড্যাশবোর্ডের তথ্য লোড করা যায়নি। অনুগ্রহ করে পৃষ্ঠাটি রিফ্রেশ করুন।');
             } finally {
                 setIsLoading(false);
             }
@@ -42,6 +46,14 @@ const AdminDashboard: React.FC = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অ্যাডমিন ড্যাশবোর্ড</h1>
+            
+            {error && (
+                <div className="bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-4 rounded-lg" role="alert">
+                    <p className="font-bold">একটি ত্রুটি ঘটেছে</p>
+                    <p>{error}</p>
+                </div>
+            )}
+            
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard icon={UsersIcon} title="মোট ইউজার" value={toBengaliNumber(stats?.totalUsers ?? 0)} color="bg-blue-500" isLoading={isLoading} />
                 <StatCard icon={ClipboardDocumentListIcon} title="পেন্ডিং অর্ডার" value={toBengaliNumber(stats?.pendingOrders ?? 0)} color="bg-yellow-500" isLoading={isLoading} />

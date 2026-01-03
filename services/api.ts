@@ -1,10 +1,10 @@
 
-import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem } from '../types';
+import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics } from '../types';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyogJp1OsDOObcXlpk_Wzzqi6C98NxUlLqgwQ3mmjGyG9TNiKisb1mlt7E9_6t8zOrEtg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxZbr-QxvIdU45AUVGTJONPspZfUcUDHvtbM45NiWKqZIhsiHjAT1IYLJfz5fy1XdPv8A/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -19,6 +19,8 @@ const callApi = async (action: string, payload: object = {}) => {
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
+      redirect: 'follow', // Explicitly set redirect policy for Apps Script compatibility
+      mode: 'cors', // Explicitly set CORS mode
       headers: {
         'Content-Type': 'text/plain;charset=utf-8', // Apps Script web apps often work best this way
       },
@@ -122,7 +124,7 @@ export const apiUpdateProfile = async (details: { name: string, photoBase64?: st
 export const fetchAllUsers = async (): Promise<User[]> => {
     return callApi('fetchAllUsers'); 
 };
-export const fetchAdminDashboardAnalytics = async () => {
+export const fetchAdminDashboardAnalytics = async (): Promise<AdminDashboardAnalytics> => {
     return callApi('fetchAdminDashboardAnalytics');
 };
 

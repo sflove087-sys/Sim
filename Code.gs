@@ -9,6 +9,7 @@ const callListOrdersSheet = ss.getSheetByName("CallListOrders");
 const adminTransactionsSheet = ss.getSheetByName("AdminTransactions");
 const settingsSheet = ss.getSheetByName("Settings");
 const passwordResetsSheet = ss.getSheetByName("PasswordResets");
+const smsSheet = ss.getSheetByName("sms");
 
 
 const REGISTRATION_BONUS = 10;
@@ -223,20 +224,62 @@ function handleFetchWallet(payload) {
 
 function handleAddMoneyRequest(payload) {
   const { userId, transactionId, amount, paymentMethod } = payload;
-  if (!transactionId || !amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0 || !paymentMethod) {
+  const numericAmount = parseFloat(amount);
+  const trimmedTransactionId = transactionId ? transactionId.toString().trim() : '';
+
+  // 1. Validation
+  if (!trimmedTransactionId || !amount || isNaN(numericAmount) || numericAmount <= 0 || !paymentMethod) {
      throw new Error("অনুগ্রহ করে সকল তথ্য সঠিকভাবে পূরণ করুন।");
   }
-  if (findRow(adminTransactionsSheet, transactionId, 4) !== -1) throw new Error("এই ট্রানজেকশন আইডিটি ইতিমধ্যে ব্যবহার করা হয়েছে।");
 
-  const requestId = "req" + Date.now();
-  const date = new Date();
-  adminTransactionsSheet.appendRow([requestId, date.toISOString(), userId, transactionId, parseFloat(amount), "Pending", paymentMethod, ""]);
+  // 2. Stricter duplicate check: has this TxnID ever been submitted?
+  if (findRow(adminTransactionsSheet, trimmedTransactionId, 4) !== -1) {
+    throw new Error("এই ট্রানজেকশন আইডিটি ইতিমধ্যে ব্যবহার করা হয়েছে।");
+  }
+
+  // 3. Check against SMS sheet
+  const smsMap = new Map();
+  if (smsSheet && smsSheet.getLastRow() > 1) {
+    const smsData = smsSheet.getRange(2, 1, smsSheet.getLastRow() - 1, 5).getValues();
+    for (const row of smsData) {
+      const txId = row[1] ? row[1].toString().trim() : '';
+      const company = row[3] ? row[3].toString().trim() : ''; // Assuming Col D is company
+      const smsAmount = parseFloat(row[4]);
+      if (txId && company && !isNaN(smsAmount)) {
+        smsMap.set(txId, { amount: smsAmount, company: company }); // Store company
+      }
+    }
+  }
+
+  const smsEntry = smsMap.get(trimmedTransactionId);
+  const requestedCompany = (paymentMethod || '').split(' ')[0];
+
+  // 4. Auto-approve if verified (amount AND company match)
+  if (smsEntry && smsEntry.amount === numericAmount && smsEntry.company.toLowerCase() === requestedCompany.toLowerCase()) {
+    // Verified! Auto-approve.
+    const walletRowIndex = findRow(walletSheet, userId, 1);
+    if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`);
+    
+    const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue();
+    walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + numericAmount);
+    
+    transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (স্বয়ংক্রিয়)", "Credit", numericAmount, "Completed"]);
+    
+    const requestId = "req" + Date.now();
+    adminTransactionsSheet.appendRow([requestId, new Date().toISOString(), userId, trimmedTransactionId, numericAmount, "Approved", paymentMethod, "Auto-approved by system"]);
+
+    return { message: "আপনার টাকা যোগ করার অনুরোধটি স্বয়ংক্রিয়ভাবে অনুমোদিত হয়েছে।" };
+  } else {
+    // Not found or mismatch, create a pending request for admin review
+    const requestId = "req" + Date.now();
+    adminTransactionsSheet.appendRow([requestId, new Date().toISOString(), userId, trimmedTransactionId, numericAmount, "Pending", paymentMethod, ""]);
   
-  const subject = `নতুন টাকা যোগ করার অনুরোধ: ৳${amount}`;
-  const body = `একজন ব্যবহারকারী টাকা যোগ করার জন্য একটি নতুন অনুরোধ জমা দিয়েছেন।<br><br><b>ব্যবহারকারী আইডি:</b> ${userId}<br><b>টাকার পরিমাণ:</b> ৳${amount}<br><b>পেমেন্ট পদ্ধতি:</b> ${paymentMethod}<br><b>ট্রানজেকশন আইডি:</b> ${transactionId}<br><b>তারিখ:</b> ${date.toLocaleString('bn-BD')}<br><br>অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে অনুরোধটি যাচাই করুন।`;
-  sendNotificationEmail(subject, body);
+    const subject = `নতুন টাকা যোগ করার অনুরোধ: ৳${amount}`;
+    const body = `একজন ব্যবহারকারী টাকা যোগ করার জন্য একটি নতুন অনুরোধ জমা দিয়েছেন।<br><br><b>ব্যবহারকারী আইডি:</b> ${userId}<br><b>টাকার পরিমাণ:</b> ৳${amount}<br><b>পেমেন্ট পদ্ধতি:</b> ${paymentMethod}<br><b>ট্রানজেকশন আইডি:</b> ${transactionId}<br><b>তারিখ:</b> ${new Date().toLocaleString('bn-BD')}<br><br>অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে অনুরোধটি যাচাই করুন।`;
+    sendNotificationEmail(subject, body);
 
-  return { message: "আপনার অনুরোধটি পর্যালোচনার জন্য পাঠানো হয়েছে।" };
+    return { message: "আপনার অনুরোধটি পর্যালোচনার জন্য পাঠানো হয়েছে।" };
+  }
 }
 
 function handleCreateBiometricOrder(payload) {
@@ -406,33 +449,90 @@ function handleFetchAllUsers(payload) {
 }
 
 function handleFetchAllMoneyRequests() {
-  const data = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 8).getValues() : [];
-  return data.map(row => ({ 
+  if (!smsSheet) {
+    Logger.log("Warning: 'sms' sheet not found. Verification will be skipped.");
+  }
+  
+  const smsMap = new Map();
+  if (smsSheet && smsSheet.getLastRow() > 1) {
+    const smsData = smsSheet.getRange(2, 1, smsSheet.getLastRow() - 1, 5).getValues();
+    for (const row of smsData) {
+      const txId = row[1] ? row[1].toString().trim() : '';
+      const company = row[3] ? row[3].toString().trim() : ''; // Assuming Col D is company
+      const amount = parseFloat(row[4]);
+      if (txId && company && !isNaN(amount)) {
+        smsMap.set(txId, { amount: amount, company: company }); // Store company
+      }
+    }
+  }
+
+  const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 8).getValues() : [];
+  
+  const approvedTxIds = new Set();
+  for (const row of allRequestsData) {
+    if (row[5] === 'Approved' && row[3]) {
+      approvedTxIds.add(row[3].toString().trim());
+    }
+  }
+
+  const processedRequests = allRequestsData.map(row => {
+    const request = { 
       requestId: row[0], 
       date: new Date(row[1]).toLocaleDateString('bn-BD'), 
       userId: row[2], 
-      transactionId: row[3], 
-      amount: row[4],
+      transactionId: row[3] ? row[3].toString().trim() : '', 
+      amount: parseFloat(row[4]),
       status: row[5] || 'Pending',
       paymentMethod: row[6] || 'N/A',
-      rejectionReason: row[7] || ''
-  })).reverse();
+      rejectionReason: row[7] || '',
+      verificationStatus: null,
+      smsAmount: null,
+      smsCompany: null
+    };
+
+    if (request.status === 'Pending') {
+      if (approvedTxIds.has(request.transactionId)) {
+        request.verificationStatus = 'Duplicate';
+      } else if (smsMap.has(request.transactionId)) {
+        const smsEntry = smsMap.get(request.transactionId);
+        const requestedCompany = (request.paymentMethod || '').split(' ')[0];
+
+        if (smsEntry.amount === request.amount && smsEntry.company.toLowerCase() === requestedCompany.toLowerCase()) {
+          request.verificationStatus = 'Verified';
+        } else {
+          request.verificationStatus = 'Mismatch';
+          request.smsAmount = smsEntry.amount;
+          request.smsCompany = smsEntry.company;
+        }
+      } else {
+        request.verificationStatus = 'Not Found';
+      }
+    }
+    
+    return request;
+  });
+
+  return processedRequests.reverse();
 }
 
 function handleFetchAdminDashboardAnalytics(payload) {
     if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
     
-    const totalUsers = usersSheet.getLastRow() - 1;
+    const totalUsers = usersSheet.getLastRow() > 1 ? usersSheet.getLastRow() - 1 : 0;
 
     // Biometric Orders Data
     const biometricOrdersData = ordersSheet.getLastRow() > 1 ? ordersSheet.getRange(2, 1, ordersSheet.getLastRow() - 1, 7).getValues() : [];
     const pendingBiometricOrders = biometricOrdersData.filter(row => row[6] === 'Pending').length;
     const completedBiometricOrders = biometricOrdersData.filter(row => row[6] === 'Completed');
 
-    // Call List Orders Data
-    const callListOrdersData = callListOrdersSheet.getLastRow() > 1 ? callListOrdersSheet.getRange(2, 1, callListOrdersSheet.getLastRow() - 1, 8).getValues() : [];
-    const pendingCallListOrders = callListOrdersData.filter(row => row[7] === 'Pending').length;
-    const completedCallListOrders = callListOrdersData.filter(row => row[7] === 'Completed');
+    // Call List Orders Data (with check for sheet existence)
+    let pendingCallListOrders = 0;
+    let completedCallListOrders = [];
+    if (callListOrdersSheet) {
+        const callListOrdersData = callListOrdersSheet.getLastRow() > 1 ? callListOrdersSheet.getRange(2, 1, callListOrdersSheet.getLastRow() - 1, 8).getValues() : [];
+        pendingCallListOrders = callListOrdersData.filter(row => row[7] === 'Pending').length;
+        completedCallListOrders = callListOrdersData.filter(row => row[7] === 'Completed');
+    }
 
     // Combine Stats
     const totalPendingOrders = pendingBiometricOrders + pendingCallListOrders;
@@ -449,6 +549,7 @@ function handleFetchAdminDashboardAnalytics(payload) {
         totalRevenue 
     };
 }
+
 
 function handleFetchSettings() {
     const methodsString = getSetting('paymentMethods');
