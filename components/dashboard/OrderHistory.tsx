@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { OrderStatus, OrderHistoryItem } from '../../types';
 import { fetchOrderHistory } from '../../services/api';
@@ -28,7 +27,7 @@ const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
 
 const OrderDetailsModal: React.FC<{details: OrderHistoryItem}> = ({ details }) => (
     <>
-        <div className="space-y-3 text-slate-600 dark:text-slate-300">
+        <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
             <p><strong>অর্ডার আইডি:</strong> <span className="font-mono">{details.id}</span></p>
             <p><strong>অর্ডারের ধরন:</strong> {details.type === 'Biometric' ? 'বায়োমেট্রিক' : 'কল লিস্ট'}</p>
             <p><strong>মোবাইল:</strong> {details.mobile} ({details.operator})</p>
@@ -110,7 +109,7 @@ const OrderHistory: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অর্ডার হিস্টোরি</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অর্ডার হিস্টোরি</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
                 <table className="w-full min-w-[700px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">

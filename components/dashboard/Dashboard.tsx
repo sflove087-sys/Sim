@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import WalletCard from './WalletCard';
 import { Page } from '../../types';
@@ -41,15 +40,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">ড্যাশবোর্ড</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">ড্যাশবোর্ড</h1>
             <WalletCard />
 
             { !isSettingsLoading && settings?.headlineNotice && isNoticeVisible && (
                 <div className="bg-indigo-100 dark:bg-indigo-900/50 flex items-start p-4 rounded-xl shadow border-l-4 border-indigo-500 space-x-3">
                     <InformationCircleIcon className="h-6 w-6 text-indigo-500 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
-                        <h4 className="font-bold text-indigo-800 dark:text-indigo-200">নোটিশ</h4>
-                        <p className="text-sm text-indigo-700 dark:text-indigo-300 font-medium">
+                        <h4 className="font-bold text-base text-indigo-800 dark:text-indigo-200">নোটিশ</h4>
+                        <p className="text-[13px] text-indigo-700 dark:text-indigo-300 font-medium">
                             {settings.headlineNotice}
                         </p>
                     </div>
@@ -69,7 +68,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
                         <div className={`p-3 rounded-full ${item.color} text-white mb-2`}>
                             <item.icon className="h-6 w-6" />
                         </div>
-                        <span className="font-semibold text-center text-slate-700 dark:text-slate-300">{item.label}</span>
+                        <span className="font-semibold text-[15px] text-center text-slate-700 dark:text-slate-300">{item.label}</span>
                     </button>
                 ))}
             </div>

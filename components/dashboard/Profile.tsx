@@ -70,7 +70,7 @@ const Profile: React.FC = () => {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <LoadingModal isOpen={isSaving} />
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">প্রোফাইল</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">প্রোফাইল</h1>
             <div className="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-lg">
                 <div className="relative w-32 h-32 mx-auto mb-4">
                     {previewUrl ? (
@@ -88,16 +88,16 @@ const Profile: React.FC = () => {
 
                 {!isEditing ? (
                     <div className="text-center">
-                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">{user.name}</h2>
-                        <p className="text-slate-500 dark:text-slate-400">{user.role === 'Admin' ? 'অ্যাডমিন' : 'ব্যবহারকারী'}</p>
+                        <h2 className="text-xl font-bold text-slate-800 dark:text-slate-200">{user.name}</h2>
+                        <p className="text-[13px] text-slate-500 dark:text-slate-400">{user.role === 'Admin' ? 'অ্যাডমিন' : 'ব্যবহারকারী'}</p>
                         <div className="mt-6 text-left space-y-4">
                             <div className="flex items-center p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
                                 <EnvelopeIcon className="h-6 w-6 text-slate-500 mr-4" />
-                                <span className="text-slate-700 dark:text-slate-300">{user.email}</span>
+                                <span className="text-base text-slate-700 dark:text-slate-300">{user.email}</span>
                             </div>
                             <div className="flex items-center p-3 bg-slate-100 dark:bg-slate-700 rounded-lg">
                                 <PhoneIcon className="h-6 w-6 text-slate-500 mr-4" />
-                                <span className="text-slate-700 dark:text-slate-300">{user.mobile}</span>
+                                <span className="text-base text-slate-700 dark:text-slate-300">{user.mobile}</span>
                             </div>
                         </div>
                         <div className="mt-8">

@@ -27,7 +27,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick }) => {
                     ) : (
                         <UserCircleIcon className="h-8 w-8 text-slate-400 dark:text-slate-500"/>
                     )}
-                    <span className="font-medium text-slate-700 dark:text-slate-300 hidden sm:block">{user?.name}</span>
+                    <span className="font-medium text-base text-slate-700 dark:text-slate-300 hidden sm:block">{user?.name}</span>
                 </div>
                 <button
                     onClick={logout}

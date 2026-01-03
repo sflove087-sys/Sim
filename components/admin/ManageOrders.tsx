@@ -213,7 +213,7 @@ const ManageOrders: React.FC = () => {
     return (
         <div className="space-y-6">
             <LoadingModal isOpen={isUploading || isSaving} />
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অর্ডার ম্যানেজ করুন</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অর্ডার ম্যানেজ করুন</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
                 <table className="w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
@@ -285,7 +285,7 @@ const ManageOrders: React.FC = () => {
             <Modal isOpen={isPdfModalOpen} onClose={handleClosePdfModal} title={`PDF আপলোড: ${selectedOrder?.id}`}>
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="pdf-upload" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label htmlFor="pdf-upload" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
                             একটি PDF ফাইল সিলেক্ট করুন
                         </label>
                         <input 
@@ -296,7 +296,7 @@ const ManageOrders: React.FC = () => {
                             className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
                     </div>
-                    {selectedFile && <p className="text-sm text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
+                    {selectedFile && <p className="text-[13px] text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
                     <div className="pt-4">
                         <Button onClick={handlePdfUpload} isLoading={isUploading} disabled={!selectedFile || isUploading}>
                             আপলোড করুন
@@ -309,7 +309,7 @@ const ManageOrders: React.FC = () => {
             <Modal isOpen={isRejectModalOpen} onClose={handleCloseRejectModal} title={`অর্ডার বাতিল করুন: ${selectedOrder?.id}`}>
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="rejectionReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label htmlFor="rejectionReason" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
                            বাতিলের কারণ লিখুন
                         </label>
                         <textarea
@@ -337,9 +337,9 @@ const ManageOrders: React.FC = () => {
                 {selectedOrder && (
                     <>
                         {!isEditing ? (
-                            <div className="space-y-3 text-slate-600 dark:text-slate-300">
+                            <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
                                 <div className="flex justify-between items-start">
-                                    <h4 className="font-semibold text-lg text-slate-800 dark:text-slate-200">অর্ডারের বিবরণ</h4>
+                                    <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200">অর্ডারের বিবরণ</h4>
                                     {selectedOrder.status === OrderStatus.PENDING && (
                                          <button
                                             onClick={() => setIsEditing(true)}

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Settings as AppSettings, PaymentMethod } from '../../types';
 import { apiFetchSettings, apiUpdateSettings } from '../../services/api';
@@ -10,7 +9,7 @@ import { PlusIcon, TrashIcon } from '@heroicons/react/24/outline';
 
 const ToggleSwitch: React.FC<{ enabled: boolean; onChange: (enabled: boolean) => void; label: string }> = ({ enabled, onChange, label }) => (
     <div className="flex items-center justify-between">
-        <span className="font-medium text-slate-700 dark:text-slate-300">{label}</span>
+        <span className="font-medium text-[15px] text-slate-700 dark:text-slate-300">{label}</span>
         <button
             type="button"
             onClick={() => onChange(!enabled)}
@@ -110,7 +109,7 @@ const Settings: React.FC = () => {
 
     return (
         <div className="space-y-6 max-w-3xl mx-auto">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অ্যাপ সেটিংস</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অ্যাপ সেটিংস</h1>
             <form onSubmit={handleSubmit} className="space-y-8">
                 
                  <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
@@ -119,7 +118,7 @@ const Settings: React.FC = () => {
                         <ToggleSwitch label="বায়োমেট্রিক অর্ডার চালু/বন্ধ" enabled={isOrderingEnabled} onChange={setIsOrderingEnabled} />
                         <ToggleSwitch label="কল লিস্ট অর্ডার চালু/বন্ধ" enabled={isCallListOrderingEnabled} onChange={setIsCallListOrderingEnabled} />
                         <div>
-                            <label htmlFor="headlineNotice" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            <label htmlFor="headlineNotice" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                                 হেডলাইন নোটিশ
                             </label>
                             <textarea
@@ -184,8 +183,8 @@ const Settings: React.FC = () => {
                             <div className="flex items-center space-x-4">
                                 {method.logoUrl && <img src={method.logoUrl} alt={method.name} className="h-10 w-10 rounded-md object-contain bg-white p-1 shadow" />}
                                 <div>
-                                    <p className="font-semibold text-slate-800 dark:text-slate-200">{method.name} ({method.type})</p>
-                                    <p className="text-sm font-mono text-slate-600 dark:text-slate-400">{method.number}</p>
+                                    <p className="font-semibold text-base text-slate-800 dark:text-slate-200">{method.name} ({method.type})</p>
+                                    <p className="text-[13px] font-mono text-slate-600 dark:text-slate-400">{method.number}</p>
                                 </div>
                             </div>
                             <button type="button" onClick={() => handleDeleteMethod(index)} className="p-2 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50 rounded-full">
@@ -196,14 +195,14 @@ const Settings: React.FC = () => {
                      {methods.length === 0 && <p className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">কোনো পেমেন্ট পদ্ধতি যোগ করা হয়নি।</p>}
 
                     <div className="border-t pt-6 dark:border-slate-600 space-y-4">
-                         <h3 className="font-semibold text-slate-700 dark:text-slate-300">নতুন পদ্ধতি যোগ করুন</h3>
+                         <h3 className="font-semibold text-base text-slate-700 dark:text-slate-300">নতুন পদ্ধতি যোগ করুন</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <Input id="new-name" name="name" label="পদ্ধতির নাম (যেমন: Bkash Personal)" value={newMethod.name} onChange={handleNewMethodChange} />
                             <Input id="new-number" name="number" label="একাউন্ট নম্বর" type="tel" value={newMethod.number} onChange={handleNewMethodChange} />
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label htmlFor="new-type" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                                <label htmlFor="new-type" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                                     ধরন
                                 </label>
                                 <select

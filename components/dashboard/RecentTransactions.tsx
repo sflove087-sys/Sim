@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Transaction, TransactionType, Page, TransactionStatus } from '../../types';
 import { fetchTransactions } from '../../services/api';
@@ -53,12 +52,12 @@ const RecentTransactions: React.FC<{ setActivePage: (page: Page) => void }> = ({
         return (
             <li className="flex items-center justify-between py-3">
                 <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-slate-700 dark:text-slate-200 truncate pr-2">{transaction.description}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{transaction.date}</p>
+                    <p className="font-semibold text-[15px] text-slate-700 dark:text-slate-200 truncate pr-2">{transaction.description}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{transaction.date}</p>
                 </div>
                 <div className="flex items-center space-x-2">
                     <div className="text-right">
-                        <p className={`font-bold text-lg ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</p>
+                        <p className={`font-bold text-base ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</p>
                          {transaction.status && (
                             <p className={`text-xs font-medium ${statusStyles[transaction.status]}`}>
                                 {statusText[transaction.status]}
@@ -80,7 +79,7 @@ const RecentTransactions: React.FC<{ setActivePage: (page: Page) => void }> = ({
                     <h3 className="text-lg font-bold text-slate-800 dark:text-slate-200">সাম্প্রতিক লেনদেন</h3>
                     <button 
                         onClick={() => setActivePage(Page.TRANSACTION_HISTORY)}
-                        className="flex items-center text-sm font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
+                        className="flex items-center text-[13px] font-medium text-indigo-600 dark:text-indigo-400 hover:underline"
                     >
                         সব দেখুন <ArrowLongRightIcon className="h-5 w-5 ml-1"/>
                     </button>
@@ -103,7 +102,7 @@ const RecentTransactions: React.FC<{ setActivePage: (page: Page) => void }> = ({
 
             {selectedTransaction && (
                 <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="লেনদেনের বিবরণ">
-                    <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                    <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
                         <p><strong>ট্রানজেকশন আইডি:</strong> <span className="font-mono">{selectedTransaction.id}</span></p>
                         <p><strong>তারিখ:</strong> {selectedTransaction.date}</p>
                         <p><strong>বিবরণ:</strong> {selectedTransaction.description}</p>

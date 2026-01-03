@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { UsersIcon, ClipboardDocumentListIcon, CheckCircleIcon, CurrencyBangladeshiIcon } from '@heroicons/react/24/solid';
 import { fetchAdminDashboardAnalytics, apiFetchChartData } from '../../services/api';
@@ -12,7 +11,7 @@ const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React
             <Icon className="h-8 w-8 text-white" />
         </div>
         <div>
-            <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-[13px] text-slate-500 dark:text-slate-400">{title}</p>
             {isLoading ? 
                 <div className="h-7 w-24 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-md mt-1"></div>
                 :
@@ -52,12 +51,12 @@ const AdminDashboard: React.FC = () => {
 
     return (
         <div className="space-y-6 pb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">অ্যাডমিন ড্যাশবোর্ড</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অ্যাডমিন ড্যাশবোর্ড</h1>
             
             {error && (
                 <div className="bg-red-100 dark:bg-red-900/50 border-l-4 border-red-500 text-red-700 dark:text-red-300 p-4 rounded-lg" role="alert">
                     <p className="font-bold">একটি ত্রুটি ঘটেছে</p>
-                    <p>{error}</p>
+                    <p className="text-[13px]">{error}</p>
                 </div>
             )}
             

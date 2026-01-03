@@ -1,4 +1,3 @@
-
 import React, { ButtonHTMLAttributes } from 'react';
 import Spinner from './Spinner';
 
@@ -15,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   className = '',
   ...props
 }) => {
-  const baseStyles = 'w-full flex justify-center items-center font-bold py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-transform transform hover:scale-105 active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100';
+  const baseStyles = 'w-full flex justify-center items-center font-bold text-[15px] py-3 px-4 rounded-lg shadow-md focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-slate-900 transition-transform transform hover:scale-105 active:scale-100 disabled:opacity-50 disabled:cursor-not-allowed disabled:scale-100';
 
   const variantStyles = {
     primary: 'bg-indigo-600 text-white hover:bg-indigo-700 focus:ring-indigo-500',
@@ -35,4 +34,3 @@ const Button: React.FC<ButtonProps> = ({
 };
 
 export default Button;
-   

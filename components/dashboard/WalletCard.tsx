@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useWallet } from '../../context/WalletContext';
@@ -35,7 +34,7 @@ const WalletCard: React.FC = () => {
         <div className="absolute -right-8 -bottom-8 w-24 h-24 bg-white/10 rounded-full opacity-50"></div>
       
         <div className="relative z-10">
-            <h2 className="text-sm font-medium text-indigo-200">ওয়ালেট ব্যালেন্স</h2>
+            <h2 className="text-[13px] font-medium text-indigo-200">ওয়ালেট ব্যালেন্স</h2>
             {isLoading && !wallet ? (
                 <div className="h-8 w-32 bg-white/20 animate-pulse rounded-md mt-1"></div>
             ) : (

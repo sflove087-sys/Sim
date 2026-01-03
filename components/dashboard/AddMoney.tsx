@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -97,19 +96,19 @@ const AddMoney: React.FC = () => {
 
             <div className="flex items-center space-x-3">
                 <BanknotesIcon className="h-8 w-8 text-indigo-500"/>
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
             </div>
             
             {/* Step Indicator */}
             <div className="flex items-center space-x-2">
                 <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
                     <CheckCircleIcon className="h-6 w-6"/>
-                    <span className="font-semibold">পদ্ধতি বাছাই</span>
+                    <span className="font-semibold text-[13px]">পদ্ধতি বাছাই</span>
                 </div>
                 <div className={`flex-1 h-0.5 ${step > 1 ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'}`}></div>
                 <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400'}`}>
                      <CheckCircleIcon className={`h-6 w-6 transition-transform ${step >= 2 ? 'scale-100' : 'scale-0'}`}/>
-                    <span className="font-semibold">বিবরণ জমা</span>
+                    <span className="font-semibold text-[13px]">বিবরণ জমা</span>
                 </div>
             </div>
 
@@ -132,7 +131,7 @@ const AddMoney: React.FC = () => {
                                                 <img src={method.logoUrl} alt={method.name} className="h-12 object-contain mb-2"/>
                                                 : <div className="h-12 flex items-center justify-center font-bold text-xl">{method.name}</div>
                                             }
-                                            <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{method.type}</p>
+                                            <p className="text-[13px] font-medium text-slate-600 dark:text-slate-400">{method.type}</p>
                                         </button>
                                     ))}
                                 </div>
@@ -147,16 +146,16 @@ const AddMoney: React.FC = () => {
                                             <span className="font-semibold text-indigo-700 dark:text-indigo-300">{selectedMethod.name}</span>
                                         </div>
                                     </div>
-                                    <button onClick={() => setSelectedMethod(null)} className="flex items-center text-sm font-medium text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                    <button onClick={() => setSelectedMethod(null)} className="flex items-center text-[13px] font-medium text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400">
                                         <ArrowLeftIcon className="h-4 w-4 mr-1"/> পরিবর্তন করুন
                                     </button>
                                 </div>
 
                                 <div className="bg-slate-100 dark:bg-slate-700/50 p-4 rounded-lg mb-6">
-                                    <p className="text-sm font-medium text-slate-600 dark:text-slate-400">আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে Send Money করুন:</p>
+                                    <p className="text-[13px] font-medium text-slate-600 dark:text-slate-400">আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে Send Money করুন:</p>
                                     <div className="flex items-center justify-between mt-2">
                                         <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
-                                        <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-sm font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
+                                        <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
                                             <ClipboardDocumentIcon className="h-5 w-5 mr-2" />
                                             কপি
                                         </button>
@@ -206,7 +205,7 @@ const AddMoney: React.FC = () => {
                     <div className="text-center p-8 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
                         <WalletIcon className="h-16 w-16 mx-auto text-slate-400" />
                         <p className="mt-4 text-slate-600 dark:text-slate-400 font-semibold">দুঃখিত, এই মুহূর্তে কোনো পেমেন্ট পদ্ধতি উপলব্ধ নেই।</p>
-                        <p className="mt-1 text-sm text-slate-500">অনুগ্রহ করে পরে আবার চেষ্টা করুন অথবা সাপোর্টে যোগাযোগ করুন।</p>
+                        <p className="mt-1 text-[13px] text-slate-500">অনুগ্রহ করে পরে আবার চেষ্টা করুন অথবা সাপোর্টে যোগাযোগ করুন।</p>
                     </div>
                 )}
             </div>

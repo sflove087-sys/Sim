@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Transaction, TransactionStatus, TransactionType } from '../../types';
 import { fetchAllTransactions } from '../../services/api';
@@ -57,7 +56,7 @@ const AllTransactions: React.FC = () => {
     
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">সকল লেনদেনের তালিকা</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">সকল লেনদেনের তালিকা</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
                 <div className="overflow-x-auto">
                     {isLoading ? (

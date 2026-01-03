@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -69,7 +68,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
             {step === 'request' ? (
                 <form onSubmit={handleRequestSubmit} className="space-y-6">
                     <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">পাসওয়ার্ড রিসেট</h2>
-                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
+                    <p className="text-center text-[13px] text-slate-500 dark:text-slate-400 mb-4">আপনার নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
                     <Input 
                         id="identifier" 
                         label="ইমেইল বা মোবাইল" 
@@ -86,7 +85,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
             ) : (
                 <form onSubmit={handleResetSubmit} className="space-y-4">
                      <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">নতুন পাসওয়ার্ড সেট করুন</h2>
-                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইলে পাঠানো ৬-সংখ্যার কোড এবং নতুন পাসওয়ার্ড দিন।</p>
+                    <p className="text-center text-[13px] text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইলে পাঠানো ৬-সংখ্যার কোড এবং নতুন পাসওয়ার্ড দিন।</p>
                     <Input id="code" label="রিসেট কোড" type="text" value={code} onChange={e => setCode(e.target.value)} required />
                     <div>
                         <Input id="newPassword" label="নতুন পাসওয়ার্ড" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
@@ -106,7 +105,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
                 <button
                     type="button"
                     onClick={() => setView('login')}
-                    className="font-medium text-sm text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    className="font-medium text-[13px] text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                 >
                     লগইন পেজে ফিরে যান
                 </button>

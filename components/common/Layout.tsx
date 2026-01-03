@@ -103,7 +103,7 @@ export default function Layout() {
                 setActivePage(page);
                 setIsMobileMenuOpen(false);
             }}
-            className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-sm'} w-full p-2 rounded-lg transition-all duration-200 ${
+            className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-[15px]'} w-full p-2 rounded-lg transition-all duration-200 ${
                 activePage === page
                     ? 'bg-indigo-600 text-white shadow-lg'
                     : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-slate-700'
@@ -138,7 +138,7 @@ export default function Layout() {
     const SidebarContent = () => (
         <>
             <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
-                <h1 className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                <h1 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                     {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সার্ভিস'}
                 </h1>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1 -mr-2 text-slate-500 dark:text-slate-400">
@@ -151,7 +151,7 @@ export default function Layout() {
                 ))}
                  <button
                     onClick={logout}
-                    className="flex items-center space-x-3 text-sm w-full p-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                    className="flex items-center space-x-3 text-[15px] w-full p-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50"
                 >
                     <ArrowLeftOnRectangleIcon className="h-6 w-6" />
                     <span>লগআউট</span>

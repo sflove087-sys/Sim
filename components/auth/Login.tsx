@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -53,13 +52,13 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
       <LoadingModal isOpen={isLoading} />
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+          <label htmlFor="loginId" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
             মোবাইল অথবা ইমেইল
           </label>
           <div className="relative rounded-lg shadow-sm">
             {isMobileInput && (
               <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <span className="text-slate-500 dark:text-slate-400 sm:text-sm font-medium">+880</span>
+                <span className="text-slate-500 dark:text-slate-400 text-[13px] font-medium">+880</span>
               </div>
             )}
             <input
@@ -90,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
               <button
               type="button"
               onClick={() => setView('forgot')}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+              className="text-[13px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
               >
               পাসওয়ার্ড ভুলে গেছেন?
               </button>
@@ -103,7 +102,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
           </Button>
         </div>
 
-        <div className="text-center text-sm">
+        <div className="text-center text-[13px]">
           <span className="text-slate-500 dark:text-slate-400">একাউন্ট নেই? </span>
           <button
             type="button"

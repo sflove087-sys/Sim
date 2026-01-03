@@ -1,4 +1,3 @@
-
 import React, { InputHTMLAttributes } from 'react';
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -9,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 const Input: React.FC<InputProps> = ({ label, id, className, ...props }) => {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+      <label htmlFor={id} className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
         {label}
       </label>
       <input
@@ -22,4 +21,3 @@ const Input: React.FC<InputProps> = ({ label, id, className, ...props }) => {
 };
 
 export default Input;
-   

@@ -62,13 +62,13 @@ const CallListOrder: React.FC = () => {
     if (!settings?.isCallListOrderingEnabled) {
         return (
             <div className="max-w-2xl mx-auto space-y-6">
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
                 <div className="bg-yellow-50 dark:bg-yellow-900/30 p-6 rounded-2xl shadow-lg text-center space-y-3">
                     <ExclamationTriangleIcon className="h-12 w-12 mx-auto text-yellow-500" />
                     <h2 className="text-xl font-bold text-yellow-800 dark:text-yellow-200">
                         {settings?.headlineNotice || "অর্ডার সুবিধা বন্ধ আছে"}
                     </h2>
-                    <p className="text-yellow-600 dark:text-yellow-400">
+                    <p className="text-[13px] text-yellow-600 dark:text-yellow-400">
                         কল লিস্ট অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ রাখা হয়েছে। অনুগ্রহ করে পরে আবার চেষ্টা করুন।
                     </p>
                 </div>
@@ -79,11 +79,11 @@ const CallListOrder: React.FC = () => {
     return (
         <div className="max-w-2xl mx-auto space-y-6">
             <LoadingModal isOpen={isLoading} />
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div>
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
                             মেয়াদ নির্বাচন করুন
                         </label>
                         <div className="grid grid-cols-2 gap-4">
@@ -102,15 +102,15 @@ const CallListOrder: React.FC = () => {
                                         htmlFor={`duration-${d}`}
                                         className="block text-center p-4 border rounded-lg cursor-pointer transition-all duration-200 border-slate-300 dark:border-slate-600 peer-checked:bg-indigo-50 dark:peer-checked:bg-slate-700 peer-checked:border-indigo-500 peer-checked:ring-2 peer-checked:ring-indigo-500"
                                     >
-                                        <p className="font-semibold text-slate-800 dark:text-slate-200">{d === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>
-                                        <p className="text-lg font-bold text-indigo-600 dark:text-indigo-400">৳{toBengaliNumber(prices[d])}</p>
+                                        <p className="font-semibold text-[15px] text-slate-800 dark:text-slate-200">{d === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>
+                                        <p className="text-base font-bold text-indigo-600 dark:text-indigo-400">৳{toBengaliNumber(prices[d])}</p>
                                     </label>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div>
-                        <label htmlFor="operator" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                        <label htmlFor="operator" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
                             অপারেটর
                         </label>
                         <select

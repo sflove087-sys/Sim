@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types';
 import { fetchAllUsers, updateUserStatus } from '../../services/api';
@@ -99,7 +98,7 @@ const UserManagement: React.FC = () => {
     return (
         <div className="space-y-6">
             <div className="flex justify-between items-center">
-                <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
+                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
                 <button 
                     onClick={() => loadUsers(true)}
                     className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
@@ -141,7 +140,7 @@ const UserManagement: React.FC = () => {
                                                         title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
                                                     />
                                                 </div>
-                                                <span>{user.name}</span>
+                                                <span className="text-base">{user.name}</span>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">{user.email}</td>
@@ -180,7 +179,7 @@ const UserManagement: React.FC = () => {
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="স্ট্যাটাস পরিবর্তন নিশ্চিত করুন">
                 {confirmationState && (
                     <div className="space-y-4">
-                        <p className="text-slate-600 dark:text-slate-300">
+                        <p className="text-[13px] text-slate-600 dark:text-slate-300">
                             আপনি কি সত্যিই ব্যবহারকারী <strong>{confirmationState.user.name}</strong> কে <strong>{confirmationState.newStatus === 'Blocked' ? 'ব্লক' : 'আনব্লক'}</strong> করতে চান?
                         </p>
                         <div className="flex space-x-3 pt-4">
@@ -203,7 +202,7 @@ const UserManagement: React.FC = () => {
 
             <Modal isOpen={isUserDetailsModalOpen} onClose={() => setIsUserDetailsModalOpen(false)} title="ইউজারের বিবরণ">
                 {selectedUser && (
-                    <div className="space-y-3 text-slate-600 dark:text-slate-300">
+                    <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
                         <p><strong>নাম:</strong> {selectedUser.name}</p>
                         <p><strong>ইউজার আইডি:</strong> <span className="font-mono text-sm">{selectedUser.id}</span></p>
                         <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p>

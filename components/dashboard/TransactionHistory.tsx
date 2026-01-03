@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Transaction, TransactionStatus, TransactionType } from '../../types';
 import { fetchTransactions } from '../../services/api';
@@ -36,12 +35,12 @@ const TransactionRow: React.FC<{ transaction: Transaction }> = ({ transaction })
             <div className="flex items-center space-x-3">
                  <Icon className={`h-8 w-8 flex-shrink-0 ${iconColor[transaction.type]}`} />
                  <div className="flex-1">
-                    <p className="font-semibold text-slate-800 dark:text-slate-200">{transaction.description}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{transaction.date}</p>
+                    <p className="font-semibold text-[15px] text-slate-800 dark:text-slate-200">{transaction.description}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{transaction.date}</p>
                 </div>
             </div>
             <div className="text-right">
-                <p className={`font-bold text-lg ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</p>
+                <p className={`font-bold text-base ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</p>
                 <p className={`text-xs font-medium ${statusStyles[transaction.status]}`}>{statusText[transaction.status]}</p>
             </div>
         </li>
@@ -75,7 +74,7 @@ const TransactionHistory: React.FC = () => {
 
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">লেনদেন হিস্টোরি</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">লেনদেন হিস্টোরি</h1>
             {transactions.length > 0 ? (
                  <ul className="space-y-3">
                     {transactions.map(tx => <TransactionRow key={tx.id} transaction={tx} />)}
@@ -84,7 +83,7 @@ const TransactionHistory: React.FC = () => {
                 <div className="text-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow">
                     <DocumentMagnifyingGlassIcon className="mx-auto h-12 w-12 text-slate-400" />
                     <h3 className="mt-2 text-lg font-medium text-slate-900 dark:text-slate-200">কোনো লেনদেন পাওয়া যায়নি</h3>
-                    <p className="mt-1 text-sm text-slate-500">আপনি কোনো লেনদেন করলে তা এখানে দেখানো হবে।</p>
+                    <p className="mt-1 text-[13px] text-slate-500">আপনি কোনো লেনদেন করলে তা এখানে দেখানো হবে।</p>
                 </div>
             )}
         </div>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import Input from '../common/Input';
 import Button from '../common/Button';
@@ -88,7 +87,7 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
                         রেজিস্টার করুন
                     </Button>
                 </div>
-                <div className="text-center text-sm">
+                <div className="text-center text-[13px]">
                     <span className="text-slate-500 dark:text-slate-400">ইতিমধ্যে একাউন্ট আছে? </span>
                     <button
                         type="button"

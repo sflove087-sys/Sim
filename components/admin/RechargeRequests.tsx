@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { User, AdminTransaction } from '../../types';
 import { 
@@ -197,7 +196,7 @@ const RechargeRequests: React.FC = () => {
     
     return (
         <div className="space-y-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">টাকা যোগের অনুরোধ</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগের অনুরোধ</h1>
             
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
                 <div className="px-2 pb-4 border-b dark:border-slate-700">
@@ -207,7 +206,7 @@ const RechargeRequests: React.FC = () => {
                             <button 
                                 key={status}
                                 onClick={() => setFilter(status)}
-                                className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${filter === status ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
+                                className={`px-4 py-1.5 text-[13px] font-semibold rounded-md transition-colors ${filter === status ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
                             >
                                 {status === 'Pending' ? 'পেন্ডিং ও যাচাই' : 
                                  status === 'Approved' ? 'অনুমোদিত' : 
@@ -242,7 +241,7 @@ const RechargeRequests: React.FC = () => {
                                             <button onClick={() => handleViewUser(tx.userId)} className="text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none">{getUserName(tx.userId)}</button>
                                             <span className="block text-xs text-slate-400 font-mono">{tx.userId}</span>
                                         </td>
-                                        <td className="px-6 py-4 font-semibold">৳{toBengaliNumber(tx.amount)}</td>
+                                        <td className="px-6 py-4 text-base font-semibold">৳{toBengaliNumber(tx.amount)}</td>
                                         <td className="px-6 py-4">{tx.paymentMethod}</td>
                                         <td className="px-6 py-4 font-mono">{tx.senderNumber}</td>
                                         <td className="px-6 py-4 font-mono">{tx.transactionId}</td>
@@ -282,16 +281,16 @@ const RechargeRequests: React.FC = () => {
             </div>
 
             <Modal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} title="ইউজারের বিবরণ">
-                {selectedUser && ( <div className="space-y-3 text-slate-600 dark:text-slate-300"> <p><strong>নাম:</strong> {selectedUser.name}</p> <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p> <p><strong>ইমেইল:</strong> {selectedUser.email}</p> <p><strong>আইপি:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p> </div> )}
+                {selectedUser && ( <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300"> <p><strong>নাম:</strong> {selectedUser.name}</p> <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p> <p><strong>ইমেইল:</strong> {selectedUser.email}</p> <p><strong>আইপি:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p> </div> )}
             </Modal>
             
             <Modal isOpen={isTxDetailsModalOpen} onClose={() => setIsTxDetailsModalOpen(false)} title="লেনদেনের বিবরণ">
                 {selectedTx && (
-                    <div className="space-y-4 text-sm">
+                    <div className="space-y-4 text-[13px]">
                         <VerificationProgressBar status={selectedTx.status} verificationStatus={selectedTx.verificationStatus || null} />
                         <hr className="dark:border-slate-600"/>
                         <div>
-                            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারীর তথ্য</h4>
+                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারীর তথ্য</h4>
                             <div className="space-y-1 text-slate-600 dark:text-slate-300">
                                 <p><strong>নাম:</strong> {getUserName(selectedTx.userId)}</p>
                                 <p><strong>ইউজার আইডি:</strong> <span className="font-mono">{selectedTx.userId}</span></p>
@@ -299,7 +298,7 @@ const RechargeRequests: React.FC = () => {
                         </div>
                         <hr className="dark:border-slate-600"/>
                         <div>
-                            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">লেনদেনের তথ্য</h4>
+                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">লেনদেনের তথ্য</h4>
                             <div className="space-y-1 text-slate-600 dark:text-slate-300">
                                 <p><strong>পরিমাণ:</strong> ৳{toBengaliNumber(selectedTx.amount)}</p>
                                 <p><strong>পদ্ধতি:</strong> {selectedTx.paymentMethod}</p>
@@ -311,7 +310,7 @@ const RechargeRequests: React.FC = () => {
                         </div>
                         <hr className="dark:border-slate-600"/>
                         <div>
-                            <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-2">যাচাইকরণের বিবরণ</h4>
+                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">যাচাইকরণের বিবরণ</h4>
                             <div className="space-y-1 text-slate-600 dark:text-slate-300">
                                 <p><strong>SMS যাচাই:</strong> <VerificationStatusBadge tx={selectedTx} /></p>
                                 {selectedTx.verificationStatus === 'Mismatch' && (
@@ -337,16 +336,16 @@ const RechargeRequests: React.FC = () => {
                 {confirmationState && (
                     <div className="space-y-4">
                          {confirmationState.tx.verificationStatus === 'Mismatch' && confirmationState.action === 'approve' && (
-                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-sm">
+                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-[13px]">
                                 <p className="font-bold">সতর্কতা: তথ্যে অমিল রয়েছে!</p>
                                 <p>ব্যবহারকারীর অনুরোধ: ৳{toBengaliNumber(confirmationState.tx.amount)}, নম্বর: ...{confirmationState.tx.senderNumber}</p>
                                 <p>SMS অনুযায়ী: ৳{toBengaliNumber(confirmationState.tx.smsAmount || 0)}, নম্বর: ...{(confirmationState.tx.smsSenderNumber || '????').slice(-4)}</p>
                             </div>
                         )}
-                         <p className="text-slate-600 dark:text-slate-300">আপনি কি <strong>{getUserName(confirmationState.tx.userId)}</strong> এর <strong>৳{toBengaliNumber(confirmationState.tx.amount)}</strong> টাকার অনুরোধটি <strong>{confirmationState.action === 'approve' ? 'অনুমোদন' : 'বাতিল'}</strong> করতে নিশ্চিত?</p>
+                         <p className="text-[13px] text-slate-600 dark:text-slate-300">আপনি কি <strong>{getUserName(confirmationState.tx.userId)}</strong> এর <strong>৳{toBengaliNumber(confirmationState.tx.amount)}</strong> টাকার অনুরোধটি <strong>{confirmationState.action === 'approve' ? 'অনুমোদন' : 'বাতিল'}</strong> করতে নিশ্চিত?</p>
                          {confirmationState.action === 'reject' && (
                              <div>
-                                <label htmlFor="rejectionReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">বাতিলের কারণ (ঐচ্ছিক)</label>
+                                <label htmlFor="rejectionReason" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">বাতিলের কারণ (ঐচ্ছিক)</label>
                                 <textarea id="rejectionReason" rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="কারণ উল্লেখ করুন..."/>
                             </div>
                          )}

@@ -162,7 +162,7 @@ const ManageCallListOrders: React.FC = () => {
     return (
         <div className="space-y-6">
             <LoadingModal isOpen={isUploading} />
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার ম্যানেজমেন্ট</h1>
+            <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার ম্যানেজমেন্ট</h1>
             
             <div className="relative max-w-sm">
                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -234,7 +234,7 @@ const ManageCallListOrders: React.FC = () => {
             <Modal isOpen={isRejectModalOpen} onClose={handleCloseRejectModal} title={`অর্ডার বাতিল করুন: ${selectedOrder?.id}`}>
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="rejectionReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label htmlFor="rejectionReason" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
                            বাতিলের কারণ লিখুন
                         </label>
                         <textarea
@@ -260,7 +260,7 @@ const ManageCallListOrders: React.FC = () => {
             <Modal isOpen={isPdfModalOpen} onClose={handleClosePdfModal} title={`PDF আপলোড: ${selectedOrder?.id}`}>
                 <div className="space-y-4">
                     <div>
-                        <label htmlFor="pdf-upload" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label htmlFor="pdf-upload" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
                             একটি PDF ফাইল সিলেক্ট করুন
                         </label>
                         <input 
@@ -271,7 +271,7 @@ const ManageCallListOrders: React.FC = () => {
                             className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
                         />
                     </div>
-                    {selectedFile && <p className="text-sm text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
+                    {selectedFile && <p className="text-[13px] text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
                     <div className="pt-4">
                         <Button onClick={handlePdfUpload} isLoading={isUploading} disabled={!selectedFile || isUploading}>
                             আপলোড করুন
