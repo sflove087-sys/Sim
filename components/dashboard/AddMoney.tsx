@@ -231,22 +231,24 @@ const AddMoney: React.FC = () => {
                                     <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনি যোগ করছেন</p>
                                     <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
                                 </div>
-                                <h3 className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">কোন মাধ্যমে টাকা পাঠাতে চান?</h3>
-                                <div className="space-y-4">
+                                <h3 id="payment-method-heading" className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">কোন মাধ্যমে টাকা পাঠাতে চান?</h3>
+                                <div role="group" aria-labelledby="payment-method-heading" className="space-y-4">
                                     {paymentMethods.map((method, index) => (
                                         <button 
                                             key={index} 
                                             onClick={() => handleMethodSelect(method)} 
+                                            aria-label={`টাকা পাঠাতে ${method.name} পদ্ধতি নির্বাচন করুন`}
                                             className="w-full flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         >
                                             {method.logoUrl && (
                                                 <img 
                                                     src={method.logoUrl} 
-                                                    alt={method.name} 
+                                                    alt=""
+                                                    aria-hidden="true"
                                                     className="h-10 w-16 object-contain mr-4"
                                                 />
                                             )}
-                                            <span className="font-bold text-lg text-slate-800 dark:text-slate-200">
+                                            <span aria-hidden="true" className="font-bold text-lg text-slate-800 dark:text-slate-200">
                                                 {method.name}
                                             </span>
                                         </button>

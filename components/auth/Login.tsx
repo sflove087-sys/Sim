@@ -29,6 +29,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
     setIsLoading(true);
     try {
         let processedLoginId = loginId;
+        // Handle cases where user enters 10 digits starting with 1 (e.g., 1712345678) instead of 017...
         if (isMobileInput) {
             if (loginId.length === 10 && loginId.startsWith('1')) {
                 processedLoginId = '0' + loginId;
@@ -46,27 +47,31 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
     }
   };
   
-  const baseInputClass = "w-full py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200";
+  const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
 
   return (
     <>
       <LoadingModal isOpen={isLoading} />
-      <form onSubmit={handleSubmit} className="space-y-4">
+       <div className="text-center mb-8">
+            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">স্বাগতম!</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">আপনার একাউন্টে লগইন করুন</p>
+        </div>
+      <form onSubmit={handleSubmit} className="space-y-6">
         <div>
             <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 মোবাইল অথবা ইমেইল
             </label>
-            <div className="relative rounded-lg shadow-sm">
-                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+            <div className="relative">
+                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     {isMobileInput 
                         ? <DevicePhoneMobileIcon className="h-5 w-5 text-slate-400" />
                         : <EnvelopeIcon className="h-5 w-5 text-slate-400" />
                     }
                 </div>
                  {isMobileInput && (
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-11">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-12">
                         <span className="text-slate-500 dark:text-slate-400 text-base">+880</span>
-                        <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 ml-2"></div>
+                        <div className="h-5 w-px bg-slate-300 dark:bg-slate-600 ml-2"></div>
                     </div>
                 )}
                 <input
@@ -76,7 +81,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                     autoComplete={isMobileInput ? "tel" : "email"}
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
-                    className={`${baseInputClass} ${isMobileInput ? 'pl-24 pr-4' : 'pl-11 pr-4'}`}
+                    className={`${baseInputClass} ${isMobileInput ? 'pl-28' : 'pl-12'} pr-4`}
                     placeholder={isMobileInput ? "171 234 5678" : "example@email.com"}
                     required
                 />
@@ -87,8 +92,8 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
             <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 পাসওয়ার্ড
             </label>
-            <div className="relative rounded-lg shadow-sm">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+            <div className="relative">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
                     <LockClosedIcon className="h-5 w-5 text-slate-400" />
                 </div>
                 <input
@@ -98,12 +103,13 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
-                    className={`${baseInputClass} pl-11 pr-12`}
+                    className={`${baseInputClass} pl-12 pr-12`}
                 />
                 <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                    aria-label={showPassword ? "পাসওয়ার্ড লুকান" : "পাসওয়ার্ড দেখুন"}
                 >
                     {showPassword ? (
                         <EyeSlashIcon className="h-5 w-5" />
