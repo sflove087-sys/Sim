@@ -8,7 +8,6 @@ import { ClipboardDocumentIcon, WalletIcon, BanknotesIcon, ArrowLeftIcon, CheckI
 import { DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import { PaymentMethod } from '../../types';
 import Spinner from '../common/Spinner';
-import LoadingModal from '../common/LoadingModal';
 import { toBengaliNumber } from '../../utils/formatters';
 
 const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
@@ -189,7 +188,6 @@ const AddMoney: React.FC = () => {
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
-            <LoadingModal isOpen={isLoading} />
             <div className="flex items-center space-x-3">
                 <BanknotesIcon className="h-8 w-8 text-indigo-500"/>
                 <h1 className="text-base font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
@@ -345,7 +343,7 @@ const AddMoney: React.FC = () => {
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই নম্বরে Send Money করুন</p>
                                     <div className="flex items-center justify-center space-x-3">
                                         {selectedMethod.logoUrl && <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />}
-                                        <span className="block font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                                        <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
                                         <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
                                             <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
                                         </button>
@@ -364,7 +362,7 @@ const AddMoney: React.FC = () => {
                                 <Input id="senderNumber" label="প্রেরক নম্বর (শেষ ৪ ডিজিট)" type="tel" value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="আপনার ব্যবহৃত নম্বরের শেষ ৪টি সংখ্যা" maxLength={4} required className="text-center" />
                                 <Input id="transactionId" label="ট্রানজেকশন আইডি (TxnID)" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="টাকা পাঠানোর পর মেসেজে পাওয়া TxnID" required className="text-center" />
                                 <div className="pt-2">
-                                    <Button type="submit" disabled={isLoading}>
+                                    <Button type="submit" isLoading={isLoading}>
                                         Pay ৳{toBengaliNumber(amount)} Confirm
                                     </Button>
                                 </div>
