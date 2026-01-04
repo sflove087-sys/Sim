@@ -70,6 +70,7 @@ const AddMoney: React.FC = () => {
     const { refreshWallet } = useWallet();
 
     const currentStep = view === 'amount' ? 1 : view === 'selection' ? 2 : 3;
+    const suggestedAmounts = [500, 1000, 2000, 5000];
 
     useEffect(() => {
         const loadMethods = async () => {
@@ -175,10 +176,6 @@ const AddMoney: React.FC = () => {
         const remainingSeconds = seconds % 60;
         return `${toBengaliNumber(String(minutes).padStart(2, '0'))}:${toBengaliNumber(String(remainingSeconds).padStart(2, '0'))}`;
     };
-    
-    const radius = 58;
-    const circumference = 2 * Math.PI * radius;
-    const progressOffset = circumference - (countdown / 480) * circumference;
 
     return (
         <div className="max-w-4xl mx-auto space-y-6">
@@ -197,10 +194,33 @@ const AddMoney: React.FC = () => {
                 {view === 'amount' && (
                     <div className="max-w-md mx-auto text-center">
                         <form onSubmit={handleAmountSubmit} className="space-y-4">
-                            <h3 className="font-bold text-lg text-center mb-1 text-slate-800 dark:text-slate-200">আপনি কত টাকা যোগ করতে চান?</h3>
+                            <h3 className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">আপনি কত টাকা যোগ করতে চান?</h3>
+                            
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                                {suggestedAmounts.map(sa => (
+                                    <button
+                                        type="button"
+                                        key={sa}
+                                        onClick={() => setAmount(String(sa))}
+                                        className={`p-3 rounded-lg font-bold transition-all text-sm ${
+                                            amount === String(sa)
+                                            ? 'bg-indigo-600 text-white shadow-md'
+                                            : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
+                                        }`}
+                                    >
+                                        ৳{toBengaliNumber(sa)}
+                                    </button>
+                                ))}
+                            </div>
+                            
+                            <div className="relative flex items-center pt-2">
+                                <hr className="w-full border-t border-slate-200 dark:border-slate-700" />
+                                <span className="absolute left-1/2 -translate-x-1/2 bg-white dark:bg-slate-800 px-2 text-xs text-slate-500">অথবা</span>
+                            </div>
+
                             <Input
                                 id="amount"
-                                label="টাকার পরিমাণ"
+                                label="টাকার পরিমাণ লিখুন"
                                 type="number"
                                 value={amount}
                                 onChange={(e) => setAmount(e.target.value)}
@@ -270,47 +290,48 @@ const AddMoney: React.FC = () => {
                             <ArrowLeftIcon className="h-4 w-4 mr-2" />
                             অন্য পদ্ধতি বাছাই করুন
                         </button>
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-                            {/* Left Column: Instructions & Timer */}
+                        <div className="space-y-8">
+                            {/* Card 1: Instructions */}
                             <div className="space-y-6">
-                                <div className="text-center p-6 rounded-2xl bg-slate-50 dark:bg-slate-700/50">
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই সময়ের মধ্যে লেনদেন সম্পন্ন করুন</p>
-                                    <div className="relative w-32 h-32 mx-auto">
-                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
-                                            <circle className="text-slate-200 dark:text-slate-700" strokeWidth="10" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" />
-                                            <circle className="text-indigo-500" strokeWidth="10" strokeDasharray={circumference} strokeDashoffset={progressOffset} strokeLinecap="round" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" style={{ transition: 'stroke-dashoffset 1s linear' }} />
-                                        </svg>
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <span className="font-mono text-3xl font-bold text-slate-800 dark:text-slate-200 tracking-widest">{formatTime(countdown)}</span>
+                                <div className="space-y-2">
+                                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">নির্দেশনা</h3>
+                                    <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে Send Money করুন। লেনদেনটি ৮ মিনিটের মধ্যে সম্পন্ন করে নিচের তথ্য জমা দিন।</p>
+                                </div>
+                                <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-700">
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">সময় বাকি আছে</p>
+                                            <span className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 tracking-widest">{formatTime(countdown)}</span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 overflow-hidden">
+                                            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${(countdown / 480) * 100}%`, transition: 'width 1s linear' }}></div>
                                         </div>
                                     </div>
-                                </div>
-                                <div className="space-y-2">
-                                     <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">নির্দেশনা</h3>
-                                    <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে Send Money করুন:</p>
-                                </div>
-                                <div className="bg-slate-100 dark:bg-slate-700/50 p-4 rounded-lg space-y-3 text-center">
-                                    <div className="flex items-center justify-center space-x-3">
-                                        {selectedMethod.logoUrl && (
-                                            <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />
-                                        )}
-                                        <span className="block font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
-                                        <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
-                                            <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
-                                        </button>
+                                    <hr className="border-slate-200 dark:border-slate-600"/>
+                                    <div className="text-center">
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই নম্বরে Send Money করুন</p>
+                                        <div className="flex items-center justify-center space-x-3">
+                                            {selectedMethod.logoUrl && <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />}
+                                            <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                                            <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
+                                                <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
+                                            </button>
+                                        </div>
                                     </div>
-                                    <div>
+                                    <hr className="border-slate-200 dark:border-slate-600"/>
+                                    <div className="text-center">
                                         <p className="text-xs text-slate-500 dark:text-slate-400">পাঠানোর পরিমাণ</p>
-                                        <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
+                                        <p className="font-bold text-3xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
                                     </div>
                                 </div>
-                                 <p className="text-xs text-slate-500 dark:text-slate-400">শুধুমাত্র 'Send Money' অপশন ব্যবহার করুন।</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">শুধুমাত্র 'Send Money' অপশন ব্যবহার করুন।</p>
                             </div>
-                            {/* Right Column: Form */}
-                            <div className="text-center">
-                                <form onSubmit={handleSubmit} className="space-y-4">
-                                    <Input id="amount" label="টাকার পরিমাণ" type="number" value={amount} readOnly className="bg-slate-200 dark:bg-slate-600 cursor-not-allowed text-center" />
+                            {/* Card 2: Form */}
+                            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg border dark:border-slate-700">
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-4 text-center">লেনদেনের তথ্য জমা দিন</h3>
+                                <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
                                     <Input id="senderNumber" label="প্রেরক নম্বর (শেষ ৪ ডিজিট)" type="tel" value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="আপনার ব্যবহৃত নম্বরের শেষ ৪টি সংখ্যা" maxLength={4} required className="text-center" />
+                                    <Input id="amount" label="টাকার পরিমাণ" type="number" value={amount} readOnly className="bg-slate-200 dark:bg-slate-600 cursor-not-allowed text-center" />
                                     <Input id="transactionId" label="ট্রানজেকশন আইডি (TxnID)" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="টাকা পাঠানোর পর মেসেজে পাওয়া TxnID" required className="text-center" />
                                     <div className="pt-2">
                                         <Button type="submit" disabled={isLoading}>অনুরোধ জমা দিন</Button>

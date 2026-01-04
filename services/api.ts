@@ -4,7 +4,7 @@ import { safeLocalStorage } from '../utils/storage';
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-7qRY7YTRwWtzMq13forLOpg6xKaXjINPOlAad7RpA_h3kT-incAE4AdH2j-L91XBAg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhnfEL-mnFfk3gmZPKsN1Ie22PfUL-KB0ttUTJG0t4MwlLEappZDfupVwc87hgqhXe1g/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend

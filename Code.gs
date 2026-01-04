@@ -460,73 +460,67 @@ function handleFetchAllUsers(payload) {
   return { users: paginatedUsers, total: total };
 }
 
-function handleFetchAllMoneyRequests() {
-  if (!smsSheet) {
-    Logger.log("Warning: 'sms' sheet not found. Verification will be skipped.");
-  }
-  
-  const smsMap = getSmsMap();
+function handleFetchAllMoneyRequests(payload) {
+    if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
 
-  const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 11).getValues() : [];
-  
-  const approvedTxIds = new Set();
-  for (const row of allRequestsData) {
-    if (row[5] === 'Approved' && row[3]) {
-      approvedTxIds.add(row[3].toString().trim());
+    if (!smsSheet) {
+        Logger.log("Warning: 'sms' sheet not found. Verification will be skipped.");
     }
-  }
 
-  const processedRequests = allRequestsData.map(row => {
-    const request = { 
-      requestId: row[0], 
-      date: new Date(row[1]).toLocaleDateString('bn-BD'), 
-      userId: row[2], 
-      transactionId: row[3] ? row[3].toString().trim() : '', 
-      amount: parseFloat(row[4]),
-      status: row[5] || 'Pending',
-      paymentMethod: row[6] || 'N/A',
-      senderNumber: row[7] || '',
-      rejectionReason: row[8] || '',
-      verificationStatus: null,
-      smsAmount: null,
-      smsCompany: null,
-      smsSenderNumber: null
-    };
+    const smsMap = getSmsMap();
 
-    if (request.status === 'Pending' || request.status === 'Verifying') {
-      const smsEntry = smsMap.get(request.transactionId);
-      if (approvedTxIds.has(request.transactionId)) {
-        request.verificationStatus = 'Duplicate';
-      } else if (smsMap.has(request.transactionId)) {
-        const senderNumberMatch = smsEntry.senderNumber && request.senderNumber && smsEntry.senderNumber.endsWith(request.senderNumber);
+    const allRequestsData = adminTransactionsSheet.getLastRow() > 1 ? adminTransactionsSheet.getRange(2, 1, adminTransactionsSheet.getLastRow() - 1, 11).getValues() : [];
 
-        if (smsEntry.amount === request.amount && senderNumberMatch) {
-            request.verificationStatus = 'Verified';
-            // Auto-approve if verified
-            try {
-                handleApproveTransaction({ requestId: request.requestId });
-                request.status = 'Approved'; // Update status for immediate UI feedback
-                approvedTxIds.add(request.transactionId); // Add to set to prevent duplicate processing in same run
-                Logger.log('Transaction ' + request.transactionId + ' auto-approved during fetch.');
-            } catch (e) {
-                Logger.log('Auto-approval failed during fetch for requestId ' + request.requestId + ': ' + e.toString());
-            }
-        } else {
-          request.verificationStatus = 'Mismatch';
-          request.smsAmount = smsEntry.amount;
-          request.smsCompany = smsEntry.company;
-          request.smsSenderNumber = smsEntry.senderNumber;
+    const approvedTxIds = new Set();
+    for (const row of allRequestsData) {
+        if (row[5] === 'Approved' && row[3]) {
+            approvedTxIds.add(row[3].toString().trim());
         }
-      } else {
-        request.verificationStatus = 'Not Found';
-      }
     }
-    
-    return request;
-  });
 
-  return processedRequests.reverse();
+    const processedRequests = allRequestsData.map(row => {
+        const request = {
+            requestId: row[0],
+            date: new Date(row[1]).toLocaleDateString('bn-BD'),
+            userId: row[2],
+            transactionId: row[3] ? row[3].toString().trim() : '',
+            amount: parseFloat(row[4]),
+            status: row[5] || 'Pending',
+            paymentMethod: row[6] || 'N/A',
+            senderNumber: row[7] || '',
+            rejectionReason: row[8] || '',
+            verificationAttempts: parseInt(row[10]) || 0,
+            verificationStatus: null,
+            smsAmount: null,
+            smsCompany: null,
+            smsSenderNumber: null
+        };
+
+        if (request.status === 'Pending' || request.status === 'Verifying') {
+            const smsEntry = smsMap.get(request.transactionId);
+            if (approvedTxIds.has(request.transactionId)) {
+                request.verificationStatus = 'Duplicate';
+            } else if (smsMap.has(request.transactionId)) {
+                const senderNumberMatch = smsEntry.senderNumber && request.senderNumber && smsEntry.senderNumber.endsWith(request.senderNumber);
+
+                if (smsEntry.amount === request.amount && senderNumberMatch) {
+                    request.verificationStatus = 'Verified';
+                } else {
+                    request.verificationStatus = 'Mismatch';
+                    request.smsAmount = smsEntry.amount;
+                    request.smsCompany = smsEntry.company;
+                    request.smsSenderNumber = smsEntry.senderNumber;
+                }
+            } else {
+                request.verificationStatus = 'Not Found';
+            }
+        }
+        return request;
+    });
+
+    return processedRequests.reverse();
 }
+
 
 function handleFetchAdminDashboardAnalytics(payload) {
     if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
@@ -943,7 +937,18 @@ function handleFetchCallListOrders(payload) {
   if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য দেখতে পারবেন।");
   if (!callListOrdersSheet) return [];
   const data = callListOrdersSheet.getLastRow() > 1 ? callListOrdersSheet.getRange(2, 1, callListOrdersSheet.getLastRow() - 1, 10).getValues() : [];
-  return data.map(row => ({ id: row[0], userId: row[1], date: row[2], operator: row[3], mobile: row[4], duration: row[5], price: row[6], status: row[7], rejectionReason: row[8], pdfUrl: row[9] })).reverse();
+  return data.map(row => ({ 
+    id: row[0], 
+    userId: row[1], 
+    date: new Date(row[2]).toISOString(), // Convert date to ISO string for safe transport
+    operator: row[3], 
+    mobile: row[4], 
+    duration: row[5], 
+    price: row[6], 
+    status: row[7], 
+    rejectionReason: row[8], 
+    pdfUrl: row[9] 
+  })).reverse();
 }
 
 function handleUploadCallListOrderPdf(payload) {
@@ -992,7 +997,14 @@ function handleUpdateCallListOrderStatus(payload) {
 
 // --- Utility Functions ---
 
-function isAdmin(userId) { if (!userId) return false; const userRowIndex = findRow(usersSheet, userId, 1); return userRowIndex !== -1 && usersSheet.getRange(userRowIndex, 6).getValue() === 'Admin'; }
+function isAdmin(userId) {
+  if (!userId) return false;
+  const userRowIndex = findRow(usersSheet, userId, 1);
+  if (userRowIndex === -1) return false;
+  const role = usersSheet.getRange(userRowIndex, 6).getValue();
+  // Make the check case-insensitive and trim whitespace
+  return typeof role === 'string' && role.trim().toLowerCase() === 'admin';
+}
 function findRow(sheet, value, col) { if (!sheet || sheet.getLastRow() < 1) return -1; const data = sheet.getRange(1, col, sheet.getLastRow(), 1).getValues(); for (let i = 0; i < data.length; i++) if (data[i][0] == value) return i + 1; return -1; }
 function mapUserRowToObject(row) { 
     return { id: row[0], name: row[1], mobile: row[2], email: row[3], role: row[5], status: row[7], photoUrl: row[8], ipAddress: row[9], lastSeen: row[10] || null }; 

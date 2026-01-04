@@ -1,4 +1,5 @@
 
+
 export interface User {
   id: string;
   name: string;
@@ -99,6 +100,7 @@ export interface AdminTransaction {
   smsAmount?: number;
   smsCompany?: string;
   smsSenderNumber?: string;
+  verificationAttempts?: number;
 }
 
 export interface PaymentMethod {

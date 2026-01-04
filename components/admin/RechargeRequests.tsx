@@ -38,7 +38,20 @@ const StatusBadge: React.FC<{ status: RequestStatus }> = ({ status }) => {
 };
 
 const VerificationStatusBadge: React.FC<{ tx: AdminTransaction }> = ({ tx }) => {
-    const { verificationStatus, smsAmount, smsCompany, smsSenderNumber } = tx;
+    const { verificationStatus, smsAmount, smsCompany, smsSenderNumber, status, verificationAttempts } = tx;
+
+    if (status === 'Verifying' && !verificationStatus) {
+        return (
+            <span 
+                className="inline-flex items-center px-2.5 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300"
+                title={`যাচাইয়ের চেষ্টা: ${toBengaliNumber(verificationAttempts || 0)}/৫`}
+            >
+                <ArrowPathIcon className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                যাচাই চলছে...
+            </span>
+        );
+    }
+    
     if (!verificationStatus) return <span className="text-xs text-slate-400">N/A</span>;
 
     const statusInfo = {
