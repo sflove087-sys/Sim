@@ -113,29 +113,35 @@ export default function Layout() {
         label: string;
         icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
     };
-
-    const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon }) => (
-        <button
-            onClick={() => {
-                setActivePage(page);
-                setIsMobileMenuOpen(false);
-            }}
-            className={`flex items-center space-x-3 text-[15px] w-full p-3 rounded-lg transition-all duration-200 group ${
-                activePage === page
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700'
-            }`}
-        >
-            <Icon className={`h-6 w-6 transition-colors ${activePage === page ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`} />
-            <span className="truncate font-medium">{label}</span>
-        </button>
-    );
+    
+    const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon }) => {
+        const isActive = activePage === page;
+        return (
+            <button
+                onClick={() => {
+                    setActivePage(page);
+                    setIsMobileMenuOpen(false);
+                }}
+                className={`relative flex items-center space-x-4 text-base w-full p-3 rounded-lg transition-all duration-200 group ${
+                    isActive
+                        ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 font-bold'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'
+                }`}
+            >
+                {isActive && <div className="absolute left-0 top-2 bottom-2 w-1 bg-indigo-600 rounded-r-full"></div>}
+                <Icon className={`h-6 w-6 transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-400 group-hover:text-slate-500 dark:group-hover:text-slate-300'}`} />
+                <span className="truncate">{label}</span>
+            </button>
+        );
+    };
     
     const SidebarContent = () => (
         <>
-            <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
-                <div className="flex items-center space-x-2">
-                    <CircleStackIcon className="h-7 w-7 text-indigo-600" />
+            <div className="flex items-center justify-between h-20 px-4 border-b dark:border-slate-700 flex-shrink-0">
+                <div className="flex items-center space-x-3">
+                    <div className="p-2 bg-indigo-600 rounded-lg shadow-md">
+                        <CircleStackIcon className="h-7 w-7 text-white" />
+                    </div>
                     <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">
                         {isAdmin ? 'অ্যাডমিন' : 'ডিজিটাল সেবা'}
                     </h1>
@@ -144,7 +150,7 @@ export default function Layout() {
                     <XMarkIcon className="h-6 w-6" />
                 </button>
             </div>
-            <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
+            <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
                 {navItems.map(({ id, label, icon }) => (
                     <NavLink key={id} page={id} label={label} icon={icon} />
                 ))}
@@ -152,10 +158,10 @@ export default function Layout() {
             <div className="p-3 border-t dark:border-slate-700">
                  <button
                     onClick={logout}
-                    className="flex items-center space-x-3 text-[15px] w-full p-3 rounded-lg transition-all duration-200 font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20"
+                    className="flex items-center space-x-4 text-base w-full p-3 rounded-lg transition-all duration-200 group text-slate-600 dark:text-slate-300 hover:bg-red-50 dark:hover:bg-red-500/10"
                 >
-                    <ArrowLeftOnRectangleIcon className="h-6 w-6" />
-                    <span>লগআউট</span>
+                    <ArrowLeftOnRectangleIcon className="h-6 w-6 text-slate-400 group-hover:text-red-500 transition-colors" />
+                    <span className="font-medium group-hover:text-red-600 dark:group-hover:text-red-400">লগআউট</span>
                 </button>
             </div>
         </>
@@ -165,14 +171,18 @@ export default function Layout() {
         <div className="flex h-screen bg-slate-100 dark:bg-slate-900">
             <LiveChatWidget />
             {showWelcomePopup && <WelcomePopup onClose={() => setShowWelcomePopup(false)} />}
+            
+            {/* Desktop Sidebar */}
             <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300">
                 <SidebarContent />
             </aside>
             
+            {/* Mobile Menu Overlay */}
             <div 
                 className={`fixed inset-0 bg-black/60 z-40 transition-opacity md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsMobileMenuOpen(false)}
             ></div>
+            {/* Mobile Sidebar */}
             <aside className={`fixed top-0 left-0 h-full z-50 w-64 bg-white dark:bg-slate-800 shadow-lg flex flex-col transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <SidebarContent />
             </aside>

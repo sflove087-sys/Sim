@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { AuthProvider } from './context/AuthContext';
 import { ToastProvider } from './context/ToastContext';
 import AuthPage from './components/auth/AuthPage';
@@ -11,21 +11,14 @@ import { LanguageProvider } from './context/LanguageContext';
 import { safeLocalStorage } from './utils/storage';
 
 function App() {
-  const [user, setUser] = useState<User | null>(() => {
-    const savedUser = safeLocalStorage.getItem('currentUser');
-    if (savedUser) {
-        try {
-            // Attempt to parse user data from localStorage
-            return JSON.parse(savedUser);
-        } catch (error) {
-            // If parsing fails (e.g., corrupted data), log the error and clear the item
-            console.error("Failed to parse user from localStorage:", error);
-            safeLocalStorage.removeItem('currentUser');
-            return null;
-        }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(null);
+
+  // User requested to always load fresh from the sheet, not from localStorage.
+  // This effect ensures any lingering session is cleared on app start.
+  useEffect(() => {
+    safeLocalStorage.removeItem('currentUser');
+  }, []);
+
 
   const login = useCallback((loggedInUser: User) => {
     setUser(loggedInUser);

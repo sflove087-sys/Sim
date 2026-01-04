@@ -4,7 +4,8 @@ import Button from '../common/Button';
 import { addMoneyRequest, apiFetchSettings } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useWallet } from '../../context/WalletContext';
-import { ClipboardDocumentIcon, WalletIcon, BanknotesIcon, ArrowLeftIcon, CheckIcon } from '@heroicons/react/24/solid';
+import { ClipboardDocumentIcon, WalletIcon, BanknotesIcon, ArrowLeftIcon, CheckIcon, CheckBadgeIcon, CreditCardIcon, BuildingLibraryIcon } from '@heroicons/react/24/solid';
+import { DevicePhoneMobileIcon } from '@heroicons/react/24/outline';
 import { PaymentMethod } from '../../types';
 import Spinner from '../common/Spinner';
 import LoadingModal from '../common/LoadingModal';
@@ -119,15 +120,24 @@ const AddMoney: React.FC = () => {
 
     const handleMethodSelect = (method: PaymentMethod) => {
         setSelectedMethod(method);
-        setView('details');
     };
+    
+    const handleProceedToDetails = () => {
+        if (selectedMethod) {
+            setView('details');
+        } else {
+            addToast('অনুগ্রহ করে একটি পেমেন্ট পদ্ধতি নির্বাচন করুন।', 'error');
+        }
+    };
+
 
     const handleGoBack = () => {
         if (view === 'details') {
             setView('selection');
-            setSelectedMethod(null);
+            // Keep selectedMethod so user doesn't have to re-select
         } else if (view === 'selection') {
             setView('amount');
+            setSelectedMethod(null);
         }
     };
 
@@ -238,45 +248,68 @@ const AddMoney: React.FC = () => {
             
                 {view === 'selection' && (
                      <div className="max-w-md mx-auto">
-                        <button onClick={handleGoBack} className="flex items-center text-[13px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors mb-4">
-                            <ArrowLeftIcon className="h-4 w-4 mr-2" />
-                            ফিরে যান
+                        <button onClick={handleGoBack} className="flex items-center text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors mb-6">
+                            <ArrowLeftIcon className="h-4 w-4 mr-1" />
+                            টাকার পরিমাণ পরিবর্তন করুন
                         </button>
+                        
+                        {/* Top Tabs */}
+                        <div className="flex items-center justify-center space-x-2 mb-6 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                <CreditCardIcon className="h-5 w-5"/> <span>কার্ড</span>
+                            </button>
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-bold bg-indigo-600 text-white shadow">
+                                <DevicePhoneMobileIcon className="h-5 w-5"/> <span>মোবাইল ব্যাংকিং</span>
+                            </button>
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                                <BuildingLibraryIcon className="h-5 w-5"/> <span>নেট ব্যাংকিং</span>
+                            </button>
+                        </div>
+
+                        <h3 className="font-semibold text-lg text-left mb-4 text-slate-800 dark:text-slate-200">
+                            মোবাইল ব্যাংকিং দিয়ে পেমেন্ট করুন
+                        </h3>
 
                         {isLoadingMethods ? (
                             <div className="flex justify-center p-8"><Spinner size="lg" colorClass="border-indigo-500" /></div>
                         ) : paymentMethods.length > 0 ? (
                             <div>
-                                <div className="text-center bg-indigo-50 dark:bg-slate-700/50 p-3 rounded-lg mb-6">
-                                    <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনি যোগ করছেন</p>
-                                    <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
-                                </div>
-                                <h3 id="payment-method-heading" className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">কোন মাধ্যমে টাকা পাঠাতে চান?</h3>
-                                <div role="group" aria-labelledby="payment-method-heading" className="space-y-4">
+                                <div role="radiogroup" className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                                     {paymentMethods.map((method, index) => (
                                         <button 
                                             key={index} 
+                                            role="radio"
+                                            aria-checked={selectedMethod?.name === method.name}
                                             onClick={() => handleMethodSelect(method)} 
-                                            aria-label={`টাকা পাঠাতে ${method.name} পদ্ধতি নির্বাচন করুন`}
-                                            className="w-full flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                                            className={`flex items-center justify-center p-2 aspect-square bg-white dark:bg-slate-800/50 rounded-lg cursor-pointer transition-all duration-200 border-2  
+                                                ${selectedMethod?.name === method.name 
+                                                    ? 'border-indigo-500 ring-2 ring-indigo-500/20' 
+                                                    : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
+                                                }`}
                                         >
-                                            {method.logoUrl && (
-                                                <img 
-                                                    src={method.logoUrl} 
-                                                    alt=""
-                                                    aria-hidden="true"
-                                                    className="h-10 w-16 object-contain mr-4"
-                                                />
+                                            {method.logoUrl ? (
+                                                <img src={method.logoUrl} alt={`${method.name} logo`} className="h-full w-full object-contain p-1 sm:p-2" />
+                                            ) : (
+                                                <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{method.name}</span>
                                             )}
-                                            <span aria-hidden="true" className="font-bold text-lg text-slate-800 dark:text-slate-200">
-                                                {method.name}
-                                            </span>
                                         </button>
                                     ))}
                                 </div>
+                                <div className="mt-8 space-y-4">
+                                    <Button
+                                        onClick={handleProceedToDetails}
+                                        disabled={!selectedMethod}
+                                        className="disabled:bg-slate-300 disabled:dark:bg-slate-600 disabled:text-slate-500 disabled:shadow-none"
+                                    >
+                                        Pay ৳{toBengaliNumber(amount)}
+                                    </Button>
+                                    <p className="text-xs text-center text-slate-500 dark:text-slate-400 px-4">
+                                        "Pay" বাটনে ক্লিক করার মাধ্যমে আপনি আমাদের পরিষেবার শর্তাবলীতে সম্মত হচ্ছেন যা আপনার পেমেন্ট সহজ করার মধ্যে সীমাবদ্ধ।
+                                    </p>
+                                </div>
                             </div>
                         ) : (
-                            <div className="text-center p-8">
+                             <div className="text-center p-8">
                                 <WalletIcon className="h-16 w-16 mx-auto text-slate-400" />
                                 <p className="mt-4 text-slate-600 dark:text-slate-400 font-semibold">দুঃখিত, এই মুহূর্তে কোনো পেমেন্ট পদ্ধতি উপলব্ধ নেই।</p>
                             </div>
@@ -285,59 +318,57 @@ const AddMoney: React.FC = () => {
                 )}
             
                 {view === 'details' && selectedMethod && (
-                    <div className="space-y-8">
+                    <div className="max-w-md mx-auto space-y-6">
                         <button onClick={handleGoBack} className="flex items-center text-[13px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors">
                             <ArrowLeftIcon className="h-4 w-4 mr-2" />
                             অন্য পদ্ধতি বাছাই করুন
                         </button>
-                        <div className="space-y-8">
-                            {/* Card 1: Instructions */}
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200">নির্দেশনা</h3>
-                                    <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে Send Money করুন। লেনদেনটি ৮ মিনিটের মধ্যে সম্পন্ন করে নিচের তথ্য জমা দিন।</p>
+                        
+                        <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg border dark:border-slate-700 space-y-6">
+                            {/* Timer */}
+                            <div>
+                                <div className="flex justify-between items-center mb-1">
+                                    <p className="text-xs font-medium text-slate-500 dark:text-slate-400">সময় বাকি আছে</p>
+                                    <span className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 tracking-widest">{formatTime(countdown)}</span>
                                 </div>
-                                <div className="bg-slate-50 dark:bg-slate-700/50 p-6 rounded-2xl space-y-4 border border-slate-200 dark:border-slate-700">
-                                    <div>
-                                        <div className="flex justify-between items-center mb-1">
-                                            <p className="text-xs font-medium text-slate-500 dark:text-slate-400">সময় বাকি আছে</p>
-                                            <span className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 tracking-widest">{formatTime(countdown)}</span>
-                                        </div>
-                                        <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 overflow-hidden">
-                                            <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${(countdown / 480) * 100}%`, transition: 'width 1s linear' }}></div>
-                                        </div>
-                                    </div>
-                                    <hr className="border-slate-200 dark:border-slate-600"/>
-                                    <div className="text-center">
-                                        <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই নম্বরে Send Money করুন</p>
-                                        <div className="flex items-center justify-center space-x-3">
-                                            {selectedMethod.logoUrl && <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />}
-                                            <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
-                                            <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
-                                                <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <hr className="border-slate-200 dark:border-slate-600"/>
-                                    <div className="text-center">
-                                        <p className="text-xs text-slate-500 dark:text-slate-400">পাঠানোর পরিমাণ</p>
-                                        <p className="font-bold text-3xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
+                                <div className="w-full bg-slate-200 dark:bg-slate-600 rounded-full h-1.5 overflow-hidden">
+                                    <div className="bg-indigo-500 h-1.5 rounded-full" style={{ width: `${(countdown / 480) * 100}%`, transition: 'width 1s linear' }}></div>
+                                </div>
+                            </div>
+                
+                            {/* Instructions */}
+                            <div className="text-center space-y-4 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl">
+                                <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                    আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে <strong>Send Money</strong> করুন।
+                                </p>
+                                <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই নম্বরে Send Money করুন</p>
+                                    <div className="flex items-center justify-center space-x-3">
+                                        {selectedMethod.logoUrl && <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />}
+                                        <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                                        <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
+                                            <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
+                                        </button>
                                     </div>
                                 </div>
-                                <p className="text-xs text-slate-500 dark:text-slate-400">শুধুমাত্র 'Send Money' অপশন ব্যবহার করুন।</p>
+                                <hr className="border-slate-200 dark:border-slate-600"/>
+                                <div>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">পাঠানোর পরিমাণ</p>
+                                    <p className="font-bold text-3xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
+                                </div>
                             </div>
-                            {/* Card 2: Form */}
-                            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg border dark:border-slate-700">
-                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-4 text-center">লেনদেনের তথ্য জমা দিন</h3>
-                                <form onSubmit={handleSubmit} className="space-y-4 max-w-sm mx-auto">
-                                    <Input id="senderNumber" label="প্রেরক নম্বর (শেষ ৪ ডিজিট)" type="tel" value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="আপনার ব্যবহৃত নম্বরের শেষ ৪টি সংখ্যা" maxLength={4} required className="text-center" />
-                                    <Input id="amount" label="টাকার পরিমাণ" type="number" value={amount} readOnly className="bg-slate-200 dark:bg-slate-600 cursor-not-allowed text-center" />
-                                    <Input id="transactionId" label="ট্রানজেকশন আইডি (TxnID)" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="টাকা পাঠানোর পর মেসেজে পাওয়া TxnID" required className="text-center" />
-                                    <div className="pt-2">
-                                        <Button type="submit" disabled={isLoading}>অনুরোধ জমা দিন</Button>
-                                    </div>
-                                </form>
-                            </div>
+                
+                            {/* Form */}
+                            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2 text-center">লেনদেনের তথ্য জমা দিন</h3>
+                                <Input id="senderNumber" label="প্রেরক নম্বর (শেষ ৪ ডিজিট)" type="tel" value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="আপনার ব্যবহৃত নম্বরের শেষ ৪টি সংখ্যা" maxLength={4} required className="text-center" />
+                                <Input id="transactionId" label="ট্রানজেকশন আইডি (TxnID)" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="টাকা পাঠানোর পর মেসেজে পাওয়া TxnID" required className="text-center" />
+                                <div className="pt-2">
+                                    <Button type="submit" disabled={isLoading}>
+                                        Pay ৳{toBengaliNumber(amount)} Confirm
+                                    </Button>
+                                </div>
+                            </form>
                         </div>
                     </div>
                 )}
