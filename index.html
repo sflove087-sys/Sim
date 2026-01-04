@@ -39,6 +39,54 @@
        .dark ::-webkit-scrollbar-thumb:hover {
         background: #64748b; /* slate-500 */
       }
+
+      /* Responsive Table System */
+      @media (max-width: 768px) {
+        .responsive-table { display: block; width: 100%; }
+        .responsive-table thead { display: none; }
+        .responsive-table tbody { display: block; width: 100%; }
+        .responsive-table tr {
+          display: block;
+          margin-bottom: 1rem;
+          border-radius: 0.5rem;
+          box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+          border-width: 1px;
+          --tw-border-opacity: 1;
+          border-color: rgb(226 232 240 / var(--tw-border-opacity));
+        }
+        .dark .responsive-table tr {
+          --tw-border-opacity: 1;
+          border-color: rgb(51 65 85 / var(--tw-border-opacity));
+        }
+        .responsive-table td {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          text-align: right;
+          padding: 0.75rem;
+          border-bottom-width: 1px;
+          --tw-border-opacity: 1;
+          border-color: rgb(226 232 240 / var(--tw-border-opacity));
+        }
+        .dark .responsive-table td {
+          --tw-border-opacity: 1;
+          border-color: rgb(51 65 85 / var(--tw-border-opacity));
+        }
+        .responsive-table td:before {
+          content: attr(data-label);
+          float: left;
+          font-weight: 600;
+          text-align: left;
+          padding-right: 1rem;
+          color: #475569; /* slate-600 */
+        }
+        .dark .responsive-table td:before {
+          color: #cbd5e1; /* slate-300 */
+        }
+        .responsive-table tr td:last-child {
+            border-bottom-width: 0px;
+        }
+      }
     </style>
   <script type="importmap">
 {

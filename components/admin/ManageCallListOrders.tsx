@@ -178,7 +178,7 @@ const ManageCallListOrders: React.FC = () => {
             </div>
             
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
+                <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                         <tr>
                             <th scope="col" className="px-6 py-3">তারিখ</th>
@@ -194,35 +194,37 @@ const ManageCallListOrders: React.FC = () => {
                     <tbody>
                         {filteredOrders.map((order) => (
                             <tr key={order.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                <td className="px-6 py-4">{new Date(order.date).toLocaleDateString('bn-BD')}</td>
-                                <td className="px-6 py-4 font-mono">{order.id}</td>
-                                <td className="px-6 py-4 font-mono">{order.userId}</td>
-                                <td className="px-6 py-4">{order.operator} - {order.mobile}</td>
-                                <td className="px-6 py-4">{order.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</td>
-                                <td className="px-6 py-4">৳{toBengaliNumber(order.price)}</td>
-                                <td className="px-6 py-4"><StatusBadge status={order.status} /></td>
-                                <td className="px-6 py-4">
-                                    {updatingStatusId === order.id ? (
-                                        <span className="text-xs animate-pulse">প্রসেসিং...</span>
-                                    ) : order.status === OrderStatus.PENDING ? (
-                                        <div className="flex items-center space-x-2">
-                                            <button onClick={() => handleOpenPdfModal(order)} className="flex items-center text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1.5 rounded-md shadow transition" title="PDF আপলোড করুন">
-                                                <DocumentArrowUpIcon className="h-4 w-4 mr-1"/> PDF
-                                            </button>
-                                            <button onClick={() => handleOpenRejectModal(order)} className="text-xs font-semibold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-md shadow transition">রিজেক্ট</button>
-                                        </div>
-                                    ) : order.status === OrderStatus.COMPLETED && order.pdfUrl ? (
-                                        <div className="flex items-center space-x-2">
-                                            <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-md shadow transition">
-                                                <LinkIcon className="h-4 w-4 mr-1"/> PDF দেখুন
-                                            </a>
-                                            <button onClick={() => order.pdfUrl && printPdf(order.pdfUrl)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 transition" title="প্রিন্ট করুন">
-                                                <PrinterIcon className="h-5 w-5"/>
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <span className="text-xs text-slate-400">N/A</span>
-                                    )}
+                                <td data-label="তারিখ" className="px-6 py-4">{new Date(order.date).toLocaleDateString('bn-BD')}</td>
+                                <td data-label="অর্ডার আইডি" className="px-6 py-4 font-mono">{order.id}</td>
+                                <td data-label="ইউজার আইডি" className="px-6 py-4 font-mono">{order.userId}</td>
+                                <td data-label="মোবাইল" className="px-6 py-4">{order.operator} - {order.mobile}</td>
+                                <td data-label="মেয়াদ" className="px-6 py-4">{order.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</td>
+                                <td data-label="মূল্য" className="px-6 py-4">৳{toBengaliNumber(order.price)}</td>
+                                <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={order.status} /></td>
+                                <td data-label="একশন" className="px-6 py-4">
+                                    <div className="flex items-center space-x-2 justify-end">
+                                        {updatingStatusId === order.id ? (
+                                            <span className="text-xs animate-pulse">প্রসেসিং...</span>
+                                        ) : order.status === OrderStatus.PENDING ? (
+                                            <>
+                                                <button onClick={() => handleOpenPdfModal(order)} className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="PDF আপলোড করুন">
+                                                    <DocumentArrowUpIcon className="h-5 w-5"/>
+                                                </button>
+                                                <button onClick={() => handleOpenRejectModal(order)} className="text-xs font-semibold text-red-600 hover:underline dark:text-red-500">রিজেক্ট</button>
+                                            </>
+                                        ) : order.status === OrderStatus.COMPLETED && order.pdfUrl ? (
+                                            <div className="flex items-center space-x-2">
+                                                <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50" title="PDF দেখুন">
+                                                    <LinkIcon className="h-5 w-5"/>
+                                                </a>
+                                                <button onClick={() => order.pdfUrl && printPdf(order.pdfUrl)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 transition" title="প্রিন্ট করুন">
+                                                    <PrinterIcon className="h-5 w-5"/>
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <span className="text-xs text-slate-400">N/A</span>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}

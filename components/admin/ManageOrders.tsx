@@ -215,7 +215,7 @@ const ManageOrders: React.FC = () => {
             <LoadingModal isOpen={isUploading || isSaving} />
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অর্ডার ম্যানেজ করুন</h1>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
+                <table className="responsive-table w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
                     <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                         <tr>
                             <th scope="col" className="px-6 py-3">অর্ডার আইডি</th>
@@ -228,10 +228,10 @@ const ManageOrders: React.FC = () => {
                     <tbody>
                         {orders.map((order) => (
                             <tr key={order.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                <td className="px-6 py-4 font-mono">{order.id}</td>
-                                <td className="px-6 py-4">{order.operator}</td>
-                                <td className="px-6 py-4">{order.mobile}</td>
-                                <td className="px-6 py-4">
+                                <td data-label="অর্ডার আইডি" className="px-6 py-4 font-mono">{order.id}</td>
+                                <td data-label="অপারেটর" className="px-6 py-4">{order.operator}</td>
+                                <td data-label="মোবাইল" className="px-6 py-4">{order.mobile}</td>
+                                <td data-label="স্ট্যাটাস" className="px-6 py-4">
                                     {updatingStatusId === order.id ? (
                                         <span className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">আপডেট হচ্ছে...</span>
                                     ) : (
@@ -253,27 +253,27 @@ const ManageOrders: React.FC = () => {
                                         </select>
                                     )}
                                 </td>
-                                <td className="px-6 py-4 flex items-center space-x-2">
-                                     <button onClick={() => handleViewDetails(order)} className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="বিস্তারিত দেখুন">
-                                        <EyeIcon className="h-5 w-5" />
-                                    </button>
-                                    {order.status === OrderStatus.PENDING && (
-                                        <>
-                                        <button onClick={() => handleOpenPdfModal(order)} className="flex items-center text-xs font-semibold text-white bg-indigo-500 hover:bg-indigo-600 px-3 py-1.5 rounded-md shadow transition" title="PDF আপলোড করুন">
-                                            <DocumentArrowUpIcon className="h-4 w-4 mr-1"/>
-                                            PDF
+                                <td data-label="একশন" className="px-6 py-4">
+                                    <div className="flex items-center space-x-2 justify-end">
+                                        <button onClick={() => handleViewDetails(order)} className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="বিস্তারিত দেখুন">
+                                            <EyeIcon className="h-5 w-5" />
                                         </button>
-                                        <button onClick={() => handleOpenRejectModal(order)} className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50" title="অর্ডার বাতিল করুন">
-                                            <XCircleIcon className="h-5 w-5" />
-                                        </button>
-                                        </>
-                                    )}
-                                    {order.pdfUrl && (
-                                        <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-xs font-semibold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-md shadow transition">
-                                            <LinkIcon className="h-4 w-4 mr-1"/>
-                                            PDF দেখুন
-                                        </a>
-                                    )}
+                                        {order.status === OrderStatus.PENDING && (
+                                            <>
+                                            <button onClick={() => handleOpenPdfModal(order)} className="p-2 rounded-full text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50" title="PDF আপলোড করুন">
+                                                <DocumentArrowUpIcon className="h-5 w-5"/>
+                                            </button>
+                                            <button onClick={() => handleOpenRejectModal(order)} className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50" title="অর্ডার বাতিল করুন">
+                                                <XCircleIcon className="h-5 w-5" />
+                                            </button>
+                                            </>
+                                        )}
+                                        {order.pdfUrl && (
+                                            <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50" title="PDF দেখুন">
+                                                <LinkIcon className="h-5 w-5"/>
+                                            </a>
+                                        )}
+                                    </div>
                                 </td>
                             </tr>
                         ))}

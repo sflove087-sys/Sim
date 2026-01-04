@@ -124,8 +124,8 @@ export default function Layout() {
             }}
             className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-[15px]'} w-full p-2.5 rounded-lg transition-all duration-200 ${
                 activePage === page
-                    ? 'bg-teal-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-teal-100 dark:hover:bg-slate-700'
+                    ? 'bg-indigo-600 text-white shadow-lg'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-slate-700'
             }`}
         >
             <Icon className={`h-6 w-6 ${isMobile ? 'mb-1' : ''}`} />
@@ -159,7 +159,7 @@ export default function Layout() {
     const SidebarContent = () => (
         <>
             <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
-                <h1 className="text-lg font-bold text-teal-600 dark:text-teal-400">
+                <h1 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
                     {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সেবা'}
                 </h1>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1 -mr-2 text-slate-500 dark:text-slate-400">

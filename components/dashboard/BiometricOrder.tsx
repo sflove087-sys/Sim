@@ -47,7 +47,7 @@ const BiometricOrder: React.FC = () => {
         return (
             <div className="max-w-2xl mx-auto space-y-6">
                  <div className="flex items-center space-x-3">
-                    <ClipboardDocumentCheckIcon className="h-8 w-8 text-teal-500"/>
+                    <ClipboardDocumentCheckIcon className="h-8 w-8 text-indigo-500"/>
                     <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">বায়োমেট্রিক অর্ডার</h1>
                 </div>
                 <div className="bg-yellow-50 dark:bg-yellow-900/30 p-6 rounded-2xl shadow-lg text-center space-y-3">
@@ -68,13 +68,13 @@ const BiometricOrder: React.FC = () => {
         <div className="max-w-2xl mx-auto space-y-6">
             <LoadingModal isOpen={isLoading} />
              <div className="flex items-center space-x-3">
-                <ClipboardDocumentCheckIcon className="h-8 w-8 text-teal-500"/>
+                <ClipboardDocumentCheckIcon className="h-8 w-8 text-indigo-500"/>
                 <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">বায়োমেট্রিক অর্ডার</h1>
             </div>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
-                <div className="text-center bg-teal-50 dark:bg-slate-700/50 p-4 rounded-xl mb-6 border border-teal-200 dark:border-teal-800">
+                <div className="text-center bg-indigo-50 dark:bg-slate-700/50 p-4 rounded-xl mb-6 border border-indigo-200 dark:border-indigo-800">
                      <p className="text-sm text-slate-500 dark:text-slate-400">অর্ডার মূল্য</p>
-                    <p className="font-bold text-3xl text-teal-600 dark:text-teal-300">
+                    <p className="font-bold text-3xl text-indigo-600 dark:text-indigo-300">
                         {isSettingsLoading ? 
                             <span className="animate-pulse">লোড হচ্ছে...</span> : 
                             `৳${toBengaliNumber(settings?.biometricOrderPrice ?? 0)}`
@@ -95,7 +95,7 @@ const BiometricOrder: React.FC = () => {
                                 id="operator"
                                 value={operator}
                                 onChange={(e) => setOperator(e.target.value as Operator)}
-                                className="w-full pl-11 pr-10 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 appearance-none"
+                                className="w-full pl-11 pr-10 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 appearance-none"
                             >
                                 {Object.values(Operator).map((op) => (
                                     <option key={op} value={op}>{op}</option>
@@ -121,7 +121,7 @@ const BiometricOrder: React.FC = () => {
                                 onChange={(e) => setMobile(e.target.value)}
                                 placeholder="e.g., 01712345678"
                                 required
-                                className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                             />
                         </div>
                     </div>

@@ -196,7 +196,7 @@ const UserManagement: React.FC = () => {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
                 {isLoading ? <SkeletonTable /> : (
                     <div className="overflow-x-auto">
-                        <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
+                        <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">নাম</th>
@@ -209,8 +209,8 @@ const UserManagement: React.FC = () => {
                             </thead>
                             <tbody>
                                 {users.map((user) => (
-                                    <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50">
-                                        <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">
+                                    <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
+                                        <td data-label="নাম" className="px-6 py-4 font-medium text-slate-900 dark:text-white">
                                             <div className="flex items-center space-x-2">
                                                 <div className="relative flex-shrink-0">
                                                     {user.photoUrl ? (
@@ -228,36 +228,38 @@ const UserManagement: React.FC = () => {
                                                 <span className="text-base">{user.name}</span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-4">{user.email}</td>
-                                        <td className="px-6 py-4">{user.mobile}</td>
-                                        <td className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
+                                        <td data-label="ইমেইল" className="px-6 py-4">{user.email}</td>
+                                        <td data-label="মোবাইল" className="px-6 py-4">{user.mobile}</td>
+                                        <td data-label="ব্যালেন্স" className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
                                             {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
                                         </td>
-                                        <td className="px-6 py-4"><StatusBadge status={user.status} /></td>
-                                        <td className="px-6 py-4 flex items-center space-x-2">
-                                            <button
-                                                onClick={() => handleViewUser(user)}
-                                                className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
-                                                title="ইউজারের বিবরণ দেখুন"
-                                            >
-                                                <EyeIcon className="h-5 w-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleOpenEmailModal(user)}
-                                                className="p-2 rounded-full text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/50"
-                                                title="ইমেইল পাঠান"
-                                            >
-                                                <EnvelopeIcon className="h-5 w-5" />
-                                            </button>
-                                            <button
-                                                onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
-                                                disabled={processingId === user.id}
-                                                className={`font-medium disabled:opacity-50 disabled:cursor-wait ${
-                                                    user.status === 'Active' ? 'text-red-600 hover:underline dark:text-red-500' : 'text-green-600 hover:underline dark:text-green-500'
-                                                }`}
-                                            >
-                                                {processingId === user.id ? 'প্রসেসিং...' : (user.status === 'Active' ? 'ব্লক করুন' : 'আনব্লক করুন')}
-                                            </button>
+                                        <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={user.status} /></td>
+                                        <td data-label="একশন" className="px-6 py-4">
+                                            <div className="flex items-center space-x-2 justify-end">
+                                                <button
+                                                    onClick={() => handleViewUser(user)}
+                                                    className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                                                    title="ইউজারের বিবরণ দেখুন"
+                                                >
+                                                    <EyeIcon className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenEmailModal(user)}
+                                                    className="p-2 rounded-full text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/50"
+                                                    title="ইমেইল পাঠান"
+                                                >
+                                                    <EnvelopeIcon className="h-5 w-5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
+                                                    disabled={processingId === user.id}
+                                                    className={`font-medium disabled:opacity-50 disabled:cursor-wait text-xs px-2 py-1 rounded-md ${
+                                                        user.status === 'Active' ? 'text-red-600 hover:bg-red-100 dark:text-red-500 dark:hover:bg-red-900/50' : 'text-green-600 hover:bg-green-100 dark:text-green-500 dark:hover:bg-green-900/50'
+                                                    }`}
+                                                >
+                                                    {processingId === user.id ? '...' : (user.status === 'Active' ? 'ব্লক' : 'আনব্লক')}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -314,7 +316,7 @@ const UserManagement: React.FC = () => {
                         <Input id="subject" label="বিষয়" type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} required />
                         <div>
                             <label htmlFor="body" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">বার্তা</label>
-                            <textarea id="body" rows={5} value={emailBody} onChange={e => setEmailBody(e.target.value)} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200" required></textarea>
+                            <textarea id="body" rows={5} value={emailBody} onChange={e => setEmailBody(e.target.value)} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" required></textarea>
                         </div>
                         <div className="flex space-x-3 pt-2">
                             <Button type="button" variant="secondary" onClick={handleCloseEmailModal} className="w-1/2">বাতিল</Button>

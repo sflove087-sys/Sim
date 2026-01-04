@@ -29,12 +29,12 @@ const WalletCard: React.FC = () => {
   };
 
   return (
-    <div className="relative bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6 rounded-2xl shadow-lg overflow-hidden flex items-center justify-between">
+    <div className="relative bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-500 text-white p-6 rounded-2xl shadow-lg overflow-hidden flex items-center justify-between">
         <div className="absolute -left-4 -top-4 w-20 h-20 bg-white/10 rounded-full opacity-50"></div>
         <div className="absolute -right-8 -bottom-8 w-28 h-28 bg-white/10 rounded-full opacity-50"></div>
       
         <div className="relative z-10">
-            <h2 className="text-sm font-medium text-cyan-200">ওয়ালেট ব্যালেন্স</h2>
+            <h2 className="text-sm font-medium text-indigo-200">ওয়ালেট ব্যালেন্স</h2>
             {isLoading && !wallet ? (
                 <div className="h-9 w-36 bg-white/20 animate-pulse rounded-md mt-1"></div>
             ) : (
@@ -46,7 +46,7 @@ const WalletCard: React.FC = () => {
                         }
                     </p>
                     <button onClick={toggleVisibility} className="p-1 rounded-full hover:bg-white/20 focus:outline-none transition-colors" title={isBalanceVisible ? "ব্যালেন্স লুকান" : "ব্যালেন্স দেখুন"}>
-                        {isBalanceVisible ? <EyeSlashIcon className="h-6 w-6 text-cyan-200" /> : <EyeIcon className="h-6 w-6 text-cyan-200" />}
+                        {isBalanceVisible ? <EyeSlashIcon className="h-6 w-6 text-indigo-200" /> : <EyeIcon className="h-6 w-6 text-indigo-200" />}
                     </button>
                 </div>
             )}

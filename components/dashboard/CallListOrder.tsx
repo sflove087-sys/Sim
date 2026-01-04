@@ -62,7 +62,7 @@ const CallListOrder: React.FC = () => {
         return (
             <div className="max-w-2xl mx-auto space-y-6">
                 <div className="flex items-center space-x-3">
-                    <PhoneArrowUpRightIcon className="h-8 w-8 text-teal-500"/>
+                    <PhoneArrowUpRightIcon className="h-8 w-8 text-indigo-500"/>
                     <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
                 </div>
                 <div className="bg-yellow-50 dark:bg-yellow-900/30 p-6 rounded-2xl shadow-lg text-center space-y-3">
@@ -82,7 +82,7 @@ const CallListOrder: React.FC = () => {
         <div className="max-w-2xl mx-auto space-y-6">
             <LoadingModal isOpen={isLoading} />
             <div className="flex items-center space-x-3">
-                <PhoneArrowUpRightIcon className="h-8 w-8 text-teal-500"/>
+                <PhoneArrowUpRightIcon className="h-8 w-8 text-indigo-500"/>
                 <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">কল লিস্ট অর্ডার</h1>
             </div>
             <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg">
@@ -105,11 +105,11 @@ const CallListOrder: React.FC = () => {
                                     />
                                     <label
                                         htmlFor={`duration-${d}`}
-                                        className="flex flex-col items-center justify-center text-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 border-slate-200 dark:border-slate-700 peer-checked:border-teal-500 peer-checked:ring-2 peer-checked:ring-teal-500/50 peer-checked:bg-teal-50 dark:peer-checked:bg-slate-700/50"
+                                        className="flex flex-col items-center justify-center text-center p-4 border-2 rounded-xl cursor-pointer transition-all duration-200 border-slate-200 dark:border-slate-700 peer-checked:border-indigo-500 peer-checked:ring-2 peer-checked:ring-indigo-500/50 peer-checked:bg-indigo-50 dark:peer-checked:bg-slate-700/50"
                                     >
-                                        <CalendarDaysIcon className="h-8 w-8 mb-2 text-slate-400 peer-checked:text-teal-500 transition-colors" />
+                                        <CalendarDaysIcon className="h-8 w-8 mb-2 text-slate-400 peer-checked:text-indigo-500 transition-colors" />
                                         <p className="font-semibold text-[15px] text-slate-800 dark:text-slate-200">{d === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>
-                                        <p className="text-base font-bold text-teal-600 dark:text-teal-400">৳{toBengaliNumber(prices[d])}</p>
+                                        <p className="text-base font-bold text-indigo-600 dark:text-indigo-400">৳{toBengaliNumber(prices[d])}</p>
                                     </label>
                                 </div>
                             ))}
@@ -127,7 +127,7 @@ const CallListOrder: React.FC = () => {
                                 id="operator"
                                 value={operator}
                                 onChange={(e) => setOperator(e.target.value as Operator)}
-                                className="w-full pl-11 pr-10 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 appearance-none"
+                                className="w-full pl-11 pr-10 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 appearance-none"
                             >
                                 {Object.values(Operator).map((op) => (
                                     <option key={op} value={op}>{op}</option>
@@ -153,7 +153,7 @@ const CallListOrder: React.FC = () => {
                                 onChange={(e) => setMobile(e.target.value)}
                                 placeholder="e.g., 01712345678"
                                 required
-                                className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200"
+                                className="w-full pl-11 pr-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200"
                             />
                         </div>
                     </div>

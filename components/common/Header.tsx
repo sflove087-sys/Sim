@@ -5,6 +5,7 @@ import ThemeSwitcher from './ThemeSwitcher';
 import { Page, Notification } from '../../types';
 import { apiFetchNotifications, apiMarkNotificationsRead } from '../../services/api';
 import Notifications from './Notifications';
+import LanguageSwitcher from './LanguageSwitcher';
 
 interface HeaderProps {
     onMenuClick: () => void;
@@ -49,27 +50,28 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
     };
     
     return (
-        <header className="relative flex items-center justify-between h-16 px-4 bg-gradient-to-r from-teal-600 to-cyan-600 text-white shadow-md flex-shrink-0 z-20">
+        <header className="relative flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 z-20">
             <div className="flex items-center">
-                <button onClick={onMenuClick} className="md:hidden mr-2 text-white/90">
+                <button onClick={onMenuClick} className="md:hidden mr-2 text-slate-600 dark:text-slate-300">
                     <Bars3Icon className="h-6 w-6" />
                 </button>
-                 <h1 className="text-lg font-semibold text-white md:hidden truncate">
+                 <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-200 md:hidden truncate">
                     ডিজিটাল সেবা
                 </h1>
             </div>
 
             <div className="flex items-center space-x-2 sm:space-x-4">
+                <LanguageSwitcher />
                 <ThemeSwitcher />
                 <div className="relative">
                     <button
                         onClick={handleToggleNotifications}
-                        className="p-2 rounded-full hover:bg-white/10 transition-colors"
+                        className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                         title="নোটিফিকেশন"
                     >
-                        <BellIcon className="h-6 w-6 text-white" />
+                        <BellIcon className="h-6 w-6" />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-teal-600"></span>
+                            <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
                         )}
                     </button>
                      {isNotificationOpen && (
@@ -82,15 +84,15 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
                 </div>
                 <button
                     onClick={() => setActivePage(Page.PROFILE)}
-                    className="flex items-center space-x-3 p-1 -m-1 rounded-full hover:bg-white/10 transition-colors"
+                    className="flex items-center space-x-3 p-1 -m-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                     title="প্রোফাইল দেখুন"
                 >
                     {user?.photoUrl ? (
-                        <img src={user.photoUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover border-2 border-white/50" />
+                        <img src={user.photoUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600" />
                     ) : (
-                        <UserCircleIcon className="h-9 w-9 text-white/80"/>
+                        <UserCircleIcon className="h-9 w-9 text-slate-400 dark:text-slate-500"/>
                     )}
-                    <span className="font-semibold text-base text-white hidden sm:block">{user?.name}</span>
+                    <span className="font-semibold text-base text-slate-800 dark:text-slate-200 hidden sm:block">{user?.name}</span>
                 </button>
             </div>
         </header>

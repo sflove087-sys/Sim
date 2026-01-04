@@ -41,7 +41,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
 
     const allMenuItems = useMemo(() => [
         { page: Page.ADD_MONEY, label: 'টাকা যোগ করুন', icon: PlusCircleIcon, color: 'bg-green-500', visible: settings?.isAddMoneyVisible },
-        { page: Page.BIOMETRIC_ORDER, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon, color: 'bg-blue-500', visible: settings?.isBiometricOrderVisible },
+        { page: Page.BIOMETRIC_ORDER, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon, color: 'bg-indigo-500', visible: settings?.isBiometricOrderVisible },
         { page: Page.CALL_LIST_ORDER, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon, color: 'bg-sky-500', visible: settings?.isCallListOrderVisible },
         { page: Page.ORDER_HISTORY, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon, color: 'bg-amber-500', visible: true },
     ], [settings]);
@@ -51,7 +51,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
     return (
         <div className="space-y-6">
             <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-200 text-center">
-                স্বাগতম, <span className="text-teal-600">{user?.name}</span>
+                স্বাগতম, <span className="text-indigo-600">{user?.name}</span>
             </h1>
             <WalletCard />
 
@@ -73,15 +73,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
                     `}
                     </style>
                 )}
-                <div className="bg-teal-50 dark:bg-teal-900/40 p-4 rounded-xl shadow-md border-l-4 border-teal-500 overflow-hidden group">
+                <div className="bg-indigo-50 dark:bg-indigo-900/40 p-4 rounded-xl shadow-md border-l-4 border-indigo-500 overflow-hidden group">
                     <div className="flex items-start space-x-3">
-                        <InformationCircleIcon className="h-6 w-6 text-teal-500 dark:text-teal-400 flex-shrink-0 mt-0.5" />
+                        <InformationCircleIcon className="h-6 w-6 text-indigo-500 dark:text-indigo-400 flex-shrink-0 mt-0.5" />
                         <div className="flex-1 min-w-0">
-                           <h4 className="font-bold text-base text-teal-800 dark:text-teal-200">নোটিশ</h4>
+                           <h4 className="font-bold text-base text-indigo-800 dark:text-indigo-200">নোটিশ</h4>
                            <div className="relative h-6 mt-1 overflow-hidden">
                                 <div className={`absolute top-0 left-0 w-full ${activeNotices.length > 1 ? 'animate-scroll-vertical' : ''}`}>
                                     {noticesToDisplay.map((notice, index) => (
-                                        <p key={index} className="text-[13px] text-teal-700 dark:text-teal-300 font-medium h-6 leading-6 truncate">
+                                        <p key={index} className="text-[13px] text-indigo-700 dark:text-indigo-300 font-medium h-6 leading-6 truncate">
                                             {notice}
                                         </p>
                                     ))}
@@ -89,7 +89,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
                             </div>
                         </div>
                         <button onClick={() => handleDismissNotice(activeNotices[0])} className="p-1 rounded-full hover:bg-black/10 dark:hover:bg-white/10 transition-colors flex-shrink-0" title="নোটিশ বন্ধ করুন">
-                            <XMarkIcon className="h-5 w-5 text-teal-600 dark:text-teal-300" />
+                            <XMarkIcon className="h-5 w-5 text-indigo-600 dark:text-indigo-300" />
                         </button>
                     </div>
                 </div>

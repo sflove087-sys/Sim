@@ -21,9 +21,9 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
                         {stepIdx < currentStep - 1 ? ( // Completed step
                             <>
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                                    <div className="h-0.5 w-full bg-teal-600" />
+                                    <div className="h-0.5 w-full bg-indigo-600" />
                                 </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-teal-600">
+                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600">
                                     <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
                                     <span className="absolute -bottom-7 text-xs font-medium text-slate-600 dark:text-slate-300 w-20 text-center">{stepName}</span>
                                 </div>
@@ -33,9 +33,9 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                     <div className="h-0.5 w-full bg-slate-200 dark:bg-slate-700" />
                                 </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-teal-600 bg-white dark:bg-slate-800" aria-current="step">
-                                    <span className="h-2.5 w-2.5 rounded-full bg-teal-600" aria-hidden="true" />
-                                    <span className="absolute -bottom-7 text-xs font-bold text-teal-600 dark:text-teal-400 w-20 text-center">{stepName}</span>
+                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-600 bg-white dark:bg-slate-800" aria-current="step">
+                                    <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" aria-hidden="true" />
+                                    <span className="absolute -bottom-7 text-xs font-bold text-indigo-600 dark:text-indigo-400 w-20 text-center">{stepName}</span>
                                 </div>
                             </>
                         ) : ( // Upcoming step
@@ -184,7 +184,7 @@ const AddMoney: React.FC = () => {
         <div className="max-w-4xl mx-auto space-y-6">
             <LoadingModal isOpen={isLoading} />
             <div className="flex items-center space-x-3">
-                <BanknotesIcon className="h-8 w-8 text-teal-500"/>
+                <BanknotesIcon className="h-8 w-8 text-indigo-500"/>
                 <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
             </div>
 
@@ -224,12 +224,12 @@ const AddMoney: React.FC = () => {
                         </button>
 
                         {isLoadingMethods ? (
-                            <div className="flex justify-center p-8"><Spinner size="lg" colorClass="border-teal-500" /></div>
+                            <div className="flex justify-center p-8"><Spinner size="lg" colorClass="border-indigo-500" /></div>
                         ) : paymentMethods.length > 0 ? (
                             <div>
-                                <div className="text-center bg-teal-50 dark:bg-slate-700/50 p-3 rounded-lg mb-6">
+                                <div className="text-center bg-indigo-50 dark:bg-slate-700/50 p-3 rounded-lg mb-6">
                                     <p className="text-[13px] text-slate-500 dark:text-slate-400">আপনি যোগ করছেন</p>
-                                    <p className="font-bold text-2xl text-teal-600 dark:text-teal-300">৳{toBengaliNumber(amount)}</p>
+                                    <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
                                 </div>
                                 <h3 className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">কোন মাধ্যমে টাকা পাঠাতে চান?</h3>
                                 <div className="space-y-4">
@@ -237,7 +237,7 @@ const AddMoney: React.FC = () => {
                                         <button 
                                             key={index} 
                                             onClick={() => handleMethodSelect(method)} 
-                                            className="w-full flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border-2 border-slate-100 dark:border-slate-700 hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                                            className="w-full flex items-center justify-center p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-xl border-2 border-slate-100 dark:border-slate-700 hover:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                                         >
                                             {method.logoUrl && (
                                                 <img 
@@ -276,7 +276,7 @@ const AddMoney: React.FC = () => {
                                     <div className="relative w-32 h-32 mx-auto">
                                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 128 128">
                                             <circle className="text-slate-200 dark:text-slate-700" strokeWidth="10" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" />
-                                            <circle className="text-teal-500" strokeWidth="10" strokeDasharray={circumference} strokeDashoffset={progressOffset} strokeLinecap="round" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" style={{ transition: 'stroke-dashoffset 1s linear' }} />
+                                            <circle className="text-indigo-500" strokeWidth="10" strokeDasharray={circumference} strokeDashoffset={progressOffset} strokeLinecap="round" stroke="currentColor" fill="transparent" r={radius} cx="64" cy="64" style={{ transition: 'stroke-dashoffset 1s linear' }} />
                                         </svg>
                                         <div className="absolute inset-0 flex items-center justify-center">
                                             <span className="font-mono text-3xl font-bold text-slate-800 dark:text-slate-200 tracking-widest">{formatTime(countdown)}</span>
@@ -292,14 +292,14 @@ const AddMoney: React.FC = () => {
                                         {selectedMethod.logoUrl && (
                                             <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />
                                         )}
-                                        <span className="block font-mono text-xl font-bold text-teal-600 dark:text-teal-400">{selectedMethod.number}</span>
+                                        <span className="block font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
                                         <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
                                             <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
                                         </button>
                                     </div>
                                     <div>
                                         <p className="text-xs text-slate-500 dark:text-slate-400">পাঠানোর পরিমাণ</p>
-                                        <p className="font-bold text-2xl text-teal-600 dark:text-teal-300">৳{toBengaliNumber(amount)}</p>
+                                        <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
                                     </div>
                                 </div>
                                  <p className="text-xs text-slate-500 dark:text-slate-400">শুধুমাত্র 'Send Money' অপশন ব্যবহার করুন।</p>

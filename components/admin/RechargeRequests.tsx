@@ -219,7 +219,7 @@ const RechargeRequests: React.FC = () => {
                 <div className="overflow-x-auto">
                     {isLoading ? (<div className="flex justify-center p-10"><Spinner size="lg" /></div>) : 
                     filteredRequests.length > 0 ? (
-                        <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
+                        <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">তারিখ</th>
@@ -236,21 +236,21 @@ const RechargeRequests: React.FC = () => {
                             <tbody>
                                 {filteredRequests.map((tx) => (
                                     <tr key={tx.requestId} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                        <td className="px-6 py-4">{tx.date}</td>
-                                        <td className="px-6 py-4">
+                                        <td data-label="তারিখ" className="px-6 py-4">{tx.date}</td>
+                                        <td data-label="ব্যবহারকারী" className="px-6 py-4">
                                             <button onClick={() => handleViewUser(tx.userId)} className="text-left focus:outline-none group">
                                                 <p className="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">{getUserName(tx.userId)}</p>
                                                 <span className="block text-xs text-slate-400 font-mono">{tx.userId}</span>
                                             </button>
                                         </td>
-                                        <td className="px-6 py-4 text-base font-semibold">৳{toBengaliNumber(tx.amount)}</td>
-                                        <td className="px-6 py-4">{tx.paymentMethod}</td>
-                                        <td className="px-6 py-4 font-mono">{tx.senderNumber}</td>
-                                        <td className="px-6 py-4 font-mono">{tx.transactionId}</td>
-                                        <td className="px-6 py-4"><VerificationStatusBadge tx={tx} /></td>
-                                        <td className="px-6 py-4"><StatusBadge status={tx.status} /></td>
-                                        <td className="px-6 py-4">
-                                            <div className="flex items-center justify-center space-x-2">
+                                        <td data-label="পরিমাণ" className="px-6 py-4 text-base font-semibold">৳{toBengaliNumber(tx.amount)}</td>
+                                        <td data-label="পদ্ধতি" className="px-6 py-4">{tx.paymentMethod}</td>
+                                        <td data-label="প্রেরক নম্বর" className="px-6 py-4 font-mono">{tx.senderNumber}</td>
+                                        <td data-label="TXN ID" className="px-6 py-4 font-mono">{tx.transactionId}</td>
+                                        <td data-label="SMS যাচাই" className="px-6 py-4"><VerificationStatusBadge tx={tx} /></td>
+                                        <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={tx.status} /></td>
+                                        <td data-label="একশন" className="px-6 py-4">
+                                            <div className="flex items-center justify-end space-x-2">
                                                 <button onClick={() => handleViewTxDetails(tx)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="বিস্তারিত দেখুন">
                                                     <EyeIcon className="h-5 w-5" />
                                                 </button>
@@ -268,8 +268,8 @@ const RechargeRequests: React.FC = () => {
 
                                                 {(tx.status === 'Pending' || tx.status === 'Verifying') && (
                                                     <>
-                                                        <button onClick={() => openConfirmationModal('approve', tx)} disabled={!!processingId || tx.verificationStatus === 'Duplicate'} className={`font-medium text-green-600 dark:text-green-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline ${tx.verificationStatus === 'Verified' ? 'font-bold' : ''}`} title={tx.verificationStatus === 'Duplicate' ? 'এই লেনদেনটি ইতিমধ্যে ব্যবহৃত হয়েছে।' : 'অনুমোদন করুন'}>Approve</button>
-                                                        <button onClick={() => openConfirmationModal('reject', tx)} disabled={!!processingId} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50">Reject</button>
+                                                        <button onClick={() => openConfirmationModal('approve', tx)} disabled={!!processingId || tx.verificationStatus === 'Duplicate'} className={`font-medium text-green-600 dark:text-green-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline text-xs ${tx.verificationStatus === 'Verified' ? 'font-bold' : ''}`} title={tx.verificationStatus === 'Duplicate' ? 'এই লেনদেনটি ইতিমধ্যে ব্যবহৃত হয়েছে।' : 'অনুমোদন করুন'}>Approve</button>
+                                                        <button onClick={() => openConfirmationModal('reject', tx)} disabled={!!processingId} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50 text-xs">Reject</button>
                                                     </>
                                                 )}
                                             </div>

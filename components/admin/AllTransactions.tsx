@@ -21,12 +21,12 @@ const TransactionRow: React.FC<{ transaction: Transaction }> = ({ transaction })
     const sign = transaction.type === TransactionType.DEBIT ? '-' : '+';
 
     return (
-         <tr className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-600/50">
-            <td className="px-6 py-4">{transaction.date}</td>
-            <td className="px-6 py-4 font-mono text-xs">{transaction.userId}</td>
-            <td className="px-6 py-4">{transaction.description}</td>
-            <td className={`px-6 py-4 font-semibold ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</td>
-            <td className="px-6 py-4">{statusText[transaction.status]}</td>
+         <tr className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
+            <td data-label="তারিখ" className="px-6 py-4">{transaction.date}</td>
+            <td data-label="ইউজার আইডি" className="px-6 py-4 font-mono text-xs">{transaction.userId}</td>
+            <td data-label="বিবরণ" className="px-6 py-4">{transaction.description}</td>
+            <td data-label="পরিমাণ" className={`px-6 py-4 font-semibold ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</td>
+            <td data-label="স্ট্যাটাস" className="px-6 py-4">{statusText[transaction.status]}</td>
         </tr>
     );
 };
@@ -62,7 +62,7 @@ const AllTransactions: React.FC = () => {
                     {isLoading ? (
                         <div className="flex justify-center items-center p-20"><Spinner size="lg" /></div>
                     ) : (
-                        <table className="w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
+                        <table className="responsive-table w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
                             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">তারিখ</th>
