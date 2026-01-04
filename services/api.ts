@@ -53,14 +53,13 @@ export const apiSignup = async (details: { name: string, mobile: string, email: 
 
 export const apiLogin = async (creds: { loginId: string, pass:string }): Promise<User> => {
     const user = await callApi('login', creds);
-    // Simulate session by storing user data in localStorage after login
-    safeLocalStorage.setItem('currentUser', JSON.stringify(user));
+    // Session is now managed by AuthContext in App.tsx
     return user;
 };
 
-// We will use a mock logout that just clears the session
+// Clears all local storage data for a full logout.
 export const apiLogout = () => {
-    safeLocalStorage.removeItem('currentUser');
+    safeLocalStorage.clear();
 };
 
 export const apiForgotPasswordRequest = async (emailOrMobile: string) => {

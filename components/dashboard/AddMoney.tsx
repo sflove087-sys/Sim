@@ -192,7 +192,7 @@ const AddMoney: React.FC = () => {
             <LoadingModal isOpen={isLoading} />
             <div className="flex items-center space-x-3">
                 <BanknotesIcon className="h-8 w-8 text-indigo-500"/>
-                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
+                <h1 className="text-base font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
             </div>
 
             <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg">
@@ -204,7 +204,7 @@ const AddMoney: React.FC = () => {
                 {view === 'amount' && (
                     <div className="max-w-md mx-auto text-center">
                         <form onSubmit={handleAmountSubmit} className="space-y-4">
-                            <h3 className="font-bold text-lg text-center mb-4 text-slate-800 dark:text-slate-200">আপনি কত টাকা যোগ করতে চান?</h3>
+                            <h3 className="font-bold text-base text-center mb-4 text-slate-800 dark:text-slate-200">আপনি কত টাকা যোগ করতে চান?</h3>
                             
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                                 {suggestedAmounts.map(sa => (
@@ -212,7 +212,7 @@ const AddMoney: React.FC = () => {
                                         type="button"
                                         key={sa}
                                         onClick={() => setAmount(String(sa))}
-                                        className={`p-3 rounded-lg font-bold transition-all text-sm ${
+                                        className={`p-3 rounded-lg font-bold transition-all text-xs ${
                                             amount === String(sa)
                                             ? 'bg-indigo-600 text-white shadow-md'
                                             : 'bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-600'
@@ -255,18 +255,18 @@ const AddMoney: React.FC = () => {
                         
                         {/* Top Tabs */}
                         <div className="flex items-center justify-center space-x-2 mb-6 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300">
                                 <CreditCardIcon className="h-5 w-5"/> <span>কার্ড</span>
                             </button>
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-bold bg-indigo-600 text-white shadow">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-xs font-bold bg-indigo-600 text-white shadow">
                                 <DevicePhoneMobileIcon className="h-5 w-5"/> <span>মোবাইল ব্যাংকিং</span>
                             </button>
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300">
                                 <BuildingLibraryIcon className="h-5 w-5"/> <span>নেট ব্যাংকিং</span>
                             </button>
                         </div>
 
-                        <h3 className="font-semibold text-lg text-left mb-4 text-slate-800 dark:text-slate-200">
+                        <h3 className="font-semibold text-base text-left mb-4 text-slate-800 dark:text-slate-200">
                             মোবাইল ব্যাংকিং দিয়ে পেমেন্ট করুন
                         </h3>
 
@@ -319,7 +319,7 @@ const AddMoney: React.FC = () => {
             
                 {view === 'details' && selectedMethod && (
                     <div className="max-w-md mx-auto space-y-6">
-                        <button onClick={handleGoBack} className="flex items-center text-[13px] font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors">
+                        <button onClick={handleGoBack} className="flex items-center text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-slate-800 dark:hover:text-slate-100 transition-colors">
                             <ArrowLeftIcon className="h-4 w-4 mr-2" />
                             অন্য পদ্ধতি বাছাই করুন
                         </button>
@@ -338,14 +338,14 @@ const AddMoney: React.FC = () => {
                 
                             {/* Instructions */}
                             <div className="text-center space-y-4 bg-slate-50 dark:bg-slate-700/50 p-4 rounded-xl">
-                                <p className="text-[13px] text-slate-600 dark:text-slate-400">
+                                <p className="text-xs text-slate-600 dark:text-slate-400">
                                     আপনার {selectedMethod.name} অ্যাপ থেকে নিচের নম্বরে <strong>Send Money</strong> করুন।
                                 </p>
                                 <div>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">এই নম্বরে Send Money করুন</p>
                                     <div className="flex items-center justify-center space-x-3">
                                         {selectedMethod.logoUrl && <img src={selectedMethod.logoUrl} alt={selectedMethod.name} className="h-8 w-12 object-contain bg-white rounded-md p-1 shadow-sm" />}
-                                        <span className="block font-mono text-2xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
+                                        <span className="block font-mono text-xl font-bold text-indigo-600 dark:text-indigo-400">{selectedMethod.number}</span>
                                         <button type="button" onClick={() => handleCopy(selectedMethod.number)} className="flex items-center text-[13px] font-semibold bg-slate-200 dark:bg-slate-600 px-3 py-2 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-500 transition" title="নম্বর কপি করুন">
                                             <ClipboardDocumentIcon className="h-5 w-5 mr-2" /> কপি
                                         </button>
@@ -354,13 +354,13 @@ const AddMoney: React.FC = () => {
                                 <hr className="border-slate-200 dark:border-slate-600"/>
                                 <div>
                                     <p className="text-xs text-slate-500 dark:text-slate-400">পাঠানোর পরিমাণ</p>
-                                    <p className="font-bold text-3xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
+                                    <p className="font-bold text-2xl text-indigo-600 dark:text-indigo-300">৳{toBengaliNumber(amount)}</p>
                                 </div>
                             </div>
                 
                             {/* Form */}
                             <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-                                <h3 className="font-bold text-lg text-slate-800 dark:text-slate-200 mb-2 text-center">লেনদেনের তথ্য জমা দিন</h3>
+                                <h3 className="font-bold text-base text-slate-800 dark:text-slate-200 mb-2 text-center">লেনদেনের তথ্য জমা দিন</h3>
                                 <Input id="senderNumber" label="প্রেরক নম্বর (শেষ ৪ ডিজিট)" type="tel" value={senderNumber} onChange={(e) => setSenderNumber(e.target.value)} placeholder="আপনার ব্যবহৃত নম্বরের শেষ ৪টি সংখ্যা" maxLength={4} required className="text-center" />
                                 <Input id="transactionId" label="ট্রানজেকশন আইডি (TxnID)" type="text" value={transactionId} onChange={(e) => setTransactionId(e.target.value)} placeholder="টাকা পাঠানোর পর মেসেজে পাওয়া TxnID" required className="text-center" />
                                 <div className="pt-2">

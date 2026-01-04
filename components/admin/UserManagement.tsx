@@ -183,7 +183,7 @@ const UserManagement: React.FC = () => {
         <div className="space-y-6">
             <LoadingModal isOpen={isSendingEmail} />
             <div className="flex justify-between items-center">
-                <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
+                <h1 className="text-base font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
                 <button 
                     onClick={() => loadUsers(true)}
                     className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
@@ -196,7 +196,7 @@ const UserManagement: React.FC = () => {
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
                 {isLoading ? <SkeletonTable /> : (
                     <div className="overflow-x-auto">
-                        <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
+                        <table className="responsive-table w-full min-w-[900px] text-xs text-left text-slate-500 dark:text-slate-400">
                             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                                 <tr>
                                     <th scope="col" className="px-6 py-3">নাম</th>
@@ -225,7 +225,7 @@ const UserManagement: React.FC = () => {
                                                         title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
                                                     />
                                                 </div>
-                                                <span className="text-base">{user.name}</span>
+                                                <span className="text-xs">{user.name}</span>
                                             </div>
                                         </td>
                                         <td data-label="ইমেইল" className="px-6 py-4">{user.email}</td>
@@ -273,7 +273,7 @@ const UserManagement: React.FC = () => {
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="স্ট্যাটাস পরিবর্তন নিশ্চিত করুন">
                 {confirmationState && (
                     <div className="space-y-4">
-                        <p className="text-[13px] text-slate-600 dark:text-slate-300">
+                        <p className="text-xs text-slate-600 dark:text-slate-300">
                             আপনি কি সত্যিই ব্যবহারকারী <strong>{confirmationState.user.name}</strong> কে <strong>{confirmationState.newStatus === 'Blocked' ? 'ব্লক' : 'আনব্লক'}</strong> করতে চান?
                         </p>
                         <div className="flex space-x-3 pt-4">
@@ -296,9 +296,9 @@ const UserManagement: React.FC = () => {
 
             <Modal isOpen={isUserDetailsModalOpen} onClose={() => setIsUserDetailsModalOpen(false)} title="ইউজারের বিবরণ">
                 {selectedUser && (
-                    <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
+                    <div className="space-y-3 text-xs text-slate-600 dark:text-slate-300">
                         <p><strong>নাম:</strong> {selectedUser.name}</p>
-                        <p><strong>ইউজার আইডি:</strong> <span className="font-mono text-sm">{selectedUser.id}</span></p>
+                        <p><strong>ইউজার আইডি:</strong> <span className="font-mono">{selectedUser.id}</span></p>
                         <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p>
                         <p><strong>ইমেইল:</strong> {selectedUser.email}</p>
                         <p><strong>ব্যালেন্স:</strong> ৳{toBengaliNumber(selectedUser.balance !== undefined ? selectedUser.balance.toFixed(2) : '0.00')}</p>
@@ -315,7 +315,7 @@ const UserManagement: React.FC = () => {
                         <p className="text-sm">প্রাপক: <span className="font-semibold">{emailTargetUser.email}</span></p>
                         <Input id="subject" label="বিষয়" type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} required />
                         <div>
-                            <label htmlFor="body" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">বার্তা</label>
+                            <label htmlFor="body" className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">বার্তা</label>
                             <textarea id="body" rows={5} value={emailBody} onChange={e => setEmailBody(e.target.value)} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200" required></textarea>
                         </div>
                         <div className="flex space-x-3 pt-2">

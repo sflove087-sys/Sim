@@ -11,21 +11,24 @@ import { LanguageProvider } from './context/LanguageContext';
 import { safeLocalStorage } from './utils/storage';
 
 function App() {
-  const [user, setUser] = useState<User | null>(null);
-
-  // User requested to always load fresh from the sheet, not from localStorage.
-  // This effect ensures any lingering session is cleared on app start.
-  useEffect(() => {
-    safeLocalStorage.removeItem('currentUser');
-  }, []);
-
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const storedUser = safeLocalStorage.getItem('currentUser');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch (error) {
+      console.error("Failed to parse stored user, clearing session:", error);
+      safeLocalStorage.removeItem('currentUser');
+      return null;
+    }
+  });
 
   const login = useCallback((loggedInUser: User) => {
+    safeLocalStorage.setItem('currentUser', JSON.stringify(loggedInUser));
     setUser(loggedInUser);
   }, []);
 
   const logout = useCallback(() => {
-    apiLogout();
+    apiLogout(); // This will now clear all local storage
     setUser(null);
   }, []);
 
