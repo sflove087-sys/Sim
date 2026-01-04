@@ -40,18 +40,18 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
 
 
     const allMenuItems = useMemo(() => [
-        { page: Page.ADD_MONEY, label: 'টাকা যোগ করুন', icon: PlusCircleIcon, color: 'bg-green-500', visible: settings?.isAddMoneyVisible },
-        { page: Page.BIOMETRIC_ORDER, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon, color: 'bg-indigo-500', visible: settings?.isBiometricOrderVisible },
-        { page: Page.CALL_LIST_ORDER, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon, color: 'bg-sky-500', visible: settings?.isCallListOrderVisible },
-        { page: Page.ORDER_HISTORY, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon, color: 'bg-amber-500', visible: true },
+        { page: Page.ADD_MONEY, label: 'টাকা যোগ করুন', icon: PlusCircleIcon, color: 'from-green-500 to-teal-500', visible: settings?.isAddMoneyVisible },
+        { page: Page.BIOMETRIC_ORDER, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon, color: 'from-indigo-500 to-blue-500', visible: settings?.isBiometricOrderVisible },
+        { page: Page.CALL_LIST_ORDER, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon, color: 'from-sky-500 to-cyan-500', visible: settings?.isCallListOrderVisible },
+        { page: Page.ORDER_HISTORY, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon, color: 'from-amber-500 to-orange-500', visible: true },
     ], [settings]);
 
     const visibleMenuItems = allMenuItems.filter(item => item.visible);
 
     return (
         <div className="space-y-6">
-            <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-200 text-center">
-                স্বাগতম, <span className="text-indigo-600">{user?.name}</span>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-800 dark:text-slate-200">
+                স্বাগতম, <span className="text-indigo-600 dark:text-indigo-400">{user?.name}</span>
             </h1>
             <WalletCard />
 
@@ -102,9 +102,9 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
                         <button
                             key={item.page}
                             onClick={() => setActivePage(item.page)}
-                            className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border border-slate-200 dark:border-slate-700"
+                            className="flex flex-col items-center justify-center p-4 bg-white dark:bg-slate-800 rounded-xl shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 border border-slate-200 dark:border-slate-700 group"
                         >
-                            <div className={`p-3 rounded-full ${item.color} text-white mb-2 shadow-lg`}>
+                            <div className={`p-3 rounded-full bg-gradient-to-br ${item.color} text-white mb-2 shadow-lg group-hover:scale-110 transition-transform`}>
                                 <item.icon className="h-6 w-6" />
                             </div>
                             <span className="font-semibold text-base text-center text-slate-700 dark:text-slate-300">{item.label}</span>

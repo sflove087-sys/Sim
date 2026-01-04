@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { UserCircleIcon, Bars3Icon, BellIcon } from '@heroicons/react/24/outline';
+import { UserCircleIcon, Bars3Icon, BellIcon, CircleStackIcon } from '@heroicons/react/24/outline';
 import ThemeSwitcher from './ThemeSwitcher';
 import { Page, Notification } from '../../types';
 import { apiFetchNotifications, apiMarkNotificationsRead } from '../../services/api';
@@ -52,15 +52,18 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
     return (
         <header className="relative flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 z-20">
             <div className="flex items-center">
-                <button onClick={onMenuClick} className="md:hidden mr-2 text-slate-600 dark:text-slate-300">
+                <button onClick={onMenuClick} className="md:hidden mr-2 text-slate-600 dark:text-slate-300 p-2 -ml-2">
                     <Bars3Icon className="h-6 w-6" />
                 </button>
-                 <h1 className="text-lg font-semibold text-slate-800 dark:text-slate-200 md:hidden truncate">
-                    ডিজিটাল সেবা
-                </h1>
+                 <div className="flex items-center space-x-2 md:hidden">
+                    <CircleStackIcon className="h-7 w-7 text-indigo-600" />
+                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+                        ডিজিটাল সেবা
+                    </h1>
+                </div>
             </div>
 
-            <div className="flex items-center space-x-2 sm:space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-3">
                 <LanguageSwitcher />
                 <ThemeSwitcher />
                 <div className="relative">
@@ -71,7 +74,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
                     >
                         <BellIcon className="h-6 w-6" />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1 right-1 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
+                            <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
                         )}
                     </button>
                      {isNotificationOpen && (
@@ -84,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
                 </div>
                 <button
                     onClick={() => setActivePage(Page.PROFILE)}
-                    className="flex items-center space-x-3 p-1 -m-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center space-x-2 p-1 -m-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
                     title="প্রোফাইল দেখুন"
                 >
                     {user?.photoUrl ? (

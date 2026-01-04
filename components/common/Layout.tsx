@@ -19,7 +19,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { apiUpdateUserActivity } from '../../services/api';
 import { 
-    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon
+    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon, CircleStackIcon
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import WelcomePopup from './WelcomePopup';
@@ -101,8 +101,6 @@ export default function Layout() {
     const PageComponent = pagesToShow[activePage]?.component;
 
     if (!PageComponent) {
-        // If the current active page is no longer visible (e.g., admin disabled it),
-        // reset to the initial page.
         if (activePage !== initialPage) {
             setActivePage(initialPage);
         }
@@ -113,71 +111,52 @@ export default function Layout() {
         page: Page;
         label: string;
         icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-        isMobile?: boolean;
     };
 
-    const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon, isMobile = false }) => (
+    const NavLink: React.FC<NavLinkProps> = ({ page, label, icon: Icon }) => (
         <button
             onClick={() => {
                 setActivePage(page);
                 setIsMobileMenuOpen(false);
             }}
-            className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-[15px]'} w-full p-2.5 rounded-lg transition-all duration-200 ${
+            className={`flex items-center space-x-3 text-[15px] w-full p-3 rounded-lg transition-all duration-200 group ${
                 activePage === page
                     ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-slate-700'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-50 dark:hover:bg-slate-700'
             }`}
         >
-            <Icon className={`h-6 w-6 ${isMobile ? 'mb-1' : ''}`} />
-            <span className="truncate">{label}</span>
+            <Icon className={`h-6 w-6 transition-colors ${activePage === page ? 'text-white' : 'text-slate-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400'}`} />
+            <span className="truncate font-medium">{label}</span>
         </button>
     );
     
-    type MobileNavItem = { page: Page; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; };
-
-    const mobileNavItems = useMemo(() => {
-        if (isAdmin) {
-            return [
-                { page: Page.ADMIN_DASHBOARD, label: "ড্যাশবোর্ড", icon: Cog6ToothIcon },
-                { page: Page.USER_MANAGEMENT, label: "ইউজার", icon: UsersIcon },
-                { page: Page.RECHARGE_REQUESTS, label: "অনুরোধ", icon: BanknotesIcon },
-                { page: Page.MANAGE_ORDERS, label: "বায়োমেট্রিক", icon: ClipboardDocumentCheckIcon },
-                { page: Page.MANAGE_CALL_LIST_ORDERS, label: "কল লিস্ট", icon: PhoneIcon },
-            ];
-        } else {
-             const items: MobileNavItem[] = [
-                { page: Page.DASHBOARD, label: "হোম", icon: HomeIcon }
-             ];
-             if (settings?.isAddMoneyVisible) items.push({ page: Page.ADD_MONEY, label: "টাকা যোগ", icon: PlusCircleIcon });
-             if (settings?.isBiometricOrderVisible) items.push({ page: Page.BIOMETRIC_ORDER, label: "বায়োমেট্রিক", icon: ClipboardDocumentListIcon });
-             if (settings?.isCallListOrderVisible) items.push({ page: Page.CALL_LIST_ORDER, label: "কল লিস্ট", icon: PhoneArrowUpRightIcon });
-             items.push({ page: Page.PROFILE, label: "প্রোফাইল", icon: UserCircleIcon });
-             return items;
-        }
-    }, [isAdmin, settings]);
-
     const SidebarContent = () => (
         <>
             <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
-                <h1 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                    {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সেবা'}
-                </h1>
+                <div className="flex items-center space-x-2">
+                    <CircleStackIcon className="h-7 w-7 text-indigo-600" />
+                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+                        {isAdmin ? 'অ্যাডমিন' : 'ডিজিটাল সেবা'}
+                    </h1>
+                </div>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1 -mr-2 text-slate-500 dark:text-slate-400">
                     <XMarkIcon className="h-6 w-6" />
                 </button>
             </div>
-            <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+            <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto">
                 {navItems.map(({ id, label, icon }) => (
                     <NavLink key={id} page={id} label={label} icon={icon} />
                 ))}
+            </nav>
+            <div className="p-3 border-t dark:border-slate-700">
                  <button
                     onClick={logout}
-                    className="flex items-center space-x-3 text-[15px] w-full p-2.5 rounded-lg transition-all duration-200 font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20"
+                    className="flex items-center space-x-3 text-[15px] w-full p-3 rounded-lg transition-all duration-200 font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20"
                 >
                     <ArrowLeftOnRectangleIcon className="h-6 w-6" />
                     <span>লগআউট</span>
                 </button>
-            </nav>
+            </div>
         </>
     );
 
@@ -200,16 +179,10 @@ export default function Layout() {
             <div className="flex-1 flex flex-col overflow-hidden">
                 <Header onMenuClick={() => setIsMobileMenuOpen(true)} setActivePage={setActivePage} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
-                    <PageComponent setActivePage={setActivePage} />
+                    <div className="animate-fade-in-up">
+                        <PageComponent setActivePage={setActivePage} />
+                    </div>
                 </main>
-
-                {!isAdmin && (
-                    <nav className={`md:hidden grid grid-cols-${mobileNavItems.length} gap-1 p-2 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700`}>
-                       {mobileNavItems.map(({ page, label, icon }) => (
-                           <NavLink key={page} page={page} label={label} icon={icon} isMobile={true} />
-                       ))}
-                    </nav>
-                )}
             </div>
         </div>
     );

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import Input from '../common/Input';
 import Button from '../common/Button';
 import { apiSignup } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingModal from '../common/LoadingModal';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon, UserIcon, DevicePhoneMobileIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 interface SignupProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
@@ -69,38 +68,37 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
         }
     };
 
+    const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
+
     return (
         <>
             <LoadingModal isOpen={isLoading} />
+             <div className="text-center mb-8">
+                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">নতুন একাউন্ট তৈরি করুন</h2>
+                <p className="text-slate-500 dark:text-slate-400 mt-1">শুরু করতে আপনার বিবরণ দিন</p>
+            </div>
             <form onSubmit={handleSubmit} className="space-y-4">
-                <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-4">নতুন একাউন্ট তৈরি করুন</h2>
-                <Input id="name" label="আপনার নাম" type="text" value={name} onChange={e => setName(e.target.value)} required />
-                <Input id="mobile" label="মোবাইল নাম্বার" type="tel" value={mobile} onChange={e => setMobile(e.target.value)} required />
-                <Input id="email" label="ইমেইল" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                 <div>
-                    <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
-                        পাসওয়ার্ড
-                    </label>
+                    <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">আপনার নাম</label>
+                    <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><UserIcon className="h-5 w-5 text-slate-400" /></div><input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., John Doe"/></div>
+                </div>
+                <div>
+                    <label htmlFor="mobile" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">মোবাইল নাম্বার</label>
+                    <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><DevicePhoneMobileIcon className="h-5 w-5 text-slate-400" /></div><input id="mobile" type="tel" value={mobile} onChange={e => setMobile(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., 01712345678" /></div>
+                </div>
+                <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">ইমেইল</label>
+                    <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><EnvelopeIcon className="h-5 w-5 text-slate-400" /></div><input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., example@email.com" /></div>
+                </div>
+                <div>
+                    <label htmlFor="password-signup" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড</label>
                      <div className="relative">
-                        <input
-                            id="password"
-                            type={showPassword ? 'text' : 'password'}
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
-                            className="w-full px-4 py-2.5 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200 pr-12"
-                        />
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
-                        >
-                            {showPassword 
-                                ? <EyeSlashIcon className="h-5 w-5" /> 
-                                : <EyeIcon className="h-5 w-5" />}
+                        <input id="password-signup" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required className={`${baseInputClass} pl-4 pr-12`} placeholder="••••••••" />
+                        <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                            {showPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
                         </button>
                     </div>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 px-1">
                         কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা থাকতে হবে।
                     </p>
                 </div>
@@ -111,11 +109,7 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
                 </div>
                 <div className="text-center text-sm">
                     <span className="text-slate-500 dark:text-slate-400">ইতিমধ্যে একাউন্ট আছে? </span>
-                    <button
-                        type="button"
-                        onClick={() => setView('login')}
-                        className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-                    >
+                    <button type="button" onClick={() => setView('login')} className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">
                         লগইন করুন
                     </button>
                 </div>

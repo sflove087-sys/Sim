@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
-import Input from '../common/Input';
 import Button from '../common/Button';
 import { useToast } from '../../context/ToastContext';
 import { apiForgotPasswordRequest, apiResetPassword } from '../../services/api';
-import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
+import { EyeIcon, EyeSlashIcon, EnvelopeIcon, KeyIcon } from '@heroicons/react/24/outline';
 
 interface ForgotPasswordProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
@@ -66,59 +65,59 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
         }
     };
 
-    const baseInputClass = "w-full px-4 py-2.5 bg-white dark:bg-slate-800/50 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200";
+    const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
 
     return (
         <div>
             {step === 'request' ? (
-                <form onSubmit={handleRequestSubmit} className="space-y-6">
-                    <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">পাসওয়ার্ড রিসেট</h2>
-                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার নিবন্ধিত ইমেইল বা মোবাইল নম্বর দিন। আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
-                    <Input 
-                        id="identifier" 
-                        label="ইমেইল বা মোবাইল" 
-                        type="text" 
-                        value={identifier}
-                        onChange={e => setIdentifier(e.target.value)}
-                        placeholder="example@email.com অথবা 017..."
-                        required 
-                    />
-                    <Button type="submit" isLoading={isLoading}>
-                        রিসেট কোড পাঠান
-                    </Button>
-                </form>
-            ) : (
-                <form onSubmit={handleResetSubmit} className="space-y-4">
-                     <h2 className="text-2xl font-bold text-center text-slate-800 dark:text-slate-200 mb-2">নতুন পাসওয়ার্ড সেট করুন</h2>
-                    <p className="text-center text-sm text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইলে পাঠানো ৬-সংখ্যার কোড এবং নতুন পাসওয়ার্ড দিন।</p>
-                    <Input id="code" label="রিসেট কোড" type="text" value={code} onChange={e => setCode(e.target.value)} required />
-                    <div>
-                        <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">নতুন পাসওয়ার্ড</label>
-                        <div className="relative">
-                            <input id="newPassword" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required className={`${baseInputClass} pr-12`} />
-                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
-                                {showNewPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                            </button>
-                        </div>
-                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
-                            কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।
-                         </p>
-                     </div>
-                     <div>
-                        <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড নিশ্চিত করুন</label>
-                         <div className="relative">
-                            <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={`${baseInputClass} pr-12`} />
-                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
-                                {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
-                            </button>
-                        </div>
-                     </div>
-                    <div className="pt-2">
-                        <Button type="submit" isLoading={isLoading}>
-                            পাসওয়ার্ড পরিবর্তন করুন
-                        </Button>
+                <>
+                    <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">পাসওয়ার্ড রিসেট</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
                     </div>
-                </form>
+                    <form onSubmit={handleRequestSubmit} className="space-y-6">
+                        <div>
+                            <label htmlFor="identifier" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">ইমেইল বা মোবাইল</label>
+                            <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><EnvelopeIcon className="h-5 w-5 text-slate-400" /></div><input id="identifier" type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="example@email.com অথবা 017..." required className={`${baseInputClass} pl-12 pr-4`} /></div>
+                        </div>
+                        <Button type="submit" isLoading={isLoading}>
+                            রিসেট কোড পাঠান
+                        </Button>
+                    </form>
+                </>
+            ) : (
+                <>
+                     <div className="text-center mb-8">
+                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">নতুন পাসওয়ার্ড সেট করুন</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mt-1">আপনার ইমেইলে পাঠানো কোড এবং নতুন পাসওয়ার্ড দিন।</p>
+                    </div>
+                    <form onSubmit={handleResetSubmit} className="space-y-4">
+                        <div>
+                            <label htmlFor="code" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">রিসেট কোড</label>
+                            <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><KeyIcon className="h-5 w-5 text-slate-400" /></div><input id="code" type="text" value={code} onChange={e => setCode(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} /></div>
+                        </div>
+                        <div>
+                            <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">নতুন পাসওয়ার্ড</label>
+                            <div className="relative">
+                                <input id="newPassword" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required className={`${baseInputClass} px-4 pr-12`} />
+                                <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400"><span className="sr-only">Toggle new password visibility</span>{showNewPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}</button>
+                            </div>
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 px-1">কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।</p>
+                        </div>
+                        <div>
+                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড নিশ্চিত করুন</label>
+                            <div className="relative">
+                                <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={`${baseInputClass} px-4 pr-12`} />
+                                <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400"><span className="sr-only">Toggle confirm password visibility</span>{showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}</button>
+                            </div>
+                        </div>
+                        <div className="pt-2">
+                            <Button type="submit" isLoading={isLoading}>
+                                পাসওয়ার্ড পরিবর্তন করুন
+                            </Button>
+                        </div>
+                    </form>
+                </>
             )}
             <div className="text-center mt-6">
                 <button
