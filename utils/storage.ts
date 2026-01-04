@@ -1,3 +1,5 @@
+import { User } from '../types';
+
 const storageAvailable = (type: 'localStorage' | 'sessionStorage'): boolean => {
     try {
         const storage = window[type];
@@ -50,4 +52,15 @@ export const safeLocalStorage = {
             }
         }
     },
+};
+
+// --- In-memory session user for reliable API calls ---
+let currentUser: User | null = null;
+
+export const setSessionUser = (user: User | null): void => {
+    currentUser = user;
+};
+
+export const getSessionUser = (): User | null => {
+    return currentUser;
 };

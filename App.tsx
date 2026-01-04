@@ -8,27 +8,32 @@ import { apiLogout } from './services/api';
 import { WalletProvider } from './context/WalletContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
-import { safeLocalStorage } from './utils/storage';
+import { safeLocalStorage, setSessionUser } from './utils/storage';
 
 function App() {
   const [user, setUser] = useState<User | null>(() => {
     try {
       const storedUser = safeLocalStorage.getItem('currentUser');
-      return storedUser ? JSON.parse(storedUser) : null;
+      const parsedUser = storedUser ? JSON.parse(storedUser) : null;
+      setSessionUser(parsedUser); // Initialize in-memory session on app start
+      return parsedUser;
     } catch (error) {
       console.error("Failed to parse stored user, clearing session:", error);
       safeLocalStorage.removeItem('currentUser');
+      setSessionUser(null); // Ensure in-memory session is also cleared
       return null;
     }
   });
 
   const login = useCallback((loggedInUser: User) => {
     safeLocalStorage.setItem('currentUser', JSON.stringify(loggedInUser));
+    setSessionUser(loggedInUser); // Update in-memory session on login
     setUser(loggedInUser);
   }, []);
 
   const logout = useCallback(() => {
-    apiLogout(); // This will now clear all local storage
+    apiLogout(); // This will clear all local storage
+    setSessionUser(null); // Clear in-memory session on logout
     setUser(null);
   }, []);
 

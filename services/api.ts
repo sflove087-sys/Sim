@@ -1,5 +1,5 @@
 import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData, Notification } from '../types';
-import { safeLocalStorage } from '../utils/storage';
+import { safeLocalStorage, getSessionUser } from '../utils/storage';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
@@ -10,12 +10,11 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyhnfEL-mnFfk3gmZPKs
 // This function sends requests to our Google Apps Script backend
 const callApi = async (action: string, payload: object = {}) => {
   try {
-    // We get the userId from a simple local storage to simulate passing it with each request
-    const sessionUser = safeLocalStorage.getItem('currentUser');
-    const user = sessionUser ? JSON.parse(sessionUser) : null;
+    // Get user from the in-memory session for reliability
+    const user = getSessionUser();
     
     // We always want to send the userId if a user is logged in, so the backend can handle permissions.
-    const finalPayload = user ? { ...payload, userId: user.id } : payload;
+    const finalPayload = (user && user.id) ? { ...payload, userId: user.id } : payload;
     
     const response = await fetch(SCRIPT_URL, {
       method: 'POST',
