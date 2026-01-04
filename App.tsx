@@ -12,7 +12,18 @@ import { LanguageProvider } from './context/LanguageContext';
 function App() {
   const [user, setUser] = useState<User | null>(() => {
     const savedUser = localStorage.getItem('currentUser');
-    return savedUser ? JSON.parse(savedUser) : null;
+    if (savedUser) {
+        try {
+            // Attempt to parse user data from localStorage
+            return JSON.parse(savedUser);
+        } catch (error) {
+            // If parsing fails (e.g., corrupted data), log the error and clear the item
+            console.error("Failed to parse user from localStorage:", error);
+            localStorage.removeItem('currentUser');
+            return null;
+        }
+    }
+    return null;
   });
 
   const login = useCallback((loggedInUser: User) => {

@@ -18,7 +18,15 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
     useEffect(() => {
         if (settings?.headlineNotices) {
             const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
-            const dismissedNotices = dismissedNoticesRaw ? JSON.parse(dismissedNoticesRaw) : [];
+            let dismissedNotices: string[] = [];
+            if (dismissedNoticesRaw) {
+                try {
+                    dismissedNotices = JSON.parse(dismissedNoticesRaw);
+                } catch (error) {
+                    console.error("Failed to parse dismissed notices from localStorage:", error);
+                    localStorage.removeItem('dismissedNotices');
+                }
+            }
             const newActiveNotices = settings.headlineNotices.filter(n => !dismissedNotices.includes(n));
             setActiveNotices(newActiveNotices);
         } else {
@@ -28,7 +36,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
 
     const handleDismissNotice = (noticeToDismiss: string) => {
         const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
-        const dismissedNotices = dismissedNoticesRaw ? JSON.parse(dismissedNoticesRaw) : [];
+        let dismissedNotices: string[] = [];
+        if (dismissedNoticesRaw) {
+            try {
+                dismissedNotices = JSON.parse(dismissedNoticesRaw);
+            } catch (error) {
+                 console.error("Failed to parse dismissed notices on dismiss:", error);
+            }
+        }
         const newDismissedNotices = [...dismissedNotices, noticeToDismiss];
         localStorage.setItem('dismissedNotices', JSON.stringify(newDismissedNotices));
         setActiveNotices(prev => prev.filter(n => n !== noticeToDismiss));
