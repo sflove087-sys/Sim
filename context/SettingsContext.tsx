@@ -1,4 +1,3 @@
-
 import React, { createContext, useState, useCallback, useContext, ReactNode, useEffect } from 'react';
 import { Settings } from '../types';
 import { apiFetchSettings } from '../services/api';

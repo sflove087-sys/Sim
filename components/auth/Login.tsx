@@ -46,17 +46,17 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
     }
   };
   
-  const baseInputClass = "w-full py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-800 focus:ring-teal-500/80 focus:border-teal-500 transition duration-200";
+  const baseInputClass = "w-full py-2.5 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition duration-200";
 
   return (
     <>
       <LoadingModal isOpen={isLoading} />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-            <label htmlFor="loginId" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 মোবাইল অথবা ইমেইল
             </label>
-            <div className="relative rounded-xl shadow-sm">
+            <div className="relative rounded-lg shadow-sm">
                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                     {isMobileInput 
                         ? <DevicePhoneMobileIcon className="h-5 w-5 text-slate-400" />
@@ -65,7 +65,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                 </div>
                  {isMobileInput && (
                     <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-11">
-                        <span className="text-slate-500 dark:text-slate-400 text-[15px]">+880</span>
+                        <span className="text-slate-500 dark:text-slate-400 text-base">+880</span>
                         <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 ml-2"></div>
                     </div>
                 )}
@@ -76,7 +76,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                     autoComplete={isMobileInput ? "tel" : "email"}
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
-                    className={`${baseInputClass} ${isMobileInput ? 'pl-[92px] pr-4' : 'pl-11 pr-4'}`}
+                    className={`${baseInputClass} ${isMobileInput ? 'pl-24 pr-4' : 'pl-11 pr-4'}`}
                     placeholder={isMobileInput ? "171 234 5678" : "example@email.com"}
                     required
                 />
@@ -84,10 +84,10 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
         </div>
         
         <div>
-            <label htmlFor="password" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
                 পাসওয়ার্ড
             </label>
-            <div className="relative rounded-xl shadow-sm">
+            <div className="relative rounded-lg shadow-sm">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
                     <LockClosedIcon className="h-5 w-5 text-slate-400" />
                 </div>
@@ -116,7 +116,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                  <button
                     type="button"
                     onClick={() => setView('forgot')}
-                    className="text-[13px] font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
+                    className="text-sm font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
                 >
                     পাসওয়ার্ড ভুলে গেছেন?
                 </button>
@@ -129,12 +129,12 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
           </Button>
         </div>
 
-        <div className="text-center text-[13px]">
+        <div className="text-center text-sm">
           <span className="text-slate-500 dark:text-slate-400">একাউন্ট নেই? </span>
           <button
             type="button"
             onClick={() => setView('signup')}
-            className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
+            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
           >
             এখানে রেজিস্টার করুন
           </button>
