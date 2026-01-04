@@ -17,7 +17,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
    
     useEffect(() => {
         if (settings?.headlineNotices) {
-            const dismissedNoticesRaw = sessionStorage.getItem('dismissedNotices');
+            const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
             const dismissedNotices = dismissedNoticesRaw ? JSON.parse(dismissedNoticesRaw) : [];
             const newActiveNotices = settings.headlineNotices.filter(n => !dismissedNotices.includes(n));
             setActiveNotices(newActiveNotices);
@@ -27,10 +27,10 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
     }, [settings?.headlineNotices]);
 
     const handleDismissNotice = (noticeToDismiss: string) => {
-        const dismissedNoticesRaw = sessionStorage.getItem('dismissedNotices');
+        const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
         const dismissedNotices = dismissedNoticesRaw ? JSON.parse(dismissedNoticesRaw) : [];
         const newDismissedNotices = [...dismissedNotices, noticeToDismiss];
-        sessionStorage.setItem('dismissedNotices', JSON.stringify(newDismissedNotices));
+        localStorage.setItem('dismissedNotices', JSON.stringify(newDismissedNotices));
         setActiveNotices(prev => prev.filter(n => n !== noticeToDismiss));
     };
     

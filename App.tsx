@@ -10,7 +10,7 @@ import { SettingsProvider } from './context/SettingsContext';
 
 function App() {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = sessionStorage.getItem('currentUser');
+    const savedUser = localStorage.getItem('currentUser');
     return savedUser ? JSON.parse(savedUser) : null;
   });
 

@@ -63,10 +63,10 @@ export default function Layout() {
     const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
     useEffect(() => {
-        const welcomeShown = sessionStorage.getItem('welcomeMessageShown');
+        const welcomeShown = localStorage.getItem('welcomeMessageShown');
         if (welcomeShown !== 'true') {
             setShowWelcomePopup(true);
-            sessionStorage.setItem('welcomeMessageShown', 'true');
+            localStorage.setItem('welcomeMessageShown', 'true');
         }
     }, []);
 
