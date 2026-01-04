@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { EyeIcon, EyeSlashIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
 import { useWallet } from '../../context/WalletContext';
 import { toBengaliNumber } from '../../utils/formatters';
+import { safeLocalStorage } from '../../utils/storage';
 
 const WalletCard: React.FC = () => {
   const { wallet, isLoading, refreshWallet } = useWallet();
   const [isBalanceVisible, setIsBalanceVisible] = useState(() => {
     try {
-      const savedVisibility = localStorage.getItem('isBalanceVisible');
+      const savedVisibility = safeLocalStorage.getItem('isBalanceVisible');
       // Default to true if nothing is saved
       return savedVisibility !== null ? JSON.parse(savedVisibility) : true;
     } catch (error) {
@@ -18,7 +19,7 @@ const WalletCard: React.FC = () => {
 
   useEffect(() => {
     try {
-        localStorage.setItem('isBalanceVisible', JSON.stringify(isBalanceVisible));
+        safeLocalStorage.setItem('isBalanceVisible', JSON.stringify(isBalanceVisible));
     } catch (error) {
         console.warn('Could not save balance visibility to localStorage', error);
     }

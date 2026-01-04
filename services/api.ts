@@ -1,4 +1,5 @@
 import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData, Notification } from '../types';
+import { safeLocalStorage } from '../utils/storage';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
@@ -10,7 +11,7 @@ const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-7qRY7YTRwWtzMq13f
 const callApi = async (action: string, payload: object = {}) => {
   try {
     // We get the userId from a simple local storage to simulate passing it with each request
-    const sessionUser = localStorage.getItem('currentUser');
+    const sessionUser = safeLocalStorage.getItem('currentUser');
     const user = sessionUser ? JSON.parse(sessionUser) : null;
     
     // We always want to send the userId if a user is logged in, so the backend can handle permissions.
@@ -53,13 +54,13 @@ export const apiSignup = async (details: { name: string, mobile: string, email: 
 export const apiLogin = async (creds: { loginId: string, pass:string }): Promise<User> => {
     const user = await callApi('login', creds);
     // Simulate session by storing user data in localStorage after login
-    localStorage.setItem('currentUser', JSON.stringify(user));
+    safeLocalStorage.setItem('currentUser', JSON.stringify(user));
     return user;
 };
 
 // We will use a mock logout that just clears the session
 export const apiLogout = () => {
-    localStorage.removeItem('currentUser');
+    safeLocalStorage.removeItem('currentUser');
 };
 
 export const apiForgotPasswordRequest = async (emailOrMobile: string) => {

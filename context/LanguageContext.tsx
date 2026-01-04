@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext, ReactNode, useEffect } from 'react';
+import { safeLocalStorage } from '../utils/storage';
 
 // --- Embedded Translations ---
 const bn = {
@@ -49,11 +50,11 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
-    return (localStorage.getItem('language') as Language) || 'bn';
+    return (safeLocalStorage.getItem('language') as Language) || 'bn';
   });
 
   const setLanguage = (lang: Language) => {
-    localStorage.setItem('language', lang);
+    safeLocalStorage.setItem('language', lang);
     setLanguageState(lang);
     document.documentElement.lang = lang;
   };

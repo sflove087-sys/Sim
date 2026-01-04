@@ -5,6 +5,7 @@ import { PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, InformationC
 import RecentTransactions from './RecentTransactions';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
+import { safeLocalStorage } from '../../utils/storage';
 
 interface DashboardProps {
     setActivePage: (page: Page) => void;
@@ -17,14 +18,14 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
    
     useEffect(() => {
         if (settings?.headlineNotices) {
-            const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
+            const dismissedNoticesRaw = safeLocalStorage.getItem('dismissedNotices');
             let dismissedNotices: string[] = [];
             if (dismissedNoticesRaw) {
                 try {
                     dismissedNotices = JSON.parse(dismissedNoticesRaw);
                 } catch (error) {
                     console.error("Failed to parse dismissed notices from localStorage:", error);
-                    localStorage.removeItem('dismissedNotices');
+                    safeLocalStorage.removeItem('dismissedNotices');
                 }
             }
             const newActiveNotices = settings.headlineNotices.filter(n => !dismissedNotices.includes(n));
@@ -35,7 +36,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
     }, [settings?.headlineNotices]);
 
     const handleDismissNotice = (noticeToDismiss: string) => {
-        const dismissedNoticesRaw = localStorage.getItem('dismissedNotices');
+        const dismissedNoticesRaw = safeLocalStorage.getItem('dismissedNotices');
         let dismissedNotices: string[] = [];
         if (dismissedNoticesRaw) {
             try {
@@ -45,7 +46,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
             }
         }
         const newDismissedNotices = [...dismissedNotices, noticeToDismiss];
-        localStorage.setItem('dismissedNotices', JSON.stringify(newDismissedNotices));
+        safeLocalStorage.setItem('dismissedNotices', JSON.stringify(newDismissedNotices));
         setActiveNotices(prev => prev.filter(n => n !== noticeToDismiss));
     };
     

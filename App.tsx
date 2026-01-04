@@ -8,10 +8,11 @@ import { apiLogout } from './services/api';
 import { WalletProvider } from './context/WalletContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { LanguageProvider } from './context/LanguageContext';
+import { safeLocalStorage } from './utils/storage';
 
 function App() {
   const [user, setUser] = useState<User | null>(() => {
-    const savedUser = localStorage.getItem('currentUser');
+    const savedUser = safeLocalStorage.getItem('currentUser');
     if (savedUser) {
         try {
             // Attempt to parse user data from localStorage
@@ -19,7 +20,7 @@ function App() {
         } catch (error) {
             // If parsing fails (e.g., corrupted data), log the error and clear the item
             console.error("Failed to parse user from localStorage:", error);
-            localStorage.removeItem('currentUser');
+            safeLocalStorage.removeItem('currentUser');
             return null;
         }
     }

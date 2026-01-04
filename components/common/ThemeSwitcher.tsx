@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { SunIcon, MoonIcon } from '@heroicons/react/24/solid';
+import { safeLocalStorage } from '../../utils/storage';
 
 const ThemeSwitcher: React.FC = () => {
   const [theme, setTheme] = useState(() => {
     if (typeof window !== 'undefined') {
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      const storedTheme = safeLocalStorage.getItem('theme');
+      if (storedTheme === 'dark' || (!storedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
         return 'dark';
       }
     }
@@ -14,10 +16,10 @@ const ThemeSwitcher: React.FC = () => {
   useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
+      safeLocalStorage.setItem('theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
+      safeLocalStorage.setItem('theme', 'light');
     }
   }, [theme]);
 

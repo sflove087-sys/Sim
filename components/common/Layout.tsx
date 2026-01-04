@@ -24,6 +24,7 @@ import {
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import WelcomePopup from './WelcomePopup';
 import LiveChatWidget from './LiveChatWidget';
+import { safeLocalStorage } from '../../utils/storage';
 
 type PageInfo = {
     component: React.ComponentType<any>;
@@ -63,10 +64,10 @@ export default function Layout() {
     const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
     useEffect(() => {
-        const welcomeShown = localStorage.getItem('welcomeMessageShown');
+        const welcomeShown = safeLocalStorage.getItem('welcomeMessageShown');
         if (welcomeShown !== 'true') {
             setShowWelcomePopup(true);
-            localStorage.setItem('welcomeMessageShown', 'true');
+            safeLocalStorage.setItem('welcomeMessageShown', 'true');
         }
     }, []);
 

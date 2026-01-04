@@ -1,4 +1,5 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
+import { safeLocalStorage } from '../../utils/storage';
 
 interface Props {
   children: ReactNode;
@@ -24,7 +25,7 @@ class ErrorBoundary extends Component<Props, State> {
 
   private handleReset = () => {
     try {
-      localStorage.clear();
+      safeLocalStorage.clear();
       window.location.reload();
     } catch (e) {
       console.error("Failed to clear storage or reload:", e);
@@ -66,7 +67,9 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    // FIX: Destructure children from props to resolve potential 'this' context issues with the compiler.
+    const { children } = this.props;
+    return children;
   }
 }
 
