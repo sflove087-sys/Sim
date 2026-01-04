@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { AdminChartData } from '../../types';
 import { toBengaliNumber } from '../../utils/formatters';
@@ -34,22 +33,22 @@ const AnalyticsChart: React.FC<AnalyticsChartProps> = ({ data, isLoading }) => {
                     {
                         label: 'নতুন ব্যবহারকারী',
                         data: data.signupData,
-                        borderColor: 'rgb(79, 70, 229)',
-                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderColor: 'rgb(20, 184, 166)', // teal-500
+                        backgroundColor: 'rgba(20, 184, 166, 0.1)',
                         tension: 0.3,
                         fill: true,
-                        pointBackgroundColor: 'rgb(79, 70, 229)',
+                        pointBackgroundColor: 'rgb(15, 118, 110)', // teal-600
                         pointRadius: 4,
                         pointHoverRadius: 6,
                     },
                     {
                         label: 'সফল অর্ডার',
                         data: data.orderData,
-                        borderColor: 'rgb(22, 163, 74)',
-                        backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                        borderColor: 'rgb(59, 130, 246)', // blue-500
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
                         tension: 0.3,
                         fill: true,
-                        pointBackgroundColor: 'rgb(22, 163, 74)',
+                        pointBackgroundColor: 'rgb(37, 99, 235)', // blue-600
                         pointRadius: 4,
                         pointHoverRadius: 6,
                     }

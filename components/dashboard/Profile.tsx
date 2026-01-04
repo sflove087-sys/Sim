@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { UserCircleIcon, EnvelopeIcon, PhoneIcon, CameraIcon } from '@heroicons/react/24/solid';
+import { UserCircleIcon, EnvelopeIcon, PhoneIcon, CameraIcon, ArrowLeftOnRectangleIcon } from '@heroicons/react/24/solid';
 import Button from '../common/Button';
 import Input from '../common/Input';
 import { useToast } from '../../context/ToastContext';
@@ -15,7 +15,7 @@ const toBase64 = (file: File): Promise<string> => new Promise((resolve, reject) 
 });
 
 const Profile: React.FC = () => {
-    const { user, login } = useAuth();
+    const { user, login, logout } = useAuth();
     const { addToast } = useToast();
 
     const [isEditing, setIsEditing] = useState(false);
@@ -124,6 +124,13 @@ const Profile: React.FC = () => {
                         </div>
                     </form>
                 )}
+
+                <div className="mt-8 border-t dark:border-slate-700 pt-6">
+                    <Button variant="danger" onClick={logout}>
+                        <ArrowLeftOnRectangleIcon className="h-5 w-5 mr-2" />
+                        লগআউট করুন
+                    </Button>
+                </div>
             </div>
         </div>
     );

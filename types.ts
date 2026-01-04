@@ -114,9 +114,13 @@ export interface Settings {
     callListPrice6Months: number;
     paymentMethods: PaymentMethod[];
     notificationEmail: string;
-    isOrderingEnabled: boolean;
-    isCallListOrderingEnabled: boolean;
-    headlineNotice: string;
+    isAddMoneyVisible: boolean;
+    isBiometricOrderVisible: boolean;
+    isCallListOrderVisible: boolean;
+    biometricOrderOffMessage: string;
+    callListOrderOffMessage: string;
+    headlineNotices: string[];
+    emailDetailsCharge: number;
 }
 
 export interface AdminDashboardAnalytics {
@@ -148,7 +152,19 @@ export interface OrderHistoryItem {
   dateOfBirth?: string;
   // Call List specific
   duration?: '3 Months' | '6 Months';
+  isEmailSent?: boolean;
 }
+
+export interface Notification {
+  id: string;
+  userId: string;
+  timestamp: string;
+  message: string;
+  isRead: boolean;
+  type: 'ORDER_COMPLETED' | 'RECHARGE_SUCCESS' | 'GENERAL';
+  referenceId?: string;
+}
+
 
 export enum Page {
     DASHBOARD = 'DASHBOARD',

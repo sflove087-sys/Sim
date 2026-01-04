@@ -1,10 +1,9 @@
-
-import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData } from '../types';
+import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData, Notification } from '../types';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoTfG_FMUli5_iY8YwGwELlNe2pYUZym0W7twkGWH-khRID5PHx_gf8pVwlagbJj57Mw/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx-7qRY7YTRwWtzMq13forLOpg6xKaXjINPOlAad7RpA_h3kT-incAE4AdH2j-L91XBAg/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -119,6 +118,19 @@ export const apiUpdateProfile = async (details: { name: string, photoBase64?: st
     return callApi('updateProfile', details);
 };
 
+export const apiSendDetailsByEmail = async (itemId: string, itemType: 'transaction' | 'order'): Promise<{ message: string }> => {
+    return callApi('sendDetailsByEmail', { itemId, itemType });
+};
+
+// --- Notifications ---
+export const apiFetchNotifications = async (): Promise<Notification[]> => {
+    return callApi('fetchNotifications');
+};
+
+export const apiMarkNotificationsRead = async (notificationIds: string[]): Promise<{ message: string }> => {
+    return callApi('markNotificationsRead', { notificationIds });
+};
+
 
 // --- Admin Functions ---
 export const fetchAllUsers = async (page: number, pageSize: number): Promise<{ users: User[], total: number }> => {
@@ -148,7 +160,7 @@ export const rejectTransaction = async (requestId: string, reason?: string) => {
     return callApi('rejectTransaction', { requestId, reason });
 };
 
-export const apiReverifyTransaction = async (requestId: string): Promise<{ newStatus: string, verificationStatus: string, smsAmount?: number, smsCompany?: string }> => {
+export const apiReverifyTransaction = async (requestId: string): Promise<{ newStatus: string, verificationStatus: string, smsAmount?: number, smsCompany?: string, smsSenderNumber?: string }> => {
     return callApi('reverifyTransaction', { requestId });
 };
 
@@ -174,6 +186,14 @@ export const updateCallListOrderStatus = async (orderId: string, status: OrderSt
 
 export const updateUserStatus = async (userIdToUpdate: string, status: 'Active' | 'Blocked') => {
     return callApi('updateUserStatus', { userIdToUpdate, status });
+};
+
+export const apiAdminSendEmail = async (targetUserId: string, subject: string, body: string) => {
+    return callApi('adminSendEmailToUser', { targetUserId, subject, body });
+};
+
+export const apiAdminSendEmailToAllUsers = async (subject: string, body: string) => {
+    return callApi('adminSendEmailToAllUsers', { subject, body });
 };
 
 export const fetchAllTransactions = async (page: number, pageSize: number): Promise<{ transactions: Transaction[], total: number }> => {

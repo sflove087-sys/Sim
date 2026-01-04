@@ -3,6 +3,7 @@ import Input from '../common/Input';
 import Button from '../common/Button';
 import { useToast } from '../../context/ToastContext';
 import { apiForgotPasswordRequest, apiResetPassword } from '../../services/api';
+import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface ForgotPasswordProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
@@ -14,6 +15,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
     const [code, setCode] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showNewPassword, setShowNewPassword] = useState(false);
+    const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
 
@@ -88,12 +91,26 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
                     <p className="text-center text-[13px] text-slate-500 dark:text-slate-400 mb-4">আপনার ইমেইলে পাঠানো ৬-সংখ্যার কোড এবং নতুন পাসওয়ার্ড দিন।</p>
                     <Input id="code" label="রিসেট কোড" type="text" value={code} onChange={e => setCode(e.target.value)} required />
                     <div>
-                        <Input id="newPassword" label="নতুন পাসওয়ার্ড" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required />
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
-                           কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।
-                        </p>
-                    </div>
-                    <Input id="confirmPassword" label="পাসওয়ার্ড নিশ্চিত করুন" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required />
+                        <label htmlFor="newPassword" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">নতুন পাসওয়ার্ড</label>
+                        <div className="relative">
+                            <input id="newPassword" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 pr-12" />
+                            <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
+                                {showNewPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                            </button>
+                        </div>
+                         <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
+                            কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।
+                         </p>
+                     </div>
+                     <div>
+                        <label htmlFor="confirmPassword" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড নিশ্চিত করুন</label>
+                         <div className="relative">
+                            <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 pr-12" />
+                            <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400">
+                                {showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}
+                            </button>
+                        </div>
+                     </div>
                     <div className="pt-2">
                         <Button type="submit" isLoading={isLoading}>
                             পাসওয়ার্ড পরিবর্তন করুন
@@ -105,7 +122,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
                 <button
                     type="button"
                     onClick={() => setView('login')}
-                    className="font-medium text-[13px] text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                    className="font-medium text-[13px] text-teal-600 hover:text-teal-500 dark:text-teal-400"
                 >
                     লগইন পেজে ফিরে যান
                 </button>

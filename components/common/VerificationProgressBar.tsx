@@ -28,7 +28,7 @@ const VerificationProgressBar: React.FC<VerificationProgressBarProps> = ({ statu
   const currentStep = getCurrentStep();
 
   return (
-    <div>
+    <div className="pb-8">
         <h4 className="font-semibold text-slate-800 dark:text-slate-200 mb-4">যাচাইকরণের অবস্থা</h4>
         <nav aria-label="Progress">
             <ol role="list" className="flex items-center">
@@ -42,7 +42,7 @@ const VerificationProgressBar: React.FC<VerificationProgressBarProps> = ({ statu
                         </div>
                         <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600 hover:bg-indigo-900">
                             <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
-                            <span className="absolute -bottom-6 text-xs text-center font-medium text-slate-600 dark:text-slate-300">{step.name}</span>
+                            <span className="absolute -bottom-6 text-xs text-center font-medium text-slate-600 dark:text-slate-300 w-20 left-1/2 -translate-x-1/2">{step.name}</span>
                         </div>
                     </>
                     ) : step.id === currentStep ? (
@@ -53,7 +53,7 @@ const VerificationProgressBar: React.FC<VerificationProgressBarProps> = ({ statu
                         </div>
                         <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-600 bg-white dark:bg-slate-800" aria-current="step">
                              <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" aria-hidden="true" />
-                             <span className="absolute -bottom-6 text-xs text-center font-bold text-indigo-600 dark:text-indigo-400">{step.name}</span>
+                             <span className="absolute -bottom-6 text-xs text-center font-bold text-indigo-600 dark:text-indigo-400 w-20 left-1/2 -translate-x-1/2">{step.name}</span>
                         </div>
                     </>
                     ) : (
@@ -64,7 +64,7 @@ const VerificationProgressBar: React.FC<VerificationProgressBarProps> = ({ statu
                         </div>
                         <div className="group relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 dark:border-slate-500 bg-white dark:bg-slate-800 hover:border-slate-400">
                             <span className="h-2.5 w-2.5 rounded-full bg-transparent" aria-hidden="true" />
-                            <span className="absolute -bottom-6 text-xs text-center font-medium text-slate-500 dark:text-slate-400">{step.name}</span>
+                            <span className="absolute -bottom-6 text-xs text-center font-medium text-slate-500 dark:text-slate-400 w-20 left-1/2 -translate-x-1/2">{step.name}</span>
                         </div>
                     </>
                     )}

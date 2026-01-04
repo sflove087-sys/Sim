@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from 'react';
-import Input from '../common/Input';
 import Button from '../common/Button';
 import { useAuth } from '../../context/AuthContext';
 import { apiLogin } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingModal from '../common/LoadingModal';
+import { DevicePhoneMobileIcon, EnvelopeIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline';
 
 interface LoginProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
@@ -14,10 +14,10 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
   const [loginId, setLoginId] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const { login } = useAuth();
   const { addToast } = useToast();
 
-  // ইনপুটটি শুধুমাত্র সংখ্যা হলে মোবাইল নম্বর হিসেবে ধরা হবে
   const isMobileInput = useMemo(() => /^\d*$/.test(loginId), [loginId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -29,7 +29,6 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
     setIsLoading(true);
     try {
         let processedLoginId = loginId;
-        // যদি মোবাইল নম্বর হয়, তবে নম্বরটি স্বাভাবিক করা হবে
         if (isMobileInput) {
             if (loginId.length === 10 && loginId.startsWith('1')) {
                 processedLoginId = '0' + loginId;
@@ -46,54 +45,82 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
         setIsLoading(false);
     }
   };
+  
+  const baseInputClass = "w-full py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-1 dark:focus:ring-offset-slate-800 focus:ring-teal-500/80 focus:border-teal-500 transition duration-200";
 
   return (
     <>
       <LoadingModal isOpen={isLoading} />
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label htmlFor="loginId" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1">
-            মোবাইল অথবা ইমেইল
-          </label>
-          <div className="relative rounded-lg shadow-sm">
-            {isMobileInput && (
-              <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
-                <span className="text-slate-500 dark:text-slate-400 text-[13px] font-medium">+880</span>
-              </div>
-            )}
-            <input
-              type="text"
-              id="loginId"
-              name="loginId"
-              autoComplete={isMobileInput ? "tel" : "email"}
-              value={loginId}
-              onChange={(e) => setLoginId(e.target.value)}
-              className={`w-full py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition ${isMobileInput ? 'pl-16 pr-4' : 'px-4'}`}
-              placeholder={isMobileInput ? "171 234 5678" : "example@email.com"}
-              required
-            />
-          </div>
+            <label htmlFor="loginId" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                মোবাইল অথবা ইমেইল
+            </label>
+            <div className="relative rounded-xl shadow-sm">
+                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                    {isMobileInput 
+                        ? <DevicePhoneMobileIcon className="h-5 w-5 text-slate-400" />
+                        : <EnvelopeIcon className="h-5 w-5 text-slate-400" />
+                    }
+                </div>
+                 {isMobileInput && (
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-11">
+                        <span className="text-slate-500 dark:text-slate-400 text-[15px]">+880</span>
+                        <div className="h-4 w-px bg-slate-300 dark:bg-slate-600 ml-2"></div>
+                    </div>
+                )}
+                <input
+                    type="text"
+                    id="loginId"
+                    name="loginId"
+                    autoComplete={isMobileInput ? "tel" : "email"}
+                    value={loginId}
+                    onChange={(e) => setLoginId(e.target.value)}
+                    className={`${baseInputClass} ${isMobileInput ? 'pl-[92px] pr-4' : 'pl-11 pr-4'}`}
+                    placeholder={isMobileInput ? "171 234 5678" : "example@email.com"}
+                    required
+                />
+            </div>
         </div>
         
         <div>
-          <Input
-            id="password"
-            label="পাসওয়ার্ড"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            required
-          />
-          <div className="text-right mt-2">
-              <button
-              type="button"
-              onClick={() => setView('forgot')}
-              className="text-[13px] font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
-              >
-              পাসওয়ার্ড ভুলে গেছেন?
-              </button>
-          </div>
+            <label htmlFor="password" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                পাসওয়ার্ড
+            </label>
+            <div className="relative rounded-xl shadow-sm">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5">
+                    <LockClosedIcon className="h-5 w-5 text-slate-400" />
+                </div>
+                <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    className={`${baseInputClass} pl-11 pr-12`}
+                />
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                >
+                    {showPassword ? (
+                        <EyeSlashIcon className="h-5 w-5" />
+                    ) : (
+                        <EyeIcon className="h-5 w-5" />
+                    )}
+                </button>
+            </div>
+             <div className="text-right mt-2">
+                 <button
+                    type="button"
+                    onClick={() => setView('forgot')}
+                    className="text-[13px] font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
+                >
+                    পাসওয়ার্ড ভুলে গেছেন?
+                </button>
+            </div>
         </div>
 
         <div className="pt-2">
@@ -107,7 +134,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
           <button
             type="button"
             onClick={() => setView('signup')}
-            className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+            className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
           >
             এখানে রেজিস্টার করুন
           </button>

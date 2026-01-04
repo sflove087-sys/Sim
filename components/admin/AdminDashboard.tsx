@@ -6,12 +6,12 @@ import { AdminDashboardAnalytics, AdminChartData } from '../../types';
 import AnalyticsChart from './AnalyticsChart';
 
 const StatCard = ({ icon: Icon, title, value, color, isLoading } : { icon: React.ComponentType<React.SVGProps<SVGSVGElement>>, title: string, value: string | number, color: string, isLoading: boolean }) => (
-    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg flex items-center space-x-4">
-        <div className={`p-3 rounded-full ${color}`}>
+    <div className="bg-white dark:bg-slate-800 p-6 rounded-2xl shadow-lg flex items-center space-x-4 border-l-4 border-slate-200 dark:border-slate-700 transition-all hover:shadow-xl hover:-translate-y-1">
+        <div className={`p-4 rounded-full ${color}`}>
             <Icon className="h-8 w-8 text-white" />
         </div>
         <div>
-            <p className="text-[13px] text-slate-500 dark:text-slate-400">{title}</p>
+            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{title}</p>
             {isLoading ? 
                 <div className="h-7 w-24 bg-slate-200 dark:bg-slate-700 animate-pulse rounded-md mt-1"></div>
                 :
@@ -62,9 +62,9 @@ const AdminDashboard: React.FC = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatCard icon={UsersIcon} title="মোট ইউজার" value={toBengaliNumber(stats?.totalUsers ?? 0)} color="bg-blue-500" isLoading={isLoading} />
-                <StatCard icon={ClipboardDocumentListIcon} title="পেন্ডিং অর্ডার" value={toBengaliNumber(stats?.pendingOrders ?? 0)} color="bg-yellow-500" isLoading={isLoading} />
+                <StatCard icon={ClipboardDocumentListIcon} title="পেন্ডিং অর্ডার" value={toBengaliNumber(stats?.pendingOrders ?? 0)} color="bg-amber-500" isLoading={isLoading} />
                 <StatCard icon={CheckCircleIcon} title="কমপ্লিট অর্ডার" value={toBengaliNumber(stats?.completedOrders ?? 0)} color="bg-green-500" isLoading={isLoading} />
-                <StatCard icon={CurrencyBangladeshiIcon} title="মোট আয়" value={`৳${toBengaliNumber(stats?.totalRevenue ?? 0)}`} color="bg-indigo-500" isLoading={isLoading} />
+                <StatCard icon={CurrencyBangladeshiIcon} title="মোট আয়" value={`৳${toBengaliNumber(stats?.totalRevenue ?? 0)}`} color="bg-teal-600" isLoading={isLoading} />
             </div>
 
             <AnalyticsChart data={chartData} isLoading={isLoading} />

@@ -4,6 +4,7 @@ import Button from '../common/Button';
 import { apiSignup } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import LoadingModal from '../common/LoadingModal';
+import { EyeIcon, EyeSlashIcon, LockClosedIcon } from '@heroicons/react/24/outline';
 
 interface SignupProps {
   setView: (view: 'login' | 'signup' | 'forgot') => void;
@@ -14,6 +15,7 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
     const [mobile, setMobile] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const { addToast } = useToast();
 
@@ -77,7 +79,28 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
                 <Input id="mobile" label="মোবাইল নাম্বার" type="tel" value={mobile} onChange={e => setMobile(e.target.value)} required />
                 <Input id="email" label="ইমেইল" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
                 <div>
-                    <Input id="password" label="পাসওয়ার্ড" type="password" value={password} onChange={e => setPassword(e.target.value)} required />
+                    <label htmlFor="password" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        পাসওয়ার্ড
+                    </label>
+                     <div className="relative">
+                        <input
+                            id="password"
+                            type={showPassword ? 'text' : 'password'}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200 pr-12"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
+                        >
+                            {showPassword 
+                                ? <EyeSlashIcon className="h-5 w-5" /> 
+                                : <EyeIcon className="h-5 w-5" />}
+                        </button>
+                    </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 px-1">
                         কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা থাকতে হবে।
                     </p>
@@ -92,7 +115,7 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
                     <button
                         type="button"
                         onClick={() => setView('login')}
-                        className="font-medium text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
+                        className="font-medium text-teal-600 hover:text-teal-500 dark:text-teal-400"
                     >
                         লগইন করুন
                     </button>

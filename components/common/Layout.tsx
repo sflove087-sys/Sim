@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Page } from '../../types';
 import Dashboard from '../dashboard/Dashboard';
 import Header from './Header';
@@ -16,30 +16,33 @@ import AllTransactions from '../admin/AllTransactions';
 import Settings from '../auth/Settings';
 import RechargeRequests from '../admin/RechargeRequests';
 import { useAuth } from '../../context/AuthContext';
+import { useSettings } from '../../context/SettingsContext';
 import { apiUpdateUserActivity } from '../../services/api';
 import { 
     HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import WelcomePopup from './WelcomePopup';
+import LiveChatWidget from './LiveChatWidget';
 
-// Fix: Add type for page configuration objects to ensure strong typing for icons.
 type PageInfo = {
     component: React.ComponentType<any>;
     label: string;
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+    id: Page;
 };
 
-const userPages: Record<string, PageInfo> = {
-    [Page.DASHBOARD]: { component: Dashboard, label: 'ড্যাশবোর্ড', icon: HomeIcon },
-    [Page.ADD_MONEY]: { component: AddMoney, label: 'টাকা যোগ করুন', icon: PlusCircleIcon },
-    [Page.BIOMETRIC_ORDER]: { component: BiometricOrder, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon },
-    [Page.CALL_LIST_ORDER]: { component: CallListOrder, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon },
-    [Page.ORDER_HISTORY]: { component: OrderHistory, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon },
-    [Page.TRANSACTION_HISTORY]: { component: TransactionHistory, label: 'লেনদেন হিস্টোরি', icon: CreditCardIcon },
-    [Page.PROFILE]: { component: Profile, label: 'প্রোফাইল', icon: UserCircleIcon },
-};
+const allUserPages: PageInfo[] = [
+    { id: Page.DASHBOARD, component: Dashboard, label: 'ড্যাশবোর্ড', icon: HomeIcon },
+    { id: Page.ADD_MONEY, component: AddMoney, label: 'টাকা যোগ করুন', icon: PlusCircleIcon },
+    { id: Page.BIOMETRIC_ORDER, component: BiometricOrder, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon },
+    { id: Page.CALL_LIST_ORDER, component: CallListOrder, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon },
+    { id: Page.ORDER_HISTORY, component: OrderHistory, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon },
+    { id: Page.TRANSACTION_HISTORY, component: TransactionHistory, label: 'লেনদেন হিস্টোরি', icon: CreditCardIcon },
+    { id: Page.PROFILE, component: Profile, label: 'প্রোফাইল', icon: UserCircleIcon },
+];
 
-const adminPages: Record<string, PageInfo> = {
+const adminPages: Record<string, Omit<PageInfo, 'id'>> = {
     [Page.ADMIN_DASHBOARD]: { component: AdminDashboard, label: 'অ্যাডমিন ড্যাশবোর্ড', icon: Cog6ToothIcon },
     [Page.USER_MANAGEMENT]: { component: UserManagement, label: 'ইউজার ম্যানেজমেন্ট', icon: UsersIcon },
     [Page.RECHARGE_REQUESTS]: { component: RechargeRequests, label: 'টাকা যোগের অনুরোধ', icon: BanknotesIcon },
@@ -51,45 +54,61 @@ const adminPages: Record<string, PageInfo> = {
 
 export default function Layout() {
     const { user, logout } = useAuth();
+    const { settings } = useSettings();
     const isAdmin = user?.role === 'Admin';
     
     const initialPage = isAdmin ? Page.ADMIN_DASHBOARD : Page.DASHBOARD;
     const [activePage, setActivePage] = useState<Page>(initialPage);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [showWelcomePopup, setShowWelcomePopup] = useState(false);
 
     useEffect(() => {
-        // This effect runs only for logged-in users because Layout is only rendered for them.
-        // It's also safe for admins, as they are also users.
+        const welcomeShown = sessionStorage.getItem('welcomeMessageShown');
+        if (welcomeShown !== 'true') {
+            setShowWelcomePopup(true);
+            sessionStorage.setItem('welcomeMessageShown', 'true');
+        }
+    }, []);
+
+    useEffect(() => {
         const updateUserActivity = () => {
-            // We don't need to handle errors here, it's a background task.
-            // If it fails, the next attempt will fix it.
             apiUpdateUserActivity().catch(err => console.debug("Activity update failed:", err));
         };
-
-        // Call it once immediately on layout mount
         updateUserActivity();
+        const intervalId = setInterval(updateUserActivity, 60 * 1000);
+        return () => clearInterval(intervalId);
+    }, []);
 
-        // Then set an interval to call it periodically
-        const intervalId = setInterval(updateUserActivity, 60 * 1000); // every 60 seconds
+    const visibleUserPages = useMemo(() => {
+        if (!settings || isAdmin) return allUserPages;
+        return allUserPages.filter(page => {
+            if (page.id === Page.ADD_MONEY) return settings.isAddMoneyVisible;
+            if (page.id === Page.BIOMETRIC_ORDER) return settings.isBiometricOrderVisible;
+            if (page.id === Page.CALL_LIST_ORDER) return settings.isCallListOrderVisible;
+            return true;
+        });
+    }, [settings, isAdmin]);
 
-        // Cleanup function to clear the interval when the component unmounts (e.g., on logout)
-        return () => {
-            clearInterval(intervalId);
-        };
-    }, []); // Empty dependency array means this runs only once on mount and cleans up on unmount.
-
-    const pagesToShow = isAdmin ? adminPages : userPages;
-    const navItems = isAdmin ? Object.entries(adminPages) : Object.entries(userPages);
+    const pagesToShow = useMemo(() => {
+        if (isAdmin) {
+            return Object.fromEntries(Object.entries(adminPages).map(([key, value]) => [key, { ...value, id: key as Page }]));
+        }
+        return Object.fromEntries(visibleUserPages.map(page => [page.id, page]));
+    }, [isAdmin, visibleUserPages]);
+    
+    const navItems = useMemo(() => Object.values(pagesToShow), [pagesToShow]);
 
     const PageComponent = pagesToShow[activePage]?.component;
 
     if (!PageComponent) {
-        setActivePage(initialPage);
+        // If the current active page is no longer visible (e.g., admin disabled it),
+        // reset to the initial page.
+        if (activePage !== initialPage) {
+            setActivePage(initialPage);
+        }
         return null; 
     }
 
-    // Fix: Redefine NavLink as a proper React.FC to handle the 'key' prop correctly
-    // and to ensure strong typing from props.
     type NavLinkProps = {
         page: Page;
         label: string;
@@ -103,10 +122,10 @@ export default function Layout() {
                 setActivePage(page);
                 setIsMobileMenuOpen(false);
             }}
-            className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-[15px]'} w-full p-2 rounded-lg transition-all duration-200 ${
+            className={`flex ${isMobile ? 'flex-col items-center justify-center text-xs' : 'items-center space-x-3 text-[15px]'} w-full p-2.5 rounded-lg transition-all duration-200 ${
                 activePage === page
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'text-slate-600 dark:text-slate-300 hover:bg-indigo-100 dark:hover:bg-slate-700'
+                    ? 'bg-teal-600 text-white shadow-lg'
+                    : 'text-slate-600 dark:text-slate-300 hover:bg-teal-100 dark:hover:bg-slate-700'
             }`}
         >
             <Icon className={`h-6 w-6 ${isMobile ? 'mb-1' : ''}`} />
@@ -114,44 +133,46 @@ export default function Layout() {
         </button>
     );
     
-    // Fix: Strongly type mobile navigation items to prevent type inference issues.
     type MobileNavItem = { page: Page; label: string; icon: React.ComponentType<React.SVGProps<SVGSVGElement>>; };
 
-    const mobileNavItemsForAdmin: MobileNavItem[] = [
-        { page: Page.ADMIN_DASHBOARD, label: "ড্যাশবোর্ড", icon: Cog6ToothIcon },
-        { page: Page.USER_MANAGEMENT, label: "ইউজার", icon: UsersIcon },
-        { page: Page.RECHARGE_REQUESTS, label: "অনুরোধ", icon: BanknotesIcon },
-        { page: Page.MANAGE_ORDERS, label: "বায়োমেট্রিক", icon: ClipboardDocumentCheckIcon },
-        { page: Page.MANAGE_CALL_LIST_ORDERS, label: "কল লিস্ট", icon: PhoneIcon },
-    ];
-    
-    const mobileNavItemsForUser: MobileNavItem[] = [
-       { page: Page.DASHBOARD, label: "হোম", icon: HomeIcon },
-       { page: Page.ADD_MONEY, label: "টাকা যোগ", icon: PlusCircleIcon },
-       { page: Page.BIOMETRIC_ORDER, label: "বায়োমেট্রিক", icon: ClipboardDocumentListIcon },
-       { page: Page.CALL_LIST_ORDER, label: "কল লিস্ট", icon: PhoneArrowUpRightIcon },
-       { page: Page.PROFILE, label: "প্রোফাইল", icon: UserCircleIcon },
-    ];
-
-    const mobileNavItems = isAdmin ? mobileNavItemsForAdmin : mobileNavItemsForUser;
+    const mobileNavItems = useMemo(() => {
+        if (isAdmin) {
+            return [
+                { page: Page.ADMIN_DASHBOARD, label: "ড্যাশবোর্ড", icon: Cog6ToothIcon },
+                { page: Page.USER_MANAGEMENT, label: "ইউজার", icon: UsersIcon },
+                { page: Page.RECHARGE_REQUESTS, label: "অনুরোধ", icon: BanknotesIcon },
+                { page: Page.MANAGE_ORDERS, label: "বায়োমেট্রিক", icon: ClipboardDocumentCheckIcon },
+                { page: Page.MANAGE_CALL_LIST_ORDERS, label: "কল লিস্ট", icon: PhoneIcon },
+            ];
+        } else {
+             const items: MobileNavItem[] = [
+                { page: Page.DASHBOARD, label: "হোম", icon: HomeIcon }
+             ];
+             if (settings?.isAddMoneyVisible) items.push({ page: Page.ADD_MONEY, label: "টাকা যোগ", icon: PlusCircleIcon });
+             if (settings?.isBiometricOrderVisible) items.push({ page: Page.BIOMETRIC_ORDER, label: "বায়োমেট্রিক", icon: ClipboardDocumentListIcon });
+             if (settings?.isCallListOrderVisible) items.push({ page: Page.CALL_LIST_ORDER, label: "কল লিস্ট", icon: PhoneArrowUpRightIcon });
+             items.push({ page: Page.PROFILE, label: "প্রোফাইল", icon: UserCircleIcon });
+             return items;
+        }
+    }, [isAdmin, settings]);
 
     const SidebarContent = () => (
         <>
             <div className="flex items-center justify-between h-16 px-4 border-b dark:border-slate-700 flex-shrink-0">
-                <h1 className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
-                    {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সার্ভিস'}
+                <h1 className="text-lg font-bold text-teal-600 dark:text-teal-400">
+                    {isAdmin ? 'অ্যাডমিন প্যানেল' : 'ডিজিটাল সেবা'}
                 </h1>
                 <button onClick={() => setIsMobileMenuOpen(false)} className="md:hidden p-1 -mr-2 text-slate-500 dark:text-slate-400">
                     <XMarkIcon className="h-6 w-6" />
                 </button>
             </div>
             <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-                {navItems.map(([pageKey, { label, icon }]) => (
-                    <NavLink key={pageKey} page={pageKey as Page} label={label} icon={icon} />
+                {navItems.map(({ id, label, icon }) => (
+                    <NavLink key={id} page={id} label={label} icon={icon} />
                 ))}
                  <button
                     onClick={logout}
-                    className="flex items-center space-x-3 text-[15px] w-full p-2 rounded-lg transition-all duration-200 text-slate-600 dark:text-slate-300 hover:bg-red-100 dark:hover:bg-red-900/50"
+                    className="flex items-center space-x-3 text-[15px] w-full p-2.5 rounded-lg transition-all duration-200 font-semibold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-500/10 hover:bg-red-100 dark:hover:bg-red-500/20"
                 >
                     <ArrowLeftOnRectangleIcon className="h-6 w-6" />
                     <span>লগআউট</span>
@@ -162,14 +183,14 @@ export default function Layout() {
 
     return (
         <div className="flex h-screen bg-slate-100 dark:bg-slate-900">
-            {/* Desktop Sidebar */}
-            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 shadow-lg transition-all duration-300">
+            <LiveChatWidget />
+            {showWelcomePopup && <WelcomePopup onClose={() => setShowWelcomePopup(false)} />}
+            <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 transition-all duration-300">
                 <SidebarContent />
             </aside>
             
-            {/* Mobile slide-in Sidebar */}
             <div 
-                className={`fixed inset-0 bg-black/50 z-40 transition-opacity md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+                className={`fixed inset-0 bg-black/60 z-40 transition-opacity md:hidden ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
                 onClick={() => setIsMobileMenuOpen(false)}
             ></div>
             <aside className={`fixed top-0 left-0 h-full z-50 w-64 bg-white dark:bg-slate-800 shadow-lg flex flex-col transition-transform duration-300 ease-in-out md:hidden ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -177,17 +198,18 @@ export default function Layout() {
             </aside>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onMenuClick={() => setIsMobileMenuOpen(true)} />
+                <Header onMenuClick={() => setIsMobileMenuOpen(true)} setActivePage={setActivePage} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
                     <PageComponent setActivePage={setActivePage} />
                 </main>
 
-                {/* Mobile Bottom Navigation */}
-                <nav className={`md:hidden grid grid-cols-${mobileNavItems.length} gap-1 p-2 bg-white dark:bg-slate-800 border-t dark:border-slate-700 shadow-t-lg`}>
-                   {mobileNavItems.map(({ page, label, icon }) => (
-                       <NavLink key={page} page={page} label={label} icon={icon} isMobile={true} />
-                   ))}
-                </nav>
+                {!isAdmin && (
+                    <nav className={`md:hidden grid grid-cols-${mobileNavItems.length} gap-1 p-2 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700`}>
+                       {mobileNavItems.map(({ page, label, icon }) => (
+                           <NavLink key={page} page={page} label={label} icon={icon} isMobile={true} />
+                       ))}
+                    </nav>
+                )}
             </div>
         </div>
     );

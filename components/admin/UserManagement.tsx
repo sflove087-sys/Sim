@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { User } from '../../types';
-import { fetchAllUsers, updateUserStatus } from '../../services/api';
+import { fetchAllUsers, updateUserStatus, apiAdminSendEmail } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber } from '../../utils/formatters';
-import { EyeIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, ArrowPathIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
 import Pagination from '../common/Pagination';
-import Spinner from '../common/Spinner';
+import Input from '../common/Input';
+import LoadingModal from '../common/LoadingModal';
 
 const PAGE_SIZE = 10;
 
@@ -34,6 +35,46 @@ const isOnline = (lastSeen?: string): boolean => {
     return (now.getTime() - lastSeenDate.getTime()) < twoMinutesInMillis;
 };
 
+const SkeletonTable = () => (
+    <div className="overflow-x-auto">
+        <table className="w-full min-w-[900px]">
+            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
+                <tr>
+                    <th scope="col" className="px-6 py-3">নাম</th>
+                    <th scope="col" className="px-6 py-3">ইমেইল</th>
+                    <th scope="col" className="px-6 py-3">মোবাইল</th>
+                    <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
+                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
+                    <th scope="col" className="px-6 py-3">একশন</th>
+                </tr>
+            </thead>
+            <tbody>
+                {[...Array(PAGE_SIZE)].map((_, i) => (
+                    <tr key={i} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 animate-pulse">
+                        <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            </div>
+                        </td>
+                        <td className="px-6 py-4"><div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+                        <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+                        <td className="px-6 py-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
+                        <td className="px-6 py-4"><div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div></td>
+                        <td className="px-6 py-4">
+                            <div className="flex items-center space-x-2">
+                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                                <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                            </div>
+                        </td>
+                    </tr>
+                ))}
+            </tbody>
+        </table>
+    </div>
+);
+
 
 const UserManagement: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
@@ -51,6 +92,13 @@ const UserManagement: React.FC = () => {
     
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isUserDetailsModalOpen, setIsUserDetailsModalOpen] = useState(false);
+
+    // Email Modal State
+    const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
+    const [emailTargetUser, setEmailTargetUser] = useState<User | null>(null);
+    const [emailSubject, setEmailSubject] = useState('');
+    const [emailBody, setEmailBody] = useState('');
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
 
     const loadUsers = useCallback(async (isRefresh: boolean = false) => {
         if (!isRefresh) setIsLoading(true);
@@ -94,9 +142,46 @@ const UserManagement: React.FC = () => {
             setProcessingId(null);
         }
     };
+    
+    // Email Modal Handlers
+    const handleOpenEmailModal = (user: User) => {
+        if (!user.email) {
+            addToast('এই ব্যবহারকারীর কোনো নিবন্ধিত ইমেইল নেই।', 'error');
+            return;
+        }
+        setEmailTargetUser(user);
+        setIsEmailModalOpen(true);
+    };
+
+    const handleCloseEmailModal = () => {
+        setIsEmailModalOpen(false);
+        setEmailTargetUser(null);
+        setEmailSubject('');
+        setEmailBody('');
+    };
+
+    const handleSendEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!emailTargetUser || !emailSubject.trim() || !emailBody.trim()) {
+            addToast('অনুগ্রহ করে সকল তথ্য পূরণ করুন।', 'error');
+            return;
+        }
+        setIsSendingEmail(true);
+        try {
+            await apiAdminSendEmail(emailTargetUser.id, emailSubject, emailBody);
+            addToast(`ইমেইল সফলভাবে পাঠানো হয়েছে।`, 'success');
+            handleCloseEmailModal();
+        } catch (error) {
+            addToast((error as Error).message, 'error');
+        } finally {
+            setIsSendingEmail(false);
+        }
+    };
+
 
     return (
         <div className="space-y-6">
+            <LoadingModal isOpen={isSendingEmail} />
             <div className="flex justify-between items-center">
                 <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">ইউজার ম্যানেজমেন্ট</h1>
                 <button 
@@ -109,8 +194,8 @@ const UserManagement: React.FC = () => {
                 </button>
             </div>
             <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
-                <div className="overflow-x-auto">
-                    {isLoading ? ( <div className="flex justify-center items-center p-20"><Spinner size="lg"/></div> ) : (
+                {isLoading ? <SkeletonTable /> : (
+                    <div className="overflow-x-auto">
                         <table className="w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
                             <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
                                 <tr>
@@ -158,6 +243,13 @@ const UserManagement: React.FC = () => {
                                                 <EyeIcon className="h-5 w-5" />
                                             </button>
                                             <button
+                                                onClick={() => handleOpenEmailModal(user)}
+                                                className="p-2 rounded-full text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/50"
+                                                title="ইমেইল পাঠান"
+                                            >
+                                                <EnvelopeIcon className="h-5 w-5" />
+                                            </button>
+                                            <button
                                                 onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
                                                 disabled={processingId === user.id}
                                                 className={`font-medium disabled:opacity-50 disabled:cursor-wait ${
@@ -171,8 +263,8 @@ const UserManagement: React.FC = () => {
                                 ))}
                             </tbody>
                         </table>
-                    )}
-                </div>
+                    </div>
+                )}
                  {!isLoading && totalUsers > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
             </div>
             
@@ -212,6 +304,23 @@ const UserManagement: React.FC = () => {
                         <p><strong>আইপি ঠিকানা:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p>
                         <p><strong>সর্বশেষ সক্রিয়:</strong> {selectedUser.lastSeen ? new Date(selectedUser.lastSeen).toLocaleString('bn-BD') : 'কখনো না'}</p>
                     </div>
+                )}
+            </Modal>
+
+             <Modal isOpen={isEmailModalOpen} onClose={handleCloseEmailModal} title={`ইমেইল পাঠান: ${emailTargetUser?.name}`}>
+                {emailTargetUser && (
+                    <form onSubmit={handleSendEmail} className="space-y-4">
+                        <p className="text-sm">প্রাপক: <span className="font-semibold">{emailTargetUser.email}</span></p>
+                        <Input id="subject" label="বিষয়" type="text" value={emailSubject} onChange={e => setEmailSubject(e.target.value)} required />
+                        <div>
+                            <label htmlFor="body" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-1.5">বার্তা</label>
+                            <textarea id="body" rows={5} value={emailBody} onChange={e => setEmailBody(e.target.value)} className="w-full px-4 py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition duration-200" required></textarea>
+                        </div>
+                        <div className="flex space-x-3 pt-2">
+                            <Button type="button" variant="secondary" onClick={handleCloseEmailModal} className="w-1/2">বাতিল</Button>
+                            <Button type="submit" isLoading={isSendingEmail} className="w-1/2">ইমেইল পাঠান</Button>
+                        </div>
+                    </form>
                 )}
             </Modal>
         </div>

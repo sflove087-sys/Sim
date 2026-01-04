@@ -173,7 +173,7 @@ const RechargeRequests: React.FC = () => {
             } else {
                 setMoneyRequests(prev => prev.map(req => 
                     req.requestId === tx.requestId 
-                        ? { ...req, verificationStatus: result.verificationStatus as any, smsAmount: result.smsAmount, smsCompany: result.smsCompany } 
+                        ? { ...req, verificationStatus: result.verificationStatus as any, smsAmount: result.smsAmount, smsCompany: result.smsCompany, smsSenderNumber: result.smsSenderNumber } 
                         : req
                 ));
     
@@ -238,8 +238,10 @@ const RechargeRequests: React.FC = () => {
                                     <tr key={tx.requestId} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
                                         <td className="px-6 py-4">{tx.date}</td>
                                         <td className="px-6 py-4">
-                                            <button onClick={() => handleViewUser(tx.userId)} className="text-indigo-600 dark:text-indigo-400 hover:underline focus:outline-none">{getUserName(tx.userId)}</button>
-                                            <span className="block text-xs text-slate-400 font-mono">{tx.userId}</span>
+                                            <button onClick={() => handleViewUser(tx.userId)} className="text-left focus:outline-none group">
+                                                <p className="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">{getUserName(tx.userId)}</p>
+                                                <span className="block text-xs text-slate-400 font-mono">{tx.userId}</span>
+                                            </button>
                                         </td>
                                         <td className="px-6 py-4 text-base font-semibold">৳{toBengaliNumber(tx.amount)}</td>
                                         <td className="px-6 py-4">{tx.paymentMethod}</td>

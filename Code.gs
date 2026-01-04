@@ -1,4 +1,3 @@
-
 const SPREADSHEET_ID = "18rYrE70i5_HKqxXoABvtMbetFAt8bnRxNy0YIgmI5ZQ"; // আপনার Google Sheet ID এখানে দিন
 const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 const usersSheet = ss.getSheetByName("Users");
@@ -48,6 +47,8 @@ function doPost(e) {
         'adminRecharge': handleAdminRecharge, 'fetchAdminRecharges': handleFetchAdminRecharges,
         'fetchCallListOrders': handleFetchCallListOrders, 'updateCallListOrderStatus': handleUpdateCallListOrderStatus,
         'uploadCallListOrderPdf': handleUploadCallListOrderPdf,
+        'adminSendEmailToUser': handleAdminSendEmailToUser,
+        'adminSendEmailToAllUsers': handleAdminSendEmailToAllUsers,
       };
 
       if (actions[action]) {
@@ -78,14 +79,20 @@ function getSetting(key) {
     const settingRow = settings.find(row => row[0] === key);
     if (!settingRow || settingRow[1] === '') {
         // Provide default values for critical settings if they are not found or empty
-        if (key === 'paymentMethods') return '[]'; 
-        if (key === 'biometricOrderPrice') return '350';
-        if (key === 'callListPrice3Months') return '900';
-        if (key === 'callListPrice6Months') return '1500';
-        if (key === 'notificationEmail') return '';
-        if (key === 'isOrderingEnabled') return 'true';
-        if (key === 'isCallListOrderingEnabled') return 'true';
-        if (key === 'headlineNotice') return '';
+        const defaults = {
+            'paymentMethods': '[]',
+            'biometricOrderPrice': '350',
+            'callListPrice3Months': '900',
+            'callListPrice6Months': '1500',
+            'notificationEmail': '',
+            'headlineNotices': '[]',
+            'isAddMoneyVisible': 'true',
+            'isBiometricOrderVisible': 'true',
+            'isCallListOrderVisible': 'true',
+            'biometricOrderOffMessage': 'বায়োমেট্রিক অর্ডার সুবিধা সাময়িকভাবে বন্ধ আছে।',
+            'callListOrderOffMessage': 'কল লিস্ট অর্ডার সুবিধা সাময়িকভাবে বন্ধ আছে।',
+        };
+        if(key in defaults) return defaults[key];
         throw new Error(`Setting key "${key}" not found.`);
     }
     return settingRow[1];
@@ -227,6 +234,9 @@ function handleFetchWallet(payload) {
 }
 
 function handleAddMoneyRequest(payload) {
+  const isVisible = getSetting('isAddMoneyVisible') == true;
+  if (!isVisible) throw new Error("টাকা যোগ করার সুবিধা সাময়িকভাবে বন্ধ আছে।");
+
   const { userId, transactionId, amount, paymentMethod, senderNumber } = payload;
   const numericAmount = parseFloat(amount);
   const trimmedTransactionId = transactionId ? transactionId.toString().trim() : '';
@@ -273,10 +283,9 @@ function handleAddMoneyRequest(payload) {
 }
 
 function handleCreateBiometricOrder(payload) {
-    const isOrderingEnabled = getSetting('isOrderingEnabled') == true;
-    if (!isOrderingEnabled) {
-      const headlineNotice = getSetting('headlineNotice');
-      throw new Error(headlineNotice || "অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে পরে চেষ্টা করুন।");
+    const isVisible = getSetting('isBiometricOrderVisible') == true;
+    if (!isVisible) {
+      throw new Error("বায়োমেট্রিক অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ আছে।");
     }
 
     const { userId, order } = payload;
@@ -303,10 +312,9 @@ function handleCreateBiometricOrder(payload) {
 }
 
 function handleCreateCallListOrder(payload) {
-    const isOrderingEnabled = getSetting('isCallListOrderingEnabled') == true;
-    if (!isOrderingEnabled) {
-      const headlineNotice = getSetting('headlineNotice');
-      throw new Error(headlineNotice || "কল লিস্ট অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ আছে। অনুগ্রহ করে পরে চেষ্টা করুন।");
+    const isVisible = getSetting('isCallListOrderVisible') == true;
+    if (!isVisible) {
+      throw new Error("কল লিস্ট অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ আছে।");
     }
 
     const { userId, order } = payload;
@@ -636,6 +644,15 @@ function handleFetchChartData(payload) {
 
 
 function handleFetchSettings() {
+    const noticesString = getSetting('headlineNotices');
+    let headlineNotices = [];
+    try {
+        headlineNotices = JSON.parse(noticesString);
+        if(!Array.isArray(headlineNotices)) headlineNotices = [];
+    } catch (e) {
+        headlineNotices = [];
+    }
+    
     const methodsString = getSetting('paymentMethods');
     let paymentMethods = [];
     try {
@@ -645,29 +662,18 @@ function handleFetchSettings() {
         paymentMethods = [];
     }
 
-    const normalizedMethods = paymentMethods.map(method => {
-      if (method && typeof method.type === 'string') {
-        const lowerType = method.type.toLowerCase();
-        if (lowerType === 'bkash') {
-          method.type = 'Bkash';
-        } else if (lowerType === 'nagad') {
-          method.type = 'Nagad';
-        } else if (lowerType === 'rocket') {
-          method.type = 'Rocket';
-        }
-      }
-      return method;
-    });
-
     return {
       biometricOrderPrice: Number(getSetting('biometricOrderPrice')),
       callListPrice3Months: Number(getSetting('callListPrice3Months')),
       callListPrice6Months: Number(getSetting('callListPrice6Months')),
-      paymentMethods: normalizedMethods,
+      paymentMethods: paymentMethods,
       notificationEmail: getSetting('notificationEmail'),
-      isOrderingEnabled: getSetting('isOrderingEnabled') == true,
-      isCallListOrderingEnabled: getSetting('isCallListOrderingEnabled') == true,
-      headlineNotice: getSetting('headlineNotice')
+      headlineNotices: headlineNotices,
+      isAddMoneyVisible: getSetting('isAddMoneyVisible') == true,
+      isBiometricOrderVisible: getSetting('isBiometricOrderVisible') == true,
+      isCallListOrderVisible: getSetting('isCallListOrderVisible') == true,
+      biometricOrderOffMessage: getSetting('biometricOrderOffMessage'),
+      callListOrderOffMessage: getSetting('callListOrderOffMessage'),
     };
 }
 
@@ -729,6 +735,79 @@ function handleFetchAdminRecharges(payload) {
 
   return adminRecharges.map(row => ({ id: row[0], userId: row[1], date: new Date(row[2]).toLocaleDateString('bn-BD'), description: row[3], type: row[4], amount: row[5], status: row[6] })).reverse();
 }
+
+function handleAdminSendEmailToUser(payload) {
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পাঠাতে পারবেন।");
+  const { targetUserId, subject, body } = payload;
+  if (!targetUserId || !subject || !body) throw new Error("প্রয়োজনীয় সকল তথ্য (প্রাপক, বিষয়, বার্তা) দিন।");
+
+  const userRowIndex = findRow(usersSheet, targetUserId, 1);
+  if (userRowIndex === -1) throw new Error("প্রাপক ব্যবহারকারীকে খুঁজে পাওয়া যায়নি।");
+  
+  const targetUserEmail = usersSheet.getRange(userRowIndex, 4).getValue();
+  if (!targetUserEmail) throw new Error("এই ব্যবহারকারীর কোনো নিবন্ধিত ইমেইল নেই।");
+
+  const finalSubject = `ডিজিটাল সার্ভিস থেকে একটি বার্তা: ${subject}`;
+  const finalBody = `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>প্রিয় গ্রাহক,</p>
+    <p>${body.replace(/\n/g, '<br>')}</p>
+    <br>
+    <p>শুভেচ্ছান্তে,<br>অ্যাডমিন, ডিজিটাল সার্ভিস</p>
+    <hr>
+    <p style="font-size: 12px; color: #888;">এটি একটি অ্যাডমিন কর্তৃক প্রেরিত বার্তা। এর উত্তর দেবেন না।</p>
+  </div>`;
+
+  MailApp.sendEmail(targetUserEmail, finalSubject, "", { htmlBody: finalBody });
+  
+  return { message: `ইমেইল সফলভাবে ${targetUserEmail} ঠিকানায় পাঠানো হয়েছে।` };
+}
+
+function handleAdminSendEmailToAllUsers(payload) {
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই কাজ করতে পারবেন।");
+  const { subject, body } = payload;
+  if (!subject || !body) throw new Error("বিষয় এবং বার্তা উভয়ই আবশ্যক।");
+
+  const usersData = usersSheet.getLastRow() > 1 ? usersSheet.getRange(2, 4, usersSheet.getLastRow() - 1, 1).getValues() : [];
+  const allEmails = usersData
+    .map(row => row[0])
+    .filter(email => email && email.includes('@'));
+
+  if (allEmails.length === 0) {
+    return { message: "কোনো ব্যবহারকারীর ইমেইল পাওয়া যায়নি।" };
+  }
+
+  const uniqueEmails = [...new Set(allEmails)];
+  const batchSize = 50; 
+
+  const finalSubject = `ডিজিটাল সার্ভিস থেকে একটি বার্তা: ${subject}`;
+  const finalBody = `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
+    <p>প্রিয় গ্রাহক,</p>
+    <p>${body.replace(/\n/g, '<br>')}</p>
+    <br>
+    <p>শুভেচ্ছান্তে,<br>অ্যাডমিন, ডিজিটাল সার্ভিস</p>
+    <hr>
+    <p style="font-size: 12px; color: #888;">এটি একটি স্বয়ংক্রিয় বার্তা। এর উত্তর দেবেন না।</p>
+  </div>`;
+  
+  for (let i = 0; i < uniqueEmails.length; i += batchSize) {
+    const batch = uniqueEmails.slice(i, i + batchSize);
+    try {
+      MailApp.sendEmail({
+        to: getSetting('notificationEmail'), // Send to admin as primary recipient
+        subject: finalSubject,
+        htmlBody: finalBody,
+        bcc: batch.join(','),
+        name: 'ডিজিটাল সার্ভিস'
+      });
+      Utilities.sleep(1000); 
+    } catch(e) {
+      Logger.log("Email batch failed: " + e.toString());
+    }
+  }
+
+  return { message: `${uniqueEmails.length} জন ব্যবহারকারীকে ইমেইল সফলভাবে পাঠানো হয়েছে।` };
+}
+
 
 function handleUpdateUserStatus(payload) { const { userId, userIdToUpdate, status } = payload; if (!isAdmin(userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const validStatuses = ['Active', 'Blocked']; if (!userIdToUpdate || !status || validStatuses.indexOf(status) === -1) throw new Error("প্রয়োজনীয় তথ্য সঠিক নয়।"); const userRowIndex = findRow(usersSheet, userIdToUpdate, 1); if (userRowIndex === -1) throw new Error("ইউজারকে খুঁজে পাওয়া যায়নি।"); usersSheet.getRange(userRowIndex, 8).setValue(status); return { message: `ইউজারের স্ট্যাটাস সফলভাবে '${status}' করা হয়েছে।` }; }
 function handleApproveTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; if (requestRow[5] === "Approved") throw new Error("এই অনুরোধটি ইতিমধ্যে অনুমোদিত হয়েছে।"); const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`); const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue(); walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + amount); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (অ্যাডমিন)", "Credit", amount, "Completed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Approved"); return { message: "লেনদেনটি সফলভাবে Approve করা হয়েছে।" }; }
