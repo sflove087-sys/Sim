@@ -49,6 +49,8 @@ function doPost(e) {
         'uploadCallListOrderPdf': handleUploadCallListOrderPdf,
         'adminSendEmailToUser': handleAdminSendEmailToUser,
         'adminSendEmailToAllUsers': handleAdminSendEmailToAllUsers,
+        'adminSendPushNotification': handleAdminSendPushNotification,
+        'updateFcmToken': handleUpdateFcmToken,
       };
 
       if (actions[action]) {
@@ -109,7 +111,7 @@ function handleSignup(payload) {
   const userId = "user" + Date.now();
   const signupDate = new Date().toISOString();
   
-  usersSheet.appendRow([userId, name, mobile, email, pass, 'User', signupDate, 'Active', '', ipAddress || 'N/A', '']);
+  usersSheet.appendRow([userId, name, mobile, email, pass, 'User', signupDate, 'Active', '', ipAddress || 'N/A', '', '']);
   walletSheet.appendRow([userId, REGISTRATION_BONUS]);
   transactionsSheet.appendRow(["tx" + Date.now(), userId, signupDate, "রেজিস্ট্রেশন বোনাস", "Bonus", REGISTRATION_BONUS, "Completed"]);
 
@@ -441,7 +443,7 @@ function handleFetchAllUsers(payload) {
   const pageNum = parseInt(page);
   const pageSizeNum = parseInt(pageSize);
 
-  const usersData = usersSheet.getLastRow() > 1 ? usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 11).getValues() : [];
+  const usersData = usersSheet.getLastRow() > 1 ? usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 12).getValues() : [];
   
   const walletData = walletSheet.getLastRow() > 1 ? walletSheet.getRange(2, 1, walletSheet.getLastRow() - 1, 2).getValues() : [];
   const walletMap = new Map(walletData.map(row => [row[0], row[1]]));
@@ -802,6 +804,64 @@ function handleAdminSendEmailToAllUsers(payload) {
   return { message: `${uniqueEmails.length} জন ব্যবহারকারীকে ইমেইল সফলভাবে পাঠানো হয়েছে।` };
 }
 
+// নতুন ফাংশন
+function handleAdminSendPushNotification(payload) {
+  if (!isAdmin(payload.userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই কাজ করতে পারবেন।");
+
+  const { target, title, body } = payload;
+  if (!target || !title || !body) throw new Error("প্রাপক, শিরোনাম এবং বার্তা আবশ্যক।");
+
+  let tokens = [];
+  if (target === 'all') {
+    const usersData = usersSheet.getRange(2, 1, usersSheet.getLastRow() - 1, 12).getValues();
+    tokens = usersData.map(row => row[11]).filter(token => token); // Column L for fcmToken
+  } else {
+    const userRowIndex = findRow(usersSheet, target, 1);
+    if (userRowIndex === -1) throw new Error("ব্যবহারকারীকে খুঁজে পাওয়া যায়নি।");
+    const token = usersSheet.getRange(userRowIndex, 12).getValue();
+    if (token) {
+      tokens.push(token);
+    }
+  }
+
+  if (tokens.length === 0) {
+    throw new Error("কোনো ব্যবহারকারীর ডিভাইস টোকেন পাওয়া যায়নি।");
+  }
+
+  const uniqueTokens = [...new Set(tokens)];
+  let successCount = 0;
+  let failureCount = 0;
+
+  uniqueTokens.forEach(token => {
+    try {
+      sendFcmMessage_(token, title, body);
+      successCount++;
+    } catch (e) {
+      failureCount++;
+      Logger.log(`Failed to send notification to token ${token}: ${e.message}`);
+    }
+  });
+
+  return { message: `${successCount}টি ডিভাইসে নোটিফিকেশন সফলভাবে পাঠানো হয়েছে। ${failureCount > 0 ? `${failureCount}টি ব্যর্থ হয়েছে।` : ''}`};
+}
+
+function handleUpdateFcmToken(payload) {
+  const { userId, fcmToken } = payload;
+  if (!userId || !fcmToken) {
+    throw new Error("User ID এবং FCM Token আবশ্যক।");
+  }
+
+  const userRowIndex = findRow(usersSheet, userId, 1); // User ID is in column A (index 1)
+  if (userRowIndex === -1) {
+    throw new Error("ব্যবহারকারীকে খুঁজে পাওয়া যায়নি।");
+  }
+  
+  // fcmToken is in Column L (index 12)
+  usersSheet.getRange(userRowIndex, 12).setValue(fcmToken);
+
+  return { message: "FCM token সফলভাবে আপডেট করা হয়েছে।" };
+}
+
 
 function handleUpdateUserStatus(payload) { const { userId, userIdToUpdate, status } = payload; if (!isAdmin(userId)) throw new Error("শুধুমাত্র অ্যাডমিনরা এই তথ্য পরিবর্তন করতে পারবেন।"); const validStatuses = ['Active', 'Blocked']; if (!userIdToUpdate || !status || validStatuses.indexOf(status) === -1) throw new Error("প্রয়োজনীয় তথ্য সঠিক নয়।"); const userRowIndex = findRow(usersSheet, userIdToUpdate, 1); if (userRowIndex === -1) throw new Error("ইউজারকে খুঁজে পাওয়া যায়নি।"); usersSheet.getRange(userRowIndex, 8).setValue(status); return { message: `ইউজারের স্ট্যাটাস সফলভাবে '${status}' করা হয়েছে।` }; }
 function handleApproveTransaction(payload) { const { requestId } = payload; const requestRowIndex = findRow(adminTransactionsSheet, requestId, 1); if (requestRowIndex === -1) throw new Error("অনুরোধটি পাওয়া যায়নি।"); const requestRow = adminTransactionsSheet.getRange(requestRowIndex, 1, 1, 6).getValues()[0]; if (requestRow[5] === "Approved") throw new Error("এই অনুরোধটি ইতিমধ্যে অনুমোদিত হয়েছে।"); const userId = requestRow[2]; const amount = parseFloat(requestRow[4]); const walletRowIndex = findRow(walletSheet, userId, 1); if (walletRowIndex === -1) throw new Error(`${userId} এর ওয়ালেট পাওয়া যায়নি।`); const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue(); walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance + amount); transactionsSheet.appendRow(["tx" + Date.now(), userId, new Date().toISOString(), "টাকা যোগ (অ্যাডমিন)", "Credit", amount, "Completed"]); adminTransactionsSheet.getRange(requestRowIndex, 6).setValue("Approved"); return { message: "লেনদেনটি সফলভাবে Approve করা হয়েছে।" }; }
@@ -1007,7 +1067,7 @@ function isAdmin(userId) {
 }
 function findRow(sheet, value, col) { if (!sheet || sheet.getLastRow() < 1) return -1; const data = sheet.getRange(1, col, sheet.getLastRow(), 1).getValues(); for (let i = 0; i < data.length; i++) if (data[i][0] == value) return i + 1; return -1; }
 function mapUserRowToObject(row) { 
-    return { id: row[0], name: row[1], mobile: row[2], email: row[3], role: row[5], status: row[7], photoUrl: row[8], ipAddress: row[9], lastSeen: row[10] || null }; 
+    return { id: row[0], name: row[1], mobile: row[2], email: row[3], role: row[5], status: row[7], photoUrl: row[8], ipAddress: row[9], lastSeen: row[10] || null, fcmToken: row[11] || null }; 
 }
 function uploadFileToDrive(base64Data, mimeType, fileName, folderName, outputType = 'view') {
     let folder;
@@ -1160,4 +1220,87 @@ function createTimeBasedTriggers() {
   ScriptApp.newTrigger("autoCancelOldOrders").timeBased().everyMinutes(5).create();
   ScriptApp.newTrigger("processPendingAndVerifyingPayments").timeBased().everyMinutes(1).create();
   Logger.log("Time-based triggers created successfully."); 
+}
+
+// --- FCM Helper Functions ---
+
+/**
+ * =====================================================================================
+ * গুরুত্বপূর্ণ নির্দেশনা: Firebase Admin SDK সেটআপ
+ * =====================================================================================
+ * এই ফাংশনটি কাজ করার জন্য, আপনাকে Firebase প্রজেক্টের একটি সার্ভিস একাউন্ট তৈরি করতে হবে।
+ * 
+ * ১. Firebase Console > Project Settings > Service accounts-এ যান।
+ * ২. "Generate new private key" তে ক্লিক করে একটি JSON ফাইল ডাউনলোড করুন।
+ * ৩. নিচের তিনটি Script Property তৈরি করুন এবং JSON ফাইল থেকে মানগুলো কপি করে পেস্ট করুন:
+ *    - `FCM_PROJECT_ID`: আপনার Firebase প্রজেক্টের "Project ID"।
+ *    - `FCM_CLIENT_EMAIL`: JSON ফাইলের "client_email"।
+ *    - `FCM_PRIVATE_KEY`: JSON ফাইলের "private_key"। (সম্পূর্ণ কী, `-----BEGIN...` থেকে `...END-----\n` পর্যন্ত)
+ * 
+ * ৪. Apps Script এডিটর-এ, "Libraries" এর পাশে "+" তে ক্লিক করুন।
+ * ৫. এই স্ক্রিপ্ট আইডিটি পেস্ট করুন: 1B7FSrk57_JpToD1TuzP3EGu4Qd-gGaOO (এটি Google-এর OAuth2 লাইব্রেরি)।
+ * ৬. সর্বশেষ ভার্সনটি সিলেক্ট করে "Add" এ ক্লিক করুন।
+ * =====================================================================================
+ */
+function getFcmAuthToken_() {
+  const properties = PropertiesService.getScriptProperties();
+  const clientEmail = properties.getProperty('FCM_CLIENT_EMAIL');
+  const privateKey = properties.getProperty('FCM_PRIVATE_KEY');
+
+  if (!clientEmail || !privateKey) {
+    throw new Error("FCM সার্ভিস একাউন্টের তথ্য (FCM_CLIENT_EMAIL, FCM_PRIVATE_KEY) Script Properties-এ পাওয়া যায়নি।");
+  }
+
+  const service = OAuth2.createService('FCM')
+      .setTokenUrl('https://oauth2.googleapis.com/token')
+      .setPrivateKey(privateKey)
+      .setIssuer(clientEmail)
+      .setSubject(clientEmail)
+      .setPropertyStore(PropertiesService.getScriptProperties())
+      .setScope('https://www.googleapis.com/auth/firebase.messaging');
+  
+  return service.getAccessToken();
+}
+
+function sendFcmMessage_(token, title, body) {
+  const projectId = PropertiesService.getScriptProperties().getProperty('FCM_PROJECT_ID');
+  if (!projectId) {
+    throw new Error("Firebase প্রজেক্ট আইডি (FCM_PROJECT_ID) Script Properties-এ পাওয়া যায়নি।");
+  }
+  const fcmUrl = `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`;
+  
+  const payload = {
+    'message': {
+      'token': token,
+      'notification': {
+        'title': title,
+        'body': body
+      },
+      'android': {
+        'notification': {
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK' // This is a common action for Flutter apps. Change if your app uses a different one.
+        }
+      }
+    }
+  };
+
+  const options = {
+    'method': 'post',
+    'contentType': 'application/json',
+    'headers': {
+      'Authorization': 'Bearer ' + getFcmAuthToken_()
+    },
+    'payload': JSON.stringify(payload),
+    'muteHttpExceptions': true
+  };
+
+  const response = UrlFetchApp.fetch(fcmUrl, options);
+  const responseCode = response.getResponseCode();
+  const responseBody = response.getContentText();
+
+  if (responseCode >= 200 && responseCode < 300) {
+    return JSON.parse(responseBody);
+  } else {
+    throw new Error(`FCM API Error: ${responseCode} - ${responseBody}`);
+  }
 }

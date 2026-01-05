@@ -47,18 +47,23 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
     }
   };
   
-  const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
+  const baseInputClass = "w-full py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
 
   return (
     <>
       <LoadingModal isOpen={isLoading} />
        <div className="text-center mb-8">
-            <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">স্বাগতম!</h2>
-            <p className="text-slate-500 dark:text-slate-400 mt-1">আপনার একাউন্টে লগইন করুন</p>
+            <div className="mb-4">
+                <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
+                    ডিজিটাল সেবা
+                </h1>
+            </div>
+            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">স্বাগতম!</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-2">আপনার একাউন্টে লগইন করুন</p>
         </div>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-            <label htmlFor="loginId" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label htmlFor="loginId" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                 মোবাইল অথবা ইমেইল
             </label>
             <div className="relative">
@@ -89,7 +94,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
         </div>
         
         <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+            <label htmlFor="password" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">
                 পাসওয়ার্ড
             </label>
             <div className="relative">

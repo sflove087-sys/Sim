@@ -1,7 +1,8 @@
-import React, { Component, ErrorInfo, ReactNode } from 'react';
+import React, { ErrorInfo, ReactNode } from 'react';
 import { safeLocalStorage } from '../../utils/storage';
 
-interface Props {
+// FIX: Renamed Props to ErrorBoundaryProps for clarity and to avoid naming conflicts.
+interface ErrorBoundaryProps {
   children: ReactNode;
 }
 
@@ -10,16 +11,24 @@ interface State {
   error?: Error;
 }
 
-class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
-    hasError: false,
-  };
+class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
+  // FIX: Using a constructor to initialize state. This can help prevent subtle type inference issues.
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = {
+      hasError: false,
+      error: undefined
+    };
+  }
 
-  public static getDerivedStateFromError(error: Error): State {
+  // FIX: Corrected return type from State to Partial<State> to align with React type definitions.
+  // FIX: Static methods are public by default. Removed explicit public modifier.
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  // FIX: Class methods are public by default. Removed explicit public modifier.
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
 
@@ -34,7 +43,8 @@ class ErrorBoundary extends Component<Props, State> {
     }
   };
 
-  public render(): React.ReactNode {
+  // FIX: Class methods are public by default. Removing explicit 'public' modifier which may have caused type inference issues and is not standard practice in React components.
+  render() {
     if (this.state.hasError) {
       return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-slate-100 dark:bg-slate-900 p-4 text-center">
@@ -66,9 +76,6 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // FIX: The 'props' property is inherited from React.Component and is available on 'this'.
-    // The error was likely due to a misconfiguration or a misleading comment.
-    // The component correctly renders its children when there is no error.
     return this.props.children;
   }
 }

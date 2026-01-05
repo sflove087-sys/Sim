@@ -65,19 +65,24 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
         }
     };
 
-    const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
+    const baseInputClass = "w-full py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
 
     return (
         <div>
             {step === 'request' ? (
                 <>
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">পাসওয়ার্ড রিসেট</h2>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
+                        <div className="mb-4">
+                            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
+                                ডিজিটাল সেবা
+                            </h1>
+                        </div>
+                        <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">পাসওয়ার্ড রিসেট</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2">আমরা আপনাকে পাসওয়ার্ড রিসেট করার জন্য একটি কোড পাঠাবো।</p>
                     </div>
                     <form onSubmit={handleRequestSubmit} className="space-y-6">
                         <div>
-                            <label htmlFor="identifier" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">ইমেইল বা মোবাইল</label>
+                            <label htmlFor="identifier" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">ইমেইল বা মোবাইল</label>
                             <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><EnvelopeIcon className="h-5 w-5 text-slate-400" /></div><input id="identifier" type="text" value={identifier} onChange={e => setIdentifier(e.target.value)} placeholder="example@email.com অথবা 017..." required className={`${baseInputClass} pl-12 pr-4`} /></div>
                         </div>
                         <Button type="submit" isLoading={isLoading}>
@@ -88,16 +93,21 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
             ) : (
                 <>
                      <div className="text-center mb-8">
-                        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">নতুন পাসওয়ার্ড সেট করুন</h2>
-                        <p className="text-slate-500 dark:text-slate-400 mt-1">আপনার ইমেইলে পাঠানো কোড এবং নতুন পাসওয়ার্ড দিন।</p>
+                        <div className="mb-4">
+                            <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
+                                ডিজিটাল সেবা
+                            </h1>
+                        </div>
+                        <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">নতুন পাসওয়ার্ড সেট করুন</h2>
+                        <p className="text-slate-500 dark:text-slate-400 mt-2">আপনার ইমেইলে পাঠানো কোড এবং নতুন পাসওয়ার্ড দিন।</p>
                     </div>
                     <form onSubmit={handleResetSubmit} className="space-y-4">
                         <div>
-                            <label htmlFor="code" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">রিসেট কোড</label>
+                            <label htmlFor="code" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">রিসেট কোড</label>
                             <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><KeyIcon className="h-5 w-5 text-slate-400" /></div><input id="code" type="text" value={code} onChange={e => setCode(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} /></div>
                         </div>
                         <div>
-                            <label htmlFor="newPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">নতুন পাসওয়ার্ড</label>
+                            <label htmlFor="newPassword" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">নতুন পাসওয়ার্ড</label>
                             <div className="relative">
                                 <input id="newPassword" type={showNewPassword ? 'text' : 'password'} value={newPassword} onChange={e => setNewPassword(e.target.value)} required className={`${baseInputClass} px-4 pr-12`} />
                                 <button type="button" onClick={() => setShowNewPassword(!showNewPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400"><span className="sr-only">Toggle new password visibility</span>{showNewPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}</button>
@@ -105,7 +115,7 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ setView }) => {
                             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1.5 px-1">কমপক্ষে ৮ অক্ষর, ১টি বড় হাতের, ১টি ছোট হাতের অক্ষর এবং ১টি সংখ্যা।</p>
                         </div>
                         <div>
-                            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড নিশ্চিত করুন</label>
+                            <label htmlFor="confirmPassword" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">পাসওয়ার্ড নিশ্চিত করুন</label>
                             <div className="relative">
                                 <input id="confirmPassword" type={showConfirmPassword ? 'text' : 'password'} value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required className={`${baseInputClass} px-4 pr-12`} />
                                 <button type="button" onClick={() => setShowConfirmPassword(!showConfirmPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400"><span className="sr-only">Toggle confirm password visibility</span>{showConfirmPassword ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon className="h-5 w-5" />}</button>

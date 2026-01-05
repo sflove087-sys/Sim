@@ -68,30 +68,35 @@ const Signup: React.FC<SignupProps> = ({ setView }) => {
         }
     };
 
-    const baseInputClass = "w-full py-3 bg-slate-100 dark:bg-slate-700 border-2 border-slate-200 dark:border-slate-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
+    const baseInputClass = "w-full py-3 bg-slate-50 dark:bg-slate-700/50 border border-slate-300 dark:border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-500 dark:focus:ring-offset-slate-800 transition duration-200";
 
     return (
         <>
             <LoadingModal isOpen={isLoading} />
              <div className="text-center mb-8">
-                <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">নতুন একাউন্ট তৈরি করুন</h2>
-                <p className="text-slate-500 dark:text-slate-400 mt-1">শুরু করতে আপনার বিবরণ দিন</p>
+                <div className="mb-4">
+                    <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
+                        ডিজিটাল সেবা
+                    </h1>
+                </div>
+                <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">নতুন একাউন্ট তৈরি করুন</h2>
+                <p className="text-slate-500 dark:text-slate-400 mt-2">শুরু করতে আপনার বিবরণ দিন</p>
             </div>
             <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">আপনার নাম</label>
+                    <label htmlFor="name" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">আপনার নাম</label>
                     <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><UserIcon className="h-5 w-5 text-slate-400" /></div><input id="name" type="text" value={name} onChange={e => setName(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., John Doe"/></div>
                 </div>
                 <div>
-                    <label htmlFor="mobile" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">মোবাইল নাম্বার</label>
+                    <label htmlFor="mobile" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">মোবাইল নাম্বার</label>
                     <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><DevicePhoneMobileIcon className="h-5 w-5 text-slate-400" /></div><input id="mobile" type="tel" value={mobile} onChange={e => setMobile(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., 01712345678" /></div>
                 </div>
                 <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">ইমেইল</label>
+                    <label htmlFor="email" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">ইমেইল</label>
                     <div className="relative"><div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4"><EnvelopeIcon className="h-5 w-5 text-slate-400" /></div><input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} required className={`${baseInputClass} pl-12 pr-4`} placeholder="e.g., example@email.com" /></div>
                 </div>
                 <div>
-                    <label htmlFor="password-signup" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1.5">পাসওয়ার্ড</label>
+                    <label htmlFor="password-signup" className="block text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">পাসওয়ার্ড</label>
                      <div className="relative">
                         <input id="password-signup" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required className={`${baseInputClass} pl-4 pr-12`} placeholder="••••••••" />
                         <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">

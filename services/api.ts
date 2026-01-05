@@ -4,7 +4,7 @@ import { safeLocalStorage, getSessionUser } from '../utils/storage';
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxzs0QoNqnb_MBk_wBJA0_Ou07qvHPQLKVkq0iVcqtXKP8bgM8BcRgTx_2jZ1k2SHbPHg/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6psSApG60-HkGkU6nBWnMqBfGgBbXRe3rguspEmbh8WDVnCLVZ4kpeOj5IaRxm7abYQ/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -213,4 +213,12 @@ export const apiAdminRecharge = async (userIdToRecharge: string, amount: number,
 
 export const apiFetchAdminRecharges = async (): Promise<Transaction[]> => {
     return callApi('fetchAdminRecharges');
+};
+
+export const apiAdminSendPushNotification = async (details: { target: 'all' | string, title: string, body: string }): Promise<{ message: string }> => {
+    return callApi('adminSendPushNotification', details);
+};
+
+export const apiUpdateFcmToken = async (fcmToken: string): Promise<{ message: string }> => {
+    return callApi('updateFcmToken', { fcmToken });
 };

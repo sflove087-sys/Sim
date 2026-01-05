@@ -15,11 +15,12 @@ import ManageCallListOrders from '../admin/ManageCallListOrders';
 import AllTransactions from '../admin/AllTransactions';
 import Settings from '../auth/Settings';
 import RechargeRequests from '../admin/RechargeRequests';
+import PushNotifications from '../admin/PushNotifications'; // নতুন ইম্পোর্ট
 import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { apiUpdateUserActivity } from '../../services/api';
 import { 
-    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon, CircleStackIcon
+    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon, CircleStackIcon, MegaphoneIcon
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import WelcomePopup from './WelcomePopup';
@@ -51,6 +52,7 @@ const adminPages: Record<string, Omit<PageInfo, 'id'>> = {
     [Page.MANAGE_CALL_LIST_ORDERS]: { component: ManageCallListOrders, label: 'কল লিস্ট অর্ডার', icon: PhoneIcon },
     [Page.ALL_TRANSACTIONS]: { component: AllTransactions, label: 'সকল লেনদেন', icon: ArchiveBoxIcon },
     [Page.ADMIN_SETTINGS]: { component: Settings, label: 'সেটিংস', icon: WrenchScrewdriverIcon },
+    [Page.PUSH_NOTIFICATIONS]: { component: PushNotifications, label: 'পুশ নোটিফিকেশন', icon: MegaphoneIcon }, // নতুন পেজ
 };
 
 export default function Layout() {

@@ -11,6 +11,7 @@ export interface User {
   ipAddress?: string;
   balance?: number;
   lastSeen?: string;
+  fcmToken?: string;
 }
 
 export interface Wallet {
@@ -185,4 +186,5 @@ export enum Page {
     MANAGE_CALL_LIST_ORDERS = 'MANAGE_CALL_LIST_ORDERS',
     ALL_TRANSACTIONS = 'ALL_TRANSACTIONS',
     ADMIN_SETTINGS = 'ADMIN_SETTINGS',
+    PUSH_NOTIFICATIONS = 'PUSH_NOTIFICATIONS',
 }

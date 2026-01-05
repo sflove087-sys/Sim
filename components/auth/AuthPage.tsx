@@ -1,13 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Login from './Login';
 import Signup from './Signup';
 import ForgotPassword from './ForgotPassword';
-import { CircleStackIcon } from '@heroicons/react/24/solid';
+
+// TypeScript declaration for VANTA object from CDN
+declare global {
+  interface Window {
+    VANTA: any;
+  }
+}
 
 type AuthView = 'login' | 'signup' | 'forgot';
 
 const AuthPage: React.FC = () => {
   const [view, setView] = useState<AuthView>('login');
+  const vantaRef = useRef(null);
+  const [vantaEffect, setVantaEffect] = useState<any>(null);
+
+  useEffect(() => {
+    // Check if VANTA is loaded and we haven't initialized the effect yet
+    if (window.VANTA && !vantaEffect) {
+      const isDark = document.documentElement.classList.contains('dark');
+      const effect = window.VANTA.WAVES({
+        el: vantaRef.current,
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        color: isDark ? 0x1e293b : 0x6366f1, // slate-800 : indigo-500
+        shininess: 35.00,
+        waveHeight: 15.00,
+        waveSpeed: 0.8,
+        zoom: 0.75,
+      });
+      setVantaEffect(effect);
+    }
+    // Cleanup function to destroy the effect when the component unmounts
+    return () => {
+      if (vantaEffect) vantaEffect.destroy();
+    };
+  }, [vantaEffect]); // Only re-run if vantaEffect state changes
 
   const renderView = () => {
     switch (view) {
@@ -23,26 +58,9 @@ const AuthPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 flex justify-center items-center p-4 antialiased">
-        <div className="w-full max-w-5xl mx-auto bg-white dark:bg-slate-800 rounded-2xl shadow-2xl grid lg:grid-cols-2 overflow-hidden border border-slate-200 dark:border-slate-700">
-            {/* Left Branding Panel */}
-            <div className="hidden lg:flex flex-col justify-center items-center p-12 bg-gradient-to-br from-indigo-600 to-violet-700 text-white relative">
-                 <div className="absolute top-0 left-0 w-32 h-32 bg-white/10 rounded-full -translate-x-1/2 -translate-y-1/2 opacity-50"></div>
-                 <div className="absolute bottom-0 right-0 w-48 h-48 bg-white/10 rounded-full translate-x-1/2 translate-y-1/2 opacity-50"></div>
-
-                <div className="relative z-10 text-center">
-                    <CircleStackIcon className="mx-auto h-16 w-16 text-white mb-6 opacity-80" />
-                    <h1 className="text-4xl font-bold mb-4 tracking-tight">ডিজিটাল সেবা</h1>
-                    <p className="text-indigo-200 text-lg">আপনার বিশ্বস্ত ডিজিটাল ওয়ালেট ও সার্ভিস প্ল্যাটফর্ম।</p>
-                </div>
-            </div>
-
-            {/* Right Form Panel */}
+    <div ref={vantaRef} className="min-h-screen w-full flex justify-center items-center p-4 antialiased">
+        <div className="w-full max-w-md mx-auto bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm rounded-2xl shadow-2xl overflow-hidden border border-slate-200/50 dark:border-slate-700/50">
             <div className="p-8 md:p-12 flex flex-col justify-center">
-                <div className="lg:hidden text-center mb-8">
-                     <CircleStackIcon className="mx-auto h-12 w-12 text-indigo-600" />
-                     <h1 className="mt-4 text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">ডিজিটাল সেবা</h1>
-                </div>
                 {renderView()}
             </div>
         </div>

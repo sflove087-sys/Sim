@@ -12,7 +12,7 @@ import Button from '../common/Button';
 import Spinner from '../common/Spinner';
 import Modal from '../common/Modal';
 import { toBengaliNumber } from '../../utils/formatters';
-import { EyeIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon, ShieldExclamationIcon, ArrowPathIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon, ShieldExclamationIcon, ArrowPathIcon, UserCircleIcon, BanknotesIcon, DevicePhoneMobileIcon, KeyIcon } from '@heroicons/react/24/solid';
 import VerificationProgressBar from '../common/VerificationProgressBar';
 
 type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Verifying';
@@ -84,6 +84,120 @@ const VerificationStatusBadge: React.FC<{ tx: AdminTransaction }> = ({ tx }) => 
     );
 };
 
+const RequestCardSkeleton: React.FC = () => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md animate-pulse">
+        <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div>
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-1.5"></div>
+                    <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            </div>
+            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+            {[...Array(4)].map((_, i) => (
+                <div key={i}>
+                    <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded mb-1.5"></div>
+                    <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            ))}
+        </div>
+        <div className="flex justify-between items-center mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+             <div className="h-6 w-24 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+             <div className="flex items-center space-x-2">
+                <div className="h-8 w-20 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+                <div className="h-8 w-20 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+             </div>
+        </div>
+    </div>
+);
+
+
+const RequestCard: React.FC<{
+    tx: AdminTransaction;
+    user: User | undefined;
+    onViewUser: (userId: string) => void;
+    onApprove: (tx: AdminTransaction) => void;
+    onReject: (tx: AdminTransaction) => void;
+    onReverify: (tx: AdminTransaction) => void;
+    processingId: string | null;
+    reverifyingId: string | null;
+}> = ({ tx, user, onViewUser, onApprove, onReject, onReverify, processingId, reverifyingId }) => {
+    return (
+        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 transition-all hover:shadow-lg border border-transparent hover:border-indigo-500/30">
+            {/* Header */}
+            <div className="flex justify-between items-start pb-3">
+                <button onClick={() => onViewUser(tx.userId)} className="flex items-center space-x-3 group">
+                    {user?.photoUrl ? (
+                        <img src={user.photoUrl} alt={user.name} className="h-10 w-10 rounded-full object-cover"/>
+                    ) : (
+                        <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-base">
+                            {user?.name.charAt(0)}
+                        </div>
+                    )}
+                    <div>
+                        <p className="font-bold text-base text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user?.name || 'অজানা'}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{tx.userId}</p>
+                    </div>
+                </button>
+                <StatusBadge status={tx.status} />
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-slate-100 dark:border-slate-700/50">
+                <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">পরিমাণ</p>
+                    <p className="font-bold text-xl text-indigo-600 dark:text-indigo-400">৳{toBengaliNumber(tx.amount)}</p>
+                </div>
+                <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">পদ্ধতি</p>
+                    <p className="font-semibold text-base text-slate-700 dark:text-slate-300">{tx.paymentMethod}</p>
+                </div>
+                 <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">প্রেরক নম্বর</p>
+                    <p className="font-mono text-base text-slate-700 dark:text-slate-300">{tx.senderNumber}</p>
+                </div>
+                 <div>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-0.5">TXN ID</p>
+                    <p className="font-mono text-sm text-slate-700 dark:text-slate-300 truncate" title={tx.transactionId}>{tx.transactionId}</p>
+                </div>
+            </div>
+
+            {/* Footer */}
+            <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pt-3">
+                <div className="flex items-center gap-2">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">SMS যাচাই:</p>
+                    <VerificationStatusBadge tx={tx} />
+                    {(tx.status === 'Pending' || tx.status === 'Verifying') && (tx.verificationStatus === 'Mismatch' || tx.verificationStatus === 'Not Found') && (
+                        <button onClick={() => onReverify(tx)} disabled={!!reverifyingId} className="p-1.5 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50" title="পুনরায় যাচাই করুন">
+                            <ArrowPathIcon className={`h-4 w-4 ${reverifyingId === tx.requestId ? 'animate-spin' : ''}`} />
+                        </button>
+                    )}
+                </div>
+                {(tx.status === 'Pending' || tx.status === 'Verifying') && (
+                    <div className="flex items-center gap-2">
+                        <Button 
+                            onClick={() => onApprove(tx)} 
+                            disabled={!!processingId || tx.verificationStatus === 'Duplicate'}
+                            className={`!w-auto !py-1.5 !px-3 !text-xs !bg-green-600 hover:!bg-green-700 ${tx.verificationStatus === 'Verified' ? 'ring-2 ring-offset-2 dark:ring-offset-slate-800 ring-green-500' : ''}`}
+                            title={tx.verificationStatus === 'Duplicate' ? 'এই লেনদেনটি ইতিমধ্যে ব্যবহৃত হয়েছে।' : 'অনুমোদন করুন'}
+                        >Approve</Button>
+                        <Button 
+                            variant="danger" 
+                            onClick={() => onReject(tx)} 
+                            disabled={!!processingId} 
+                            className="!w-auto !py-1.5 !px-3 !text-xs !bg-red-600 hover:!bg-red-700"
+                        >Reject</Button>
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+
 const RechargeRequests: React.FC = () => {
     const [users, setUsers] = useState<User[]>([]);
     const [moneyRequests, setMoneyRequests] = useState<AdminTransaction[]>([]);
@@ -91,7 +205,6 @@ const RechargeRequests: React.FC = () => {
     const [reverifyingId, setReverifyingId] = useState<string | null>(null);
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [isUserModalOpen, setIsUserModalOpen] = useState(false);
-    const [isTxDetailsModalOpen, setIsTxDetailsModalOpen] = useState(false);
     const [selectedTx, setSelectedTx] = useState<AdminTransaction | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
     const [filter, setFilter] = useState<RequestStatus>('Pending');
@@ -101,8 +214,6 @@ const RechargeRequests: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const { addToast } = useToast();
     
-    const getUserName = (userId: string) => users.find(u => u.id === userId)?.name || 'অজানা ব্যবহারকারী';
-
     const loadData = useCallback(async (showLoading = true) => {
         if(showLoading) setIsLoading(true);
         try {
@@ -138,11 +249,6 @@ const RechargeRequests: React.FC = () => {
         } else {
             addToast('ইউজার খুঁজে পাওয়া যায়নি।', 'error');
         }
-    };
-
-    const handleViewTxDetails = (tx: AdminTransaction) => {
-        setSelectedTx(tx);
-        setIsTxDetailsModalOpen(true);
     };
 
     const openConfirmationModal = (action: 'approve' | 'reject', tx: AdminTransaction) => {
@@ -211,170 +317,62 @@ const RechargeRequests: React.FC = () => {
         <div className="space-y-6">
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগের অনুরোধ</h1>
             
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
-                <div className="px-2 pb-4 border-b dark:border-slate-700">
-                    <h2 className="text-xl font-semibold text-slate-700 dark:text-slate-300">ব্যবহারকারীর অনুরোধসমূহ</h2>
-                     <div className="flex flex-wrap gap-2 mt-3 border border-slate-200 dark:border-slate-600 rounded-lg p-1 w-fit">
-                        {(['Pending', 'Approved', 'Rejected'] as RequestStatus[]).map(status => (
-                            <button 
-                                key={status}
-                                onClick={() => setFilter(status)}
-                                className={`px-4 py-1.5 text-[13px] font-semibold rounded-md transition-colors ${filter === status ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700'}`}
-                            >
-                                {status === 'Pending' ? 'পেন্ডিং ও যাচাই' : 
-                                 status === 'Approved' ? 'অনুমোদিত' : 
-                                 'বাতিল'}
-                            </button>
-                        ))}
+            <div className="flex flex-wrap gap-2 border border-slate-200 dark:border-slate-700 rounded-lg p-1 w-fit bg-slate-50 dark:bg-slate-800">
+                {(['Pending', 'Approved', 'Rejected'] as RequestStatus[]).map(status => (
+                    <button 
+                        key={status}
+                        onClick={() => setFilter(status)}
+                        className={`px-4 py-1.5 text-sm font-semibold rounded-md transition-colors ${filter === status ? 'bg-indigo-600 text-white shadow' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'}`}
+                    >
+                        {status === 'Pending' ? 'পেন্ডিং ও যাচাই' : 
+                            status === 'Approved' ? 'অনুমোদিত' : 
+                            'বাতিল'}
+                    </button>
+                ))}
+            </div>
+
+            <div className="space-y-4">
+                {isLoading ? (
+                    [...Array(5)].map((_, i) => <RequestCardSkeleton key={i} />)
+                ) : filteredRequests.length > 0 ? (
+                    filteredRequests.map((tx) => (
+                        <RequestCard
+                            key={tx.requestId}
+                            tx={tx}
+                            user={users.find(u => u.id === tx.userId)}
+                            onViewUser={handleViewUser}
+                            onApprove={() => openConfirmationModal('approve', tx)}
+                            onReject={() => openConfirmationModal('reject', tx)}
+                            onReverify={handleReverify}
+                            processingId={processingId}
+                            reverifyingId={reverifyingId}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow">
+                        <p className="text-slate-500">এই বিভাগে কোনো অনুরোধ পাওয়া যায়নি।</p>
                     </div>
-                </div>
-
-                <div className="overflow-x-auto">
-                    {isLoading ? (<div className="flex justify-center p-10"><Spinner size="lg" /></div>) : 
-                    filteredRequests.length > 0 ? (
-                        <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">তারিখ</th>
-                                    <th scope="col" className="px-6 py-3">ব্যবহারকারী</th>
-                                    <th scope="col" className="px-6 py-3">পরিমাণ</th>
-                                    <th scope="col" className="px-6 py-3">পদ্ধতি</th>
-                                    <th scope="col" className="px-6 py-3">প্রেরক নম্বর</th>
-                                    <th scope="col" className="px-6 py-3">TXN ID</th>
-                                    <th scope="col" className="px-6 py-3">SMS যাচাই</th>
-                                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                                    <th scope="col" className="px-6 py-3 text-center">একশন</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {filteredRequests.map((tx) => (
-                                    <tr key={tx.requestId} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                        <td data-label="তারিখ" className="px-6 py-4">{tx.date}</td>
-                                        <td data-label="ব্যবহারকারী" className="px-6 py-4">
-                                            <button onClick={() => handleViewUser(tx.userId)} className="text-left focus:outline-none group">
-                                                <p className="font-medium text-indigo-600 dark:text-indigo-400 group-hover:underline">{getUserName(tx.userId)}</p>
-                                                <span className="block text-xs text-slate-400 font-mono">{tx.userId}</span>
-                                            </button>
-                                        </td>
-                                        <td data-label="পরিমাণ" className="px-6 py-4 text-base font-semibold">৳{toBengaliNumber(tx.amount)}</td>
-                                        <td data-label="পদ্ধতি" className="px-6 py-4">{tx.paymentMethod}</td>
-                                        <td data-label="প্রেরক নম্বর" className="px-6 py-4 font-mono">{tx.senderNumber}</td>
-                                        <td data-label="TXN ID" className="px-6 py-4 font-mono">{tx.transactionId}</td>
-                                        <td data-label="SMS যাচাই" className="px-6 py-4"><VerificationStatusBadge tx={tx} /></td>
-                                        <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={tx.status} /></td>
-                                        <td data-label="একশন" className="px-6 py-4">
-                                            <div className="flex items-center justify-end space-x-2">
-                                                <button onClick={() => handleViewTxDetails(tx)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="বিস্তারিত দেখুন">
-                                                    <EyeIcon className="h-5 w-5" />
-                                                </button>
-                                                
-                                                {(tx.status === 'Pending' || tx.status === 'Verifying') && (tx.verificationStatus === 'Mismatch' || tx.verificationStatus === 'Not Found') && (
-                                                    <button 
-                                                        onClick={() => handleReverify(tx)} 
-                                                        disabled={!!reverifyingId}
-                                                        className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50 disabled:opacity-50 disabled:cursor-wait" 
-                                                        title="পুনরায় যাচাই করুন"
-                                                    >
-                                                        <ArrowPathIcon className={`h-5 w-5 ${reverifyingId === tx.requestId ? 'animate-spin' : ''}`} />
-                                                    </button>
-                                                )}
-
-                                                {(tx.status === 'Pending' || tx.status === 'Verifying') && (
-                                                    <>
-                                                        <button onClick={() => openConfirmationModal('approve', tx)} disabled={!!processingId || tx.verificationStatus === 'Duplicate'} className={`font-medium text-green-600 dark:text-green-500 hover:underline disabled:opacity-50 disabled:cursor-not-allowed disabled:no-underline text-xs ${tx.verificationStatus === 'Verified' ? 'font-bold' : ''}`} title={tx.verificationStatus === 'Duplicate' ? 'এই লেনদেনটি ইতিমধ্যে ব্যবহৃত হয়েছে।' : 'অনুমোদন করুন'}>Approve</button>
-                                                        <button onClick={() => openConfirmationModal('reject', tx)} disabled={!!processingId} className="font-medium text-red-600 dark:text-red-500 hover:underline disabled:opacity-50 text-xs">Reject</button>
-                                                    </>
-                                                )}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    ) : ( <p className="text-center p-6 text-slate-500">এই বিভাগে কোনো অনুরোধ পাওয়া যায়নি।</p> )}
-                </div>
+                )}
             </div>
 
             <Modal isOpen={isUserModalOpen} onClose={() => setIsUserModalOpen(false)} title="ইউজারের বিবরণ">
-                {selectedUser && ( <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300"> <p><strong>নাম:</strong> {selectedUser.name}</p> <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p> <p><strong>ইমেইল:</strong> {selectedUser.email}</p> <p><strong>আইপি:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p> </div> )}
+                {selectedUser && ( <div className="space-y-3 text-sm text-slate-600 dark:text-slate-300"> <p><strong>নাম:</strong> {selectedUser.name}</p> <p><strong>মোবাইল:</strong> {selectedUser.mobile}</p> <p><strong>ইমেইল:</strong> {selectedUser.email}</p> <p><strong>আইপি:</strong> <span className="font-mono">{selectedUser.ipAddress || 'N/A'}</span></p> </div> )}
             </Modal>
             
-            <Modal isOpen={isTxDetailsModalOpen} onClose={() => setIsTxDetailsModalOpen(false)} title="লেনদেনের বিবরণ">
-                {selectedTx && (
-                    <div className="space-y-4 text-[13px]">
-                        <VerificationProgressBar status={selectedTx.status} verificationStatus={selectedTx.verificationStatus || null} />
-                        <hr className="dark:border-slate-600"/>
-                        {(() => {
-                            const txUser = users.find(u => u.id === selectedTx.userId);
-                            if (txUser) {
-                                return (
-                                     <div className="pb-4 mb-4 border-b dark:border-slate-600">
-                                        <div className="flex flex-col items-center text-center space-y-2">
-                                            {txUser.photoUrl ? (
-                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
-                                            ) : (
-                                                <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
-                                            )}
-                                            <div>
-                                                <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{txUser.name}</p>
-                                                <p className="text-sm text-slate-500">{txUser.mobile}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            return null;
-                        })()}
-
-                        <div>
-                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">লেনদেনের তথ্য</h4>
-                            <div className="space-y-1 text-slate-600 dark:text-slate-300">
-                                <p><strong>পরিমাণ:</strong> ৳{toBengaliNumber(selectedTx.amount)}</p>
-                                <p><strong>পদ্ধতি:</strong> {selectedTx.paymentMethod}</p>
-                                <p><strong>প্রেরক নম্বর (শেষ ৪ ডিজিট):</strong> <span className="font-mono">{selectedTx.senderNumber}</span></p>
-                                <p><strong>Txn ID:</strong> <span className="font-mono">{selectedTx.transactionId}</span></p>
-                                <p><strong>তারিখ:</strong> {selectedTx.date}</p>
-                                <p><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedTx.status} /></p>
-                            </div>
-                        </div>
-                        <hr className="dark:border-slate-600"/>
-                        <div>
-                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">যাচাইকরণের বিবরণ</h4>
-                            <div className="space-y-1 text-slate-600 dark:text-slate-300">
-                                <p><strong>SMS যাচাই:</strong> <VerificationStatusBadge tx={selectedTx} /></p>
-                                {selectedTx.verificationStatus === 'Mismatch' && (
-                                    <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-md mt-2 space-y-1">
-                                        <p><strong>SMS-এ টাকার পরিমাণ:</strong> ৳{toBengaliNumber(selectedTx.smsAmount || 0)}</p>
-                                        <p><strong>SMS-এ পেমেন্ট কোম্পানি:</strong> {selectedTx.smsCompany || 'N/A'}</p>
-                                        <p><strong>SMS-এ প্রেরক নম্বর:</strong> {selectedTx.smsSenderNumber || 'N/A'}</p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                        {selectedTx.rejectionReason && (
-                            <div className="mt-2 p-3 bg-red-50 dark:bg-red-900/30 rounded-lg">
-                                <p className="font-semibold text-red-700 dark:text-red-300">বাতিলের কারণ:</p>
-                                <p className="text-red-600 dark:text-red-400">{selectedTx.rejectionReason}</p>
-                            </div>
-                        )}
-                    </div>
-                )}
-            </Modal>
-
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="অনুরোধ নিশ্চিত করুন">
                 {confirmationState && (
                     <div className="space-y-4">
                          {confirmationState.tx.verificationStatus === 'Mismatch' && confirmationState.action === 'approve' && (
-                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-[13px]">
+                            <div className="p-3 bg-yellow-50 dark:bg-yellow-900/30 rounded-lg text-yellow-800 dark:text-yellow-300 text-sm">
                                 <p className="font-bold">সতর্কতা: তথ্যে অমিল রয়েছে!</p>
                                 <p>ব্যবহারকারীর অনুরোধ: ৳{toBengaliNumber(confirmationState.tx.amount)}, নম্বর: ...{confirmationState.tx.senderNumber}</p>
                                 <p>SMS অনুযায়ী: ৳{toBengaliNumber(confirmationState.tx.smsAmount || 0)}, নম্বর: ...{(confirmationState.tx.smsSenderNumber || '????').slice(-4)}</p>
                             </div>
                         )}
-                         <p className="text-[13px] text-slate-600 dark:text-slate-300">আপনি কি <strong>{getUserName(confirmationState.tx.userId)}</strong> এর <strong>৳{toBengaliNumber(confirmationState.tx.amount)}</strong> টাকার অনুরোধটি <strong>{confirmationState.action === 'approve' ? 'অনুমোদন' : 'বাতিল'}</strong> করতে নিশ্চিত?</p>
+                         <p className="text-sm text-slate-600 dark:text-slate-300">আপনি কি <strong>{users.find(u => u.id === confirmationState.tx.userId)?.name}</strong> এর <strong>৳{toBengaliNumber(confirmationState.tx.amount)}</strong> টাকার অনুরোধটি <strong>{confirmationState.action === 'approve' ? 'অনুমোদন' : 'বাতিল'}</strong> করতে নিশ্চিত?</p>
                          {confirmationState.action === 'reject' && (
                              <div>
-                                <label htmlFor="rejectionReason" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">বাতিলের কারণ (ঐচ্ছিক)</label>
+                                <label htmlFor="rejectionReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">বাতিলের কারণ (ঐচ্ছিক)</label>
                                 <textarea id="rejectionReason" rows={3} value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="কারণ উল্লেখ করুন..."/>
                             </div>
                          )}
