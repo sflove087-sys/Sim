@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { CallListOrder, OrderStatus } from '../../types';
-import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf } from '../../services/api';
+import { CallListOrder, OrderStatus, User } from '../../types';
+import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf, fetchAllUsers } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber, printPdf } from '../../utils/formatters';
-import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon, EyeIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import LoadingModal from '../common/LoadingModal';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
@@ -28,9 +28,11 @@ const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
 
 const ManageCallListOrders: React.FC = () => {
     const [orders, setOrders] = useState<CallListOrder[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
+    const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<CallListOrder | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [rejectionReason, setRejectionReason] = useState('');
@@ -43,10 +45,14 @@ const ManageCallListOrders: React.FC = () => {
     const loadOrders = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await fetchCallListOrders();
+            const [data, usersData] = await Promise.all([
+                fetchCallListOrders(),
+                fetchAllUsers(1, 10000)
+            ]);
             setOrders(data);
+            setUsers(usersData.users);
         } catch (error) {
-            addToast('কল লিস্ট অর্ডার লোড করা যায়নি।', 'error');
+            addToast('কল লিস্ট অর্ডার বা ব্যবহারকারীদের তথ্য লোড করা যায়নি।', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -87,6 +93,11 @@ const ManageCallListOrders: React.FC = () => {
         setIsPdfModalOpen(false);
         setSelectedFile(null);
         setSelectedOrder(null);
+    };
+    
+    const handleViewDetails = (order: CallListOrder) => {
+        setSelectedOrder(order);
+        setIsDetailsModalOpen(true);
     };
 
     const handleConfirmRejection = async () => {
@@ -203,6 +214,9 @@ const ManageCallListOrders: React.FC = () => {
                                 <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={order.status} /></td>
                                 <td data-label="একশন" className="px-6 py-4">
                                     <div className="flex items-center space-x-2 justify-end">
+                                        <button onClick={() => handleViewDetails(order)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="বিস্তারিত দেখুন">
+                                            <EyeIcon className="h-5 w-5" />
+                                        </button>
                                         {updatingStatusId === order.id ? (
                                             <span className="text-xs animate-pulse">প্রসেসিং...</span>
                                         ) : order.status === OrderStatus.PENDING ? (
@@ -280,6 +294,58 @@ const ManageCallListOrders: React.FC = () => {
                         </Button>
                     </div>
                 </div>
+            </Modal>
+            
+            <Modal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} title="কল লিস্ট অর্ডারের বিবরণ">
+                {selectedOrder && (
+                    <div className="space-y-4 text-[13px]">
+                        {(() => {
+                            const orderUser = users.find(u => u.id === selectedOrder.userId);
+                            if (orderUser) {
+                                return (
+                                    <div className="pb-3 mb-3 border-b dark:border-slate-600">
+                                        <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারী</h4>
+                                        <div className="flex items-center space-x-3">
+                                            {orderUser.photoUrl ? (
+                                                <img src={orderUser.photoUrl} alt={orderUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                            ) : (
+                                                <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                            )}
+                                            <div>
+                                                <p className="font-bold text-slate-800 dark:text-slate-200">{orderUser.name}</p>
+                                                <p className="text-xs text-slate-500">{orderUser.mobile}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        <div>
+                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">অর্ডারের তথ্য</h4>
+                            <p><strong>অর্ডার আইডি:</strong> <span className="font-mono">{selectedOrder.id}</span></p>
+                            <p><strong>মোবাইল:</strong> {selectedOrder.operator} - {selectedOrder.mobile}</p>
+                            <p><strong>মেয়াদ:</strong> {selectedOrder.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>
+                            <p><strong>মূল্য:</strong> ৳{toBengaliNumber(selectedOrder.price)}</p>
+                            <p><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedOrder.status} /></p>
+                            {selectedOrder.status === OrderStatus.REJECTED && selectedOrder.rejectionReason && (
+                                <p><strong>বাতিলের কারণ:</strong> {selectedOrder.rejectionReason}</p>
+                            )}
+                        </div>
+
+                        {selectedOrder.pdfUrl && (
+                            <div className="pt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+                                <a href={selectedOrder.pdfUrl} target="_blank" rel="noopener noreferrer" className="w-full">
+                                    <Button><LinkIcon className="h-5 w-5 mr-2"/> PDF দেখুন</Button>
+                                </a>
+                                <Button variant="secondary" onClick={() => selectedOrder.pdfUrl && printPdf(selectedOrder.pdfUrl)} className="w-full">
+                                    <PrinterIcon className="h-5 w-5 mr-2"/> প্রিন্ট করুন
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                )}
             </Modal>
         </div>
     );

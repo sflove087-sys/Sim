@@ -12,7 +12,7 @@ import Button from '../common/Button';
 import Spinner from '../common/Spinner';
 import Modal from '../common/Modal';
 import { toBengaliNumber } from '../../utils/formatters';
-import { EyeIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon, ShieldExclamationIcon, ArrowPathIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, CheckCircleIcon, ExclamationTriangleIcon, XCircleIcon, ShieldExclamationIcon, ArrowPathIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import VerificationProgressBar from '../common/VerificationProgressBar';
 
 type RequestStatus = 'Pending' | 'Approved' | 'Rejected' | 'Verifying';
@@ -304,14 +304,30 @@ const RechargeRequests: React.FC = () => {
                     <div className="space-y-4 text-[13px]">
                         <VerificationProgressBar status={selectedTx.status} verificationStatus={selectedTx.verificationStatus || null} />
                         <hr className="dark:border-slate-600"/>
-                        <div>
-                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারীর তথ্য</h4>
-                            <div className="space-y-1 text-slate-600 dark:text-slate-300">
-                                <p><strong>নাম:</strong> {getUserName(selectedTx.userId)}</p>
-                                <p><strong>ইউজার আইডি:</strong> <span className="font-mono">{selectedTx.userId}</span></p>
-                            </div>
-                        </div>
-                        <hr className="dark:border-slate-600"/>
+                        {(() => {
+                            const txUser = users.find(u => u.id === selectedTx.userId);
+                            if (txUser) {
+                                return (
+                                    <div>
+                                        <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারীর তথ্য</h4>
+                                        <div className="flex items-center space-x-3">
+                                            {txUser.photoUrl ? (
+                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                            ) : (
+                                                <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                            )}
+                                            <div>
+                                                <p className="font-bold text-slate-800 dark:text-slate-200">{txUser.name}</p>
+                                                <p className="text-xs text-slate-500">{txUser.mobile}</p>
+                                            </div>
+                                        </div>
+                                        <hr className="dark:border-slate-600 mt-4"/>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
                         <div>
                             <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">লেনদেনের তথ্য</h4>
                             <div className="space-y-1 text-slate-600 dark:text-slate-300">

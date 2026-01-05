@@ -360,7 +360,7 @@ function handleUpdateProfile(payload) {
   usersSheet.getRange(userRowIndex, 2).setValue(name);
 
   if (photoBase64 && mimeType) {
-    const fileUrl = uploadFileToDrive(photoBase64, mimeType, userId, "Profile Photos");
+    const fileUrl = uploadFileToDrive(photoBase64, mimeType, userId, "Profile Photos", 'direct');
     usersSheet.getRange(userRowIndex, 9).setValue(fileUrl);
   }
   
@@ -390,7 +390,7 @@ function handleFetchOrders(payload) {
   if(!userId) throw new Error("অনুরোধ করার জন্য ইউজার আইডি আবশ্যক।");
 
   const sheetData = ordersSheet.getLastRow() > 1 ? ordersSheet.getRange(2, 1, ordersSheet.getLastRow() - 1, 12).getValues() : [];
-  const mapRowToOrder = row => ({ id: row[0], date: new Date(row[2]).toLocaleDateString('bn-BD'), operator: row[3], mobile: row[4], price: row[5], status: row[6], pdfUrl: row[7], nidNumber: row[8], customerName: row[9], dateOfBirth: row[10], rejectionReason: row[11] });
+  const mapRowToOrder = row => ({ id: row[0], userId: row[1], date: new Date(row[2]).toLocaleDateString('bn-BD'), operator: row[3], mobile: row[4], price: row[5], status: row[6], pdfUrl: row[7], nidNumber: row[8], customerName: row[9], dateOfBirth: row[10], rejectionReason: row[11] });
   
   if (!isAdmin(userId)) {
     throw new Error("Permission denied.");
@@ -1009,7 +1009,29 @@ function findRow(sheet, value, col) { if (!sheet || sheet.getLastRow() < 1) retu
 function mapUserRowToObject(row) { 
     return { id: row[0], name: row[1], mobile: row[2], email: row[3], role: row[5], status: row[7], photoUrl: row[8], ipAddress: row[9], lastSeen: row[10] || null }; 
 }
-function uploadFileToDrive(base64Data, mimeType, fileName, folderName) { let folder; const folders = DriveApp.getFoldersByName(folderName); if (folders.hasNext()) folder = folders.next(); else folder = DriveApp.createFolder(folderName); const decoded = Utilities.base64Decode(base64Data.split(';base64,')[1]); const blob = Utilities.newBlob(decoded, mimeType, `${fileName}.${mimeType.split('/')[1]}`); const file = folder.createFile(blob); file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW); return file.getUrl(); }
+function uploadFileToDrive(base64Data, mimeType, fileName, folderName, outputType = 'view') {
+    let folder;
+    const folders = DriveApp.getFoldersByName(folderName);
+    if (folders.hasNext()) {
+        folder = folders.next();
+    } else {
+        folder = DriveApp.createFolder(folderName);
+    }
+    
+    folder.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+    const decoded = Utilities.base64Decode(base64Data.split(';base64,')[1]);
+    const blob = Utilities.newBlob(decoded, mimeType, `${fileName}.${mimeType.split('/')[1]}`);
+    const file = folder.createFile(blob);
+    
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    if (outputType === 'direct') {
+        return `https://drive.google.com/uc?id=${file.getId()}`;
+    }
+    
+    return file.getUrl();
+}
 function sendNotificationEmail(subject, body) {
   try {
     const email = getSetting('notificationEmail');

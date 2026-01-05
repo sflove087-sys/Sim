@@ -82,6 +82,10 @@ const OrderProgressModal: React.FC<{ details: OrderHistoryItem; onClose: () => v
                  <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-center">
                     <p className="text-sm text-blue-700 dark:text-blue-300">আপনার অর্ডারটি প্রক্রিয়াধীন আছে। সম্পন্ন হলে আপনাকে বিস্তারিত তথ্যসহ একটি PDF ফাইল প্রদান করা হবে।</p>
                 </div>
+
+                <div className="mt-6">
+                    <Button variant="secondary" onClick={onClose}>বন্ধ করুন</Button>
+                </div>
             </div>
         </Modal>
     );
@@ -181,6 +185,7 @@ const OrderDetailsModal: React.FC<{
                     {details.isEmailSent ? <CheckBadgeIcon className="h-5 w-5 mr-2 text-green-500" /> : <EnvelopeIcon className="h-5 w-5 mr-2" />}
                     {details.isEmailSent ? 'ইমেইল পাঠানো হয়েছে' : 'বিবরণ ইমেইল করুন (৳৩)'}
                 </Button>
+                 <Button variant="secondary" onClick={onClose}>বন্ধ করুন</Button>
             </div>
         </div>
     );

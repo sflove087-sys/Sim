@@ -55,6 +55,7 @@ export enum OrderStatus {
 
 export interface Order {
   id: string;
+  userId: string;
   date: string;
   operator: Operator;
   mobile: string;

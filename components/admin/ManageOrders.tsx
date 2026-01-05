@@ -1,14 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Order, OrderStatus } from '../../types';
-import { fetchOrders, uploadOrderPdf, updateOrderStatus, updateOrderDetails } from '../../services/api';
+import { Order, OrderStatus, User } from '../../types';
+import { fetchOrders, uploadOrderPdf, updateOrderStatus, updateOrderDetails, fetchAllUsers } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon } from '@heroicons/react/24/outline';
+import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon, CheckCircleIcon, UserCircleIcon } from '@heroicons/react/24/solid';
 import { printPdf } from '../../utils/formatters';
 import LoadingModal from '../common/LoadingModal';
-
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     const statusStyles = {
@@ -28,8 +27,59 @@ const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
     );
 };
 
+const OrderCardSkeleton: React.FC = () => (
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 space-y-3 animate-pulse">
+        <div className="flex justify-between items-start">
+            <div>
+                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                <div className="h-5 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            </div>
+            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+        </div>
+        <div className="flex justify-end items-center space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+            <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+            <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+        </div>
+    </div>
+);
+
+const OrderCard: React.FC<{
+    order: Order;
+    onViewDetails: (order: Order) => void;
+    onComplete: (order: Order) => void;
+    onReject: (order: Order) => void;
+}> = ({ order, onViewDetails, onComplete, onReject }) => (
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 space-y-3 transition-shadow hover:shadow-lg">
+        <div className="flex justify-between items-start">
+            <div>
+                <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{order.id}</p>
+                <p className="font-bold text-base text-slate-800 dark:text-slate-200">{order.operator} - {order.mobile}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{order.date}</p>
+            </div>
+            <StatusBadge status={order.status} />
+        </div>
+        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="secondary" onClick={() => onViewDetails(order)} className="!w-auto !px-3 !py-1.5" title="বিস্তারিত দেখুন"><EyeIcon className="h-4 w-4"/></Button>
+            {order.status === OrderStatus.PENDING && (
+                <>
+                    <Button onClick={() => onComplete(order)} className="!w-auto !py-1.5 !px-3 !text-xs !bg-green-600 hover:!bg-green-700"><CheckCircleIcon className="h-4 w-4 mr-1.5"/> সম্পন্ন করুন</Button>
+                    <Button variant="danger" onClick={() => onReject(order)} className="!w-auto !py-1.5 !px-3 !text-xs !bg-red-600 hover:!bg-red-700"><XCircleIcon className="h-4 w-4 mr-1.5"/> বাতিল করুন</Button>
+                </>
+            )}
+            {order.pdfUrl && (
+                <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer">
+                    <Button className="!w-auto !py-1.5 !px-3 !text-xs"><LinkIcon className="h-4 w-4 mr-1.5"/> PDF দেখুন</Button>
+                </a>
+            )}
+        </div>
+    </div>
+);
+
+
 const ManageOrders: React.FC = () => {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [isPdfModalOpen, setIsPdfModalOpen] = useState(false);
     const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
@@ -39,7 +89,6 @@ const ManageOrders: React.FC = () => {
     const [rejectionReason, setRejectionReason] = useState('');
     const [isUploading, setIsUploading] = useState(false);
     const [isRejecting, setIsRejecting] = useState(false);
-    const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
     const { addToast } = useToast();
 
     // --- State for editing order details ---
@@ -54,11 +103,15 @@ const ManageOrders: React.FC = () => {
     const loadOrders = useCallback(async () => {
         setIsLoading(true);
         try {
-            const data = await fetchOrders(); 
+            const [data, usersData] = await Promise.all([
+                fetchOrders(),
+                fetchAllUsers(1, 10000)
+            ]);
             setOrders(data);
+            setUsers(usersData.users);
         } catch (error) {
-            console.error("Failed to load orders", error);
-            addToast('অর্ডার লোড করা যায়নি।', 'error');
+            console.error("Failed to load orders and users", error);
+            addToast('অর্ডার ও ব্যবহারকারীদের তথ্য লোড করা যায়নি।', 'error');
         } finally {
             setIsLoading(false);
         }
@@ -157,30 +210,6 @@ const ManageOrders: React.FC = () => {
             setIsRejecting(false);
         }
     };
-
-    const handleStatusChange = async (orderId: string, newStatus: OrderStatus, event: React.ChangeEvent<HTMLSelectElement>) => {
-        const originalStatus = orders.find(o => o.id === orderId)?.status;
-        if (!originalStatus || newStatus === originalStatus) return;
-
-        const isConfirmed = window.confirm(`আপনি কি এই অর্ডারের স্ট্যাটাস পরিবর্তন করতে নিশ্চিত?`);
-        if (!isConfirmed) {
-            event.target.value = originalStatus;
-            return;
-        }
-
-        setUpdatingStatusId(orderId);
-        try {
-            await updateOrderStatus(orderId, newStatus);
-            addToast('স্ট্যাটাস সফলভাবে পরিবর্তন করা হয়েছে।', 'success');
-            await loadOrders();
-        } catch (error) {
-            const err = error as Error;
-            addToast(err.message || 'স্ট্যাটাস পরিবর্তন করা যায়নি।', 'error');
-            event.target.value = originalStatus;
-        } finally {
-            setUpdatingStatusId(null);
-        }
-    };
     
     const handleDetailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -196,8 +225,11 @@ const ManageOrders: React.FC = () => {
             await updateOrderDetails(selectedOrder.id, editableDetails);
             addToast('বিবরণ সফলভাবে সংরক্ষণ করা হয়েছে।', 'success');
             setIsEditing(false); 
-            await loadOrders(); 
-            setSelectedOrder(prev => prev ? { ...prev, ...editableDetails } : null);
+            // Optimistically update the selected order details for instant UI feedback
+            const updatedOrder = { ...selectedOrder, ...editableDetails };
+            setSelectedOrder(updatedOrder);
+            // Also update the main orders list
+            setOrders(prevOrders => prevOrders.map(o => o.id === selectedOrder.id ? updatedOrder : o));
         } catch (error) {
             const err = error as Error;
             addToast(err.message || 'বিবরণ সংরক্ষণ করা যায়নি।', 'error');
@@ -206,79 +238,29 @@ const ManageOrders: React.FC = () => {
         }
     };
 
-    if (isLoading) {
-        return <div className="text-center p-10">অর্ডার লোড হচ্ছে...</div>;
-    }
-
     return (
         <div className="space-y-6">
             <LoadingModal isOpen={isUploading || isSaving} />
             <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">অর্ডার ম্যানেজ করুন</h1>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="responsive-table w-full min-w-[800px] text-sm text-left text-slate-500 dark:text-slate-400">
-                    <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">অর্ডার আইডি</th>
-                            <th scope="col" className="px-6 py-3">অপারেটর</th>
-                            <th scope="col" className="px-6 py-3">মোবাইল</th>
-                            <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                            <th scope="col" className="px-6 py-3">একশন</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {orders.map((order) => (
-                            <tr key={order.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                <td data-label="অর্ডার আইডি" className="px-6 py-4 font-mono">{order.id}</td>
-                                <td data-label="অপারেটর" className="px-6 py-4">{order.operator}</td>
-                                <td data-label="মোবাইল" className="px-6 py-4">{order.mobile}</td>
-                                <td data-label="স্ট্যাটাস" className="px-6 py-4">
-                                    {updatingStatusId === order.id ? (
-                                        <span className="text-xs text-slate-500 dark:text-slate-400 animate-pulse">আপডেট হচ্ছে...</span>
-                                    ) : (
-                                        <select
-                                            value={order.status}
-                                            onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus, e)}
-                                            disabled={order.status === OrderStatus.COMPLETED || order.status === OrderStatus.REJECTED}
-                                            title={order.status !== OrderStatus.PENDING ? "এই অর্ডারের স্ট্যাটাস পরিবর্তন করা যাবে না।" : "স্ট্যাটাস পরিবর্তন করুন"}
-                                            className={`w-full p-2 text-xs font-medium rounded-lg border-transparent focus:outline-none focus:ring-2 focus:ring-indigo-500 appearance-none
-                                                ${order.status === OrderStatus.PENDING ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300' : ''}
-                                                ${order.status === OrderStatus.COMPLETED ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300' : ''}
-                                                ${order.status === OrderStatus.REJECTED ? 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300' : ''}
-                                                ${order.status !== OrderStatus.PENDING ? 'cursor-not-allowed' : ''}
-                                            `}
-                                        >
-                                            <option value={OrderStatus.PENDING}>পেন্ডিং</option>
-                                            <option value={OrderStatus.COMPLETED}>কমপ্লিট</option>
-                                            <option value={OrderStatus.REJECTED} disabled>রিজেক্টেড</option>
-                                        </select>
-                                    )}
-                                </td>
-                                <td data-label="একশন" className="px-6 py-4">
-                                    <div className="flex items-center space-x-2 justify-end">
-                                        <button onClick={() => handleViewDetails(order)} className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="বিস্তারিত দেখুন">
-                                            <EyeIcon className="h-5 w-5" />
-                                        </button>
-                                        {order.status === OrderStatus.PENDING && (
-                                            <>
-                                            <button onClick={() => handleOpenPdfModal(order)} className="p-2 rounded-full text-green-600 hover:bg-green-100 dark:hover:bg-green-900/50" title="PDF আপলোড করুন">
-                                                <DocumentArrowUpIcon className="h-5 w-5"/>
-                                            </button>
-                                            <button onClick={() => handleOpenRejectModal(order)} className="p-2 rounded-full text-red-500 hover:bg-red-100 dark:hover:bg-red-900/50" title="অর্ডার বাতিল করুন">
-                                                <XCircleIcon className="h-5 w-5" />
-                                            </button>
-                                            </>
-                                        )}
-                                        {order.pdfUrl && (
-                                            <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50" title="PDF দেখুন">
-                                                <LinkIcon className="h-5 w-5"/>
-                                            </a>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
+            
+            <div className="space-y-4">
+                {isLoading ? (
+                    [...Array(5)].map((_, i) => <OrderCardSkeleton key={i} />)
+                ) : orders.length > 0 ? (
+                    orders.map((order) => (
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onViewDetails={handleViewDetails}
+                            onComplete={handleOpenPdfModal}
+                            onReject={handleOpenRejectModal}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow">
+                        <p className="text-slate-500">কোনো অর্ডার পাওয়া যায়নি।</p>
+                    </div>
+                )}
             </div>
 
             {/* PDF Upload Modal */}
@@ -299,7 +281,7 @@ const ManageOrders: React.FC = () => {
                     {selectedFile && <p className="text-[13px] text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
                     <div className="pt-4">
                         <Button onClick={handlePdfUpload} isLoading={isUploading} disabled={!selectedFile || isUploading}>
-                            আপলোড করুন
+                            আপলোড ও সম্পন্ন করুন
                         </Button>
                     </div>
                 </div>
@@ -338,6 +320,29 @@ const ManageOrders: React.FC = () => {
                     <>
                         {!isEditing ? (
                             <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
+                                {(() => {
+                                    const orderUser = users.find(u => u.id === selectedOrder.userId);
+                                    if (orderUser) {
+                                        return (
+                                            <div className="pb-3 mb-3 border-b dark:border-slate-600">
+                                                <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারী</h4>
+                                                <div className="flex items-center space-x-3">
+                                                    {orderUser.photoUrl ? (
+                                                        <img src={orderUser.photoUrl} alt={orderUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                                    ) : (
+                                                        <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                                    )}
+                                                    <div>
+                                                        <p className="font-bold text-slate-800 dark:text-slate-200">{orderUser.name}</p>
+                                                        <p className="text-xs text-slate-500">{orderUser.mobile}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+                                
                                 <div className="flex justify-between items-start">
                                     <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200">অর্ডারের বিবরণ</h4>
                                     {selectedOrder.status === OrderStatus.PENDING && (
@@ -356,7 +361,7 @@ const ManageOrders: React.FC = () => {
                                 <p><strong>জন্ম তারিখ:</strong> {selectedOrder.dateOfBirth ? new Date(selectedOrder.dateOfBirth).toLocaleDateString('bn-BD') : 'N/A'}</p>
                                 <p><strong>মোবাইল:</strong> {selectedOrder.mobile}</p>
                                 <p><strong>অপারেটর:</strong> {selectedOrder.operator}</p>
-
+                                
                                 <hr className="dark:border-slate-600 my-4"/>
                                 
                                 <p><strong>অর্ডার আইডি:</strong> {selectedOrder.id}</p>

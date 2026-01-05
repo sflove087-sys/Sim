@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber } from '../../utils/formatters';
-import { EyeIcon, ArrowPathIcon, EnvelopeIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, ArrowPathIcon, EnvelopeIcon, CheckIcon, XMarkIcon } from '@heroicons/react/24/solid';
 import Pagination from '../common/Pagination';
 import Input from '../common/Input';
 import LoadingModal from '../common/LoadingModal';
@@ -35,45 +35,112 @@ const isOnline = (lastSeen?: string): boolean => {
     return (now.getTime() - lastSeenDate.getTime()) < twoMinutesInMillis;
 };
 
-const SkeletonTable = () => (
-    <div className="overflow-x-auto">
-        <table className="w-full min-w-[900px]">
-            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                <tr>
-                    <th scope="col" className="px-6 py-3">নাম</th>
-                    <th scope="col" className="px-6 py-3">ইমেইল</th>
-                    <th scope="col" className="px-6 py-3">মোবাইল</th>
-                    <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
-                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                    <th scope="col" className="px-6 py-3">একশন</th>
-                </tr>
-            </thead>
-            <tbody>
-                {[...Array(PAGE_SIZE)].map((_, i) => (
-                    <tr key={i} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700 animate-pulse">
-                        <td className="px-6 py-4">
-                            <div className="flex items-center space-x-2">
-                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-                                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                            </div>
-                        </td>
-                        <td className="px-6 py-4"><div className="h-4 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div></td>
-                        <td className="px-6 py-4"><div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div></td>
-                        <td className="px-6 py-4">
-                            <div className="flex items-center space-x-2">
-                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-                                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-                                <div className="h-4 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
-                            </div>
-                        </td>
-                    </tr>
-                ))}
-            </tbody>
-        </table>
+const UserCardSkeleton = () => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md animate-pulse flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <div className="flex items-center space-x-4">
+            <div className="h-12 w-12 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+            <div>
+                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                <div className="h-3 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            </div>
+        </div>
+        <div className="flex justify-between items-center md:space-x-8">
+            <div>
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
+                <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            </div>
+             <div>
+                <div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            </div>
+        </div>
+        <div className="flex items-center space-x-2 justify-end">
+            <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+            <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+            <div className="h-8 w-20 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+        </div>
     </div>
 );
+
+
+const UserCard: React.FC<{
+    user: User;
+    onView: (user: User) => void;
+    onEmail: (user: User) => void;
+    onStatusChange: (user: User) => void;
+    processingId: string | null;
+}> = ({ user, onView, onEmail, onStatusChange, processingId }) => {
+    return (
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md transition-shadow hover:shadow-lg flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0 md:space-x-4">
+            <div className="flex items-center space-x-4 flex-1">
+                <div className="relative flex-shrink-0">
+                    {user.photoUrl ? (
+                        <img src={user.photoUrl} alt={user.name} className="h-12 w-12 rounded-full object-cover"/>
+                    ) : (
+                        <div className="h-12 w-12 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-lg">
+                            {user.name.charAt(0)}
+                        </div>
+                    )}
+                    <span 
+                        className={`absolute bottom-0 right-0 block h-3 w-3 rounded-full ring-2 ring-white dark:ring-slate-800 ${isOnline(user.lastSeen) ? 'bg-green-500' : 'bg-slate-400'}`} 
+                        title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
+                    />
+                </div>
+                <div>
+                    <p className="font-bold text-base text-slate-800 dark:text-slate-200">{user.name}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
+                </div>
+            </div>
+
+            <div className="flex justify-between md:items-center md:space-x-8 text-xs">
+                 <div className="text-left">
+                    <p className="text-slate-500 dark:text-slate-400">ব্যালেন্স</p>
+                    <p className="font-semibold text-base text-indigo-600 dark:text-indigo-400">
+                        {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
+                    </p>
+                </div>
+                <div className="text-right md:text-left">
+                     <p className="text-slate-500 dark:text-slate-400 mb-1">স্ট্যাটাস</p>
+                    <StatusBadge status={user.status} />
+                </div>
+            </div>
+
+            <div className="flex items-center justify-end space-x-2 border-t md:border-none pt-3 md:pt-0">
+                <button
+                    onClick={() => onView(user)}
+                    className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    title="ইউজারের বিবরণ দেখুন"
+                >
+                    <EyeIcon className="h-5 w-5" />
+                </button>
+                <button
+                    onClick={() => onEmail(user)}
+                    className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition"
+                    title="ইমেইল পাঠান"
+                >
+                    <EnvelopeIcon className="h-5 w-5" />
+                </button>
+                 <button
+                    onClick={() => onStatusChange(user)}
+                    disabled={processingId === user.id}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-full transition-colors disabled:opacity-50 disabled:cursor-wait ${
+                        user.status === 'Active' 
+                        ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-500/20 dark:text-red-400 dark:hover:bg-red-500/30' 
+                        : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-500/20 dark:text-green-400 dark:hover:bg-green-500/30'
+                    }`}
+                >
+                    <div className="flex items-center">
+                        {processingId === user.id 
+                            ? '...' 
+                            : user.status === 'Active' 
+                            ? <><XMarkIcon className="h-4 w-4 mr-1"/><span>ব্লক</span></>
+                            : <><CheckIcon className="h-4 w-4 mr-1"/><span>আনব্লক</span></>
+                        }
+                    </div>
+                </button>
+            </div>
+        </div>
+    );
+};
 
 
 const UserManagement: React.FC = () => {
@@ -193,82 +260,25 @@ const UserManagement: React.FC = () => {
                     <ArrowPathIcon className={`h-6 w-6 ${isLoading ? 'animate-spin' : ''}`} />
                 </button>
             </div>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
-                {isLoading ? <SkeletonTable /> : (
-                    <div className="overflow-x-auto">
-                        <table className="responsive-table w-full min-w-[900px] text-xs text-left text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">নাম</th>
-                                    <th scope="col" className="px-6 py-3">ইমেইল</th>
-                                    <th scope="col" className="px-6 py-3">মোবাইল</th>
-                                    <th scope="col" className="px-6 py-3">ওয়ালেট ব্যালেন্স</th>
-                                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                                    <th scope="col" className="px-6 py-3">একশন</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {users.map((user) => (
-                                    <tr key={user.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                        <td data-label="নাম" className="px-6 py-4 font-medium text-slate-900 dark:text-white">
-                                            <div className="flex items-center space-x-2">
-                                                <div className="relative flex-shrink-0">
-                                                    {user.photoUrl ? (
-                                                        <img src={user.photoUrl} alt={user.name} className="h-8 w-8 rounded-full object-cover"/>
-                                                    ) : (
-                                                        <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
-                                                            {user.name.charAt(0)}
-                                                        </div>
-                                                    )}
-                                                    <span 
-                                                        className={`absolute bottom-0 right-0 block h-2.5 w-2.5 rounded-full ring-2 ring-white dark:ring-slate-800 ${isOnline(user.lastSeen) ? 'bg-green-500' : 'bg-red-500'}`} 
-                                                        title={isOnline(user.lastSeen) ? 'অনলাইন' : 'অফলাইন'}
-                                                    />
-                                                </div>
-                                                <span className="text-xs">{user.name}</span>
-                                            </div>
-                                        </td>
-                                        <td data-label="ইমেইল" className="px-6 py-4">{user.email}</td>
-                                        <td data-label="মোবাইল" className="px-6 py-4">{user.mobile}</td>
-                                        <td data-label="ব্যালেন্স" className="px-6 py-4 font-semibold text-indigo-600 dark:text-indigo-400">
-                                            {user.balance !== undefined ? `৳${toBengaliNumber(user.balance.toFixed(2))}` : 'N/A'}
-                                        </td>
-                                        <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={user.status} /></td>
-                                        <td data-label="একশন" className="px-6 py-4">
-                                            <div className="flex items-center space-x-2 justify-end">
-                                                <button
-                                                    onClick={() => handleViewUser(user)}
-                                                    className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
-                                                    title="ইউজারের বিবরণ দেখুন"
-                                                >
-                                                    <EyeIcon className="h-5 w-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => handleOpenEmailModal(user)}
-                                                    className="p-2 rounded-full text-teal-600 hover:bg-teal-100 dark:hover:bg-teal-900/50"
-                                                    title="ইমেইল পাঠান"
-                                                >
-                                                    <EnvelopeIcon className="h-5 w-5" />
-                                                </button>
-                                                <button
-                                                    onClick={() => setConfirmationState({ user, newStatus: user.status === 'Active' ? 'Blocked' : 'Active' })}
-                                                    disabled={processingId === user.id}
-                                                    className={`font-medium disabled:opacity-50 disabled:cursor-wait text-xs px-2 py-1 rounded-md ${
-                                                        user.status === 'Active' ? 'text-red-600 hover:bg-red-100 dark:text-red-500 dark:hover:bg-red-900/50' : 'text-green-600 hover:bg-green-100 dark:text-green-500 dark:hover:bg-green-900/50'
-                                                    }`}
-                                                >
-                                                    {processingId === user.id ? '...' : (user.status === 'Active' ? 'ব্লক' : 'আনব্লক')}
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
+            
+            <div className="space-y-4">
+                {isLoading ? (
+                    [...Array(PAGE_SIZE)].map((_, i) => <UserCardSkeleton key={i} />)
+                ) : (
+                    users.map((user) => (
+                        <UserCard
+                            key={user.id}
+                            user={user}
+                            onView={handleViewUser}
+                            onEmail={handleOpenEmailModal}
+                            onStatusChange={(u) => setConfirmationState({ user: u, newStatus: u.status === 'Active' ? 'Blocked' : 'Active' })}
+                            processingId={processingId}
+                        />
+                    ))
                 )}
-                 {!isLoading && totalUsers > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
             </div>
+            
+            {!isLoading && totalUsers > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
             
             <Modal isOpen={!!confirmationState} onClose={() => setConfirmationState(null)} title="স্ট্যাটাস পরিবর্তন নিশ্চিত করুন">
                 {confirmationState && (

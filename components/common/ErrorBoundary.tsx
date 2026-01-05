@@ -34,7 +34,6 @@ class ErrorBoundary extends Component<Props, State> {
     }
   };
 
-  // FIX: Added explicit return type React.ReactNode to the render method.
   public render(): React.ReactNode {
     if (this.state.hasError) {
       return (
@@ -67,9 +66,10 @@ class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    // FIX: Destructure children from props to resolve potential 'this' context issues with the compiler.
-    const { children } = this.props;
-    return children;
+    // FIX: The 'props' property is inherited from React.Component and is available on 'this'.
+    // The error was likely due to a misconfiguration or a misleading comment.
+    // The component correctly renders its children when there is no error.
+    return this.props.children;
   }
 }
 
