@@ -50,14 +50,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
     };
     
     return (
-        <header className="relative flex items-center justify-between h-16 px-4 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 flex-shrink-0 z-20">
+        <header className="relative flex items-center justify-between h-16 px-4 bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg flex-shrink-0 z-20">
             <div className="flex items-center">
-                <button onClick={onMenuClick} className="md:hidden mr-2 text-slate-600 dark:text-slate-300 p-2 -ml-2">
+                <button onClick={onMenuClick} className="md:hidden mr-2 text-white p-2 -ml-2">
                     <Bars3Icon className="h-6 w-6" />
                 </button>
                  <div className="flex items-center space-x-2 md:hidden">
-                    <CircleStackIcon className="h-7 w-7 text-indigo-600" />
-                    <h1 className="text-xl font-bold text-slate-800 dark:text-slate-200 tracking-tight">
+                    <CircleStackIcon className="h-7 w-7 text-white" />
+                    <h1 className="text-xl font-bold text-white tracking-tight">
                         ডিজিটাল সেবা
                     </h1>
                 </div>
@@ -69,12 +69,12 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
                 <div className="relative">
                     <button
                         onClick={handleToggleNotifications}
-                        className="p-2 rounded-full text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                        className="p-2 rounded-full text-white hover:bg-white/20 transition-colors"
                         title="নোটিফিকেশন"
                     >
                         <BellIcon className="h-6 w-6" />
                         {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white dark:ring-slate-800"></span>
+                            <span className="absolute top-1.5 right-1.5 block h-2.5 w-2.5 rounded-full bg-red-500 ring-2 ring-white"></span>
                         )}
                     </button>
                      {isNotificationOpen && (
@@ -87,15 +87,15 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, setActivePage }) => {
                 </div>
                 <button
                     onClick={() => setActivePage(Page.PROFILE)}
-                    className="flex items-center space-x-2 p-1 -m-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                    className="flex items-center space-x-2 p-1 -m-1 rounded-lg hover:bg-white/20 transition-colors"
                     title="প্রোফাইল দেখুন"
                 >
                     {user?.photoUrl ? (
-                        <img src={user.photoUrl} alt={user.name} className="h-9 w-9 rounded-full object-cover border-2 border-slate-200 dark:border-slate-600" />
+                        <img src={user.photoUrl} alt={user.name} referrerPolicy="no-referrer" className="h-9 w-9 rounded-full object-cover border-2 border-white/50" />
                     ) : (
-                        <UserCircleIcon className="h-9 w-9 text-slate-400 dark:text-slate-500"/>
+                        <UserCircleIcon className="h-9 w-9 text-indigo-200"/>
                     )}
-                    <span className="font-semibold text-base text-slate-800 dark:text-slate-200 hidden sm:block">{user?.name}</span>
+                    <span className="font-semibold text-base text-white hidden sm:block">{user?.name}</span>
                 </button>
             </div>
         </header>

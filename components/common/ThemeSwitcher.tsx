@@ -30,13 +30,13 @@ const ThemeSwitcher: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="flex items-center justify-center h-9 w-9 rounded-full text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+      className="flex items-center justify-center h-9 w-9 rounded-full text-white hover:bg-white/20 transition-colors"
       title="থিম পরিবর্তন করুন"
     >
       {theme === 'dark' ? (
-        <SunIcon className="h-5 w-5 text-yellow-400" />
+        <SunIcon className="h-5 w-5 text-yellow-300" />
       ) : (
-        <MoonIcon className="h-5 w-5 text-slate-700" />
+        <MoonIcon className="h-5 w-5" />
       )}
     </button>
   );

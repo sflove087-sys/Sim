@@ -13,7 +13,7 @@ const LanguageSwitcher: React.FC = () => {
   return (
     <button
       onClick={toggleLanguage}
-      className="flex items-center justify-center h-9 w-9 rounded-full font-semibold text-sm bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+      className="flex items-center justify-center h-9 w-9 rounded-full font-semibold text-sm bg-white/20 text-white hover:bg-white/30 transition-colors"
       title={t('language.change')}
     >
       {language === 'bn' ? 'EN' : 'BN'}

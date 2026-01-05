@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber, printPdf } from '../../utils/formatters';
-import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon, EyeIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon, EyeIcon, UserCircleIcon, InformationCircleIcon, DevicePhoneMobileIcon, ClockIcon, WifiIcon } from '@heroicons/react/24/solid';
 import LoadingModal from '../common/LoadingModal';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
@@ -25,6 +25,16 @@ const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
         </span>
     );
 };
+
+const DetailRow: React.FC<{ icon: React.FC<any>, label: string, value: string | React.ReactNode }> = ({ icon: Icon, label, value }) => (
+    <div className="flex items-start space-x-3 text-slate-600 dark:text-slate-300">
+        <Icon className="h-5 w-5 mt-0.5 text-slate-400" />
+        <div className="flex-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="font-semibold text-[15px]">{value}</p>
+        </div>
+    </div>
+);
 
 const ManageCallListOrders: React.FC = () => {
     const [orders, setOrders] = useState<CallListOrder[]>([]);
@@ -303,17 +313,16 @@ const ManageCallListOrders: React.FC = () => {
                             const orderUser = users.find(u => u.id === selectedOrder.userId);
                             if (orderUser) {
                                 return (
-                                    <div className="pb-3 mb-3 border-b dark:border-slate-600">
-                                        <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারী</h4>
-                                        <div className="flex items-center space-x-3">
+                                    <div className="pb-4 mb-4 border-b dark:border-slate-600">
+                                        <div className="flex flex-col items-center text-center space-y-2">
                                             {orderUser.photoUrl ? (
-                                                <img src={orderUser.photoUrl} alt={orderUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                                <img src={orderUser.photoUrl} alt={orderUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
                                             ) : (
-                                                <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                                <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
                                             )}
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-200">{orderUser.name}</p>
-                                                <p className="text-xs text-slate-500">{orderUser.mobile}</p>
+                                                <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{orderUser.name}</p>
+                                                <p className="text-sm text-slate-500">{orderUser.mobile}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -323,16 +332,23 @@ const ManageCallListOrders: React.FC = () => {
                         })()}
 
                         <div>
-                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">অর্ডারের তথ্য</h4>
-                            <p><strong>অর্ডার আইডি:</strong> <span className="font-mono">{selectedOrder.id}</span></p>
-                            <p><strong>মোবাইল:</strong> {selectedOrder.operator} - {selectedOrder.mobile}</p>
-                            <p><strong>মেয়াদ:</strong> {selectedOrder.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>
-                            <p><strong>মূল্য:</strong> ৳{toBengaliNumber(selectedOrder.price)}</p>
-                            <p><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedOrder.status} /></p>
-                            {selectedOrder.status === OrderStatus.REJECTED && selectedOrder.rejectionReason && (
-                                <p><strong>বাতিলের কারণ:</strong> {selectedOrder.rejectionReason}</p>
-                            )}
+                            <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-4">অর্ডারের তথ্য</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
+                                <DetailRow icon={InformationCircleIcon} label="অর্ডার আইডি" value={<span className="font-mono">{selectedOrder.id}</span>} />
+                                <DetailRow icon={DevicePhoneMobileIcon} label="মোবাইল" value={`${selectedOrder.operator} - ${selectedOrder.mobile}`} />
+                                <DetailRow icon={ClockIcon} label="মেয়াদ" value={selectedOrder.duration === '3 Months' ? '৩ মাস' : '৬ মাস'} />
+                                <DetailRow icon={WifiIcon} label="অপারেটর" value={selectedOrder.operator} />
+                            </div>
                         </div>
+
+                        <hr className="dark:border-slate-600 my-4"/>
+
+                        <p><strong>মূল্য:</strong> ৳{toBengaliNumber(selectedOrder.price)}</p>
+                        <p><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedOrder.status} /></p>
+                        {selectedOrder.status === OrderStatus.REJECTED && selectedOrder.rejectionReason && (
+                            <p><strong>বাতিলের কারণ:</strong> {selectedOrder.rejectionReason}</p>
+                        )}
+
 
                         {selectedOrder.pdfUrl && (
                             <div className="pt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">

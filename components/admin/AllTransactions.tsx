@@ -2,44 +2,102 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Transaction, TransactionStatus, TransactionType, User } from '../../types';
 import { fetchAllTransactions, fetchAllUsers } from '../../services/api';
 import { toBengaliNumber } from '../../utils/formatters';
-import Spinner from '../common/Spinner';
 import Pagination from '../common/Pagination';
 import Modal from '../common/Modal';
-import { EyeIcon, UserCircleIcon, InformationCircleIcon, CalendarDaysIcon, CheckBadgeIcon } from '@heroicons/react/24/solid';
+import { EyeIcon, UserCircleIcon, InformationCircleIcon, CalendarDaysIcon, CheckBadgeIcon, ArrowUpCircleIcon, ArrowDownCircleIcon } from '@heroicons/react/24/solid';
 
-const PAGE_SIZE = 15;
+const PAGE_SIZE = 10; // Changed to 10 for better card view
 
-const TransactionRow: React.FC<{ transaction: Transaction; userName: string; onViewDetails: (tx: Transaction) => void; }> = ({ transaction, userName, onViewDetails }) => {
+const TransactionCardSkeleton: React.FC = () => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md animate-pulse">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div className="flex items-center gap-4 flex-1">
+                <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-3/4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div className="h-3 w-1/4 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            </div>
+            <div className="flex items-center gap-3 md:w-48">
+                <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            </div>
+            <div className="md:w-32 space-y-2">
+                <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded ml-auto"></div>
+                <div className="h-4 w-16 bg-slate-200 dark:bg-slate-700 rounded ml-auto"></div>
+            </div>
+            <div className="md:w-16 flex justify-end">
+                <div className="h-8 w-8 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+            </div>
+        </div>
+    </div>
+);
+
+const TransactionCard: React.FC<{ transaction: Transaction; user: User | undefined; onViewDetails: (tx: Transaction) => void; }> = ({ transaction, user, onViewDetails }) => {
     const typeStyles = {
         [TransactionType.CREDIT]: 'text-green-600 dark:text-green-400',
         [TransactionType.DEBIT]: 'text-red-600 dark:text-red-400',
         [TransactionType.BONUS]: 'text-blue-600 dark:text-blue-400',
+    };
+    const iconStyles = {
+        [TransactionType.CREDIT]: 'text-green-500',
+        [TransactionType.DEBIT]: 'text-red-500',
+        [TransactionType.BONUS]: 'text-blue-500',
     };
     const statusText = {
         [TransactionStatus.PENDING]: 'পেন্ডিং',
         [TransactionStatus.COMPLETED]: 'কমপ্লিট',
         [TransactionStatus.FAILED]: 'ব্যর্থ',
     };
+    const statusStyles = {
+        [TransactionStatus.COMPLETED]: 'text-green-600',
+        [TransactionStatus.PENDING]: 'text-yellow-600',
+        [TransactionStatus.FAILED]: 'text-red-600',
+    };
     const sign = transaction.type === TransactionType.DEBIT ? '-' : '+';
+    const Icon = transaction.type === TransactionType.DEBIT ? ArrowDownCircleIcon : ArrowUpCircleIcon;
 
     return (
-         <tr className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-            <td data-label="তারিখ" className="px-6 py-4">{transaction.date}</td>
-            <td data-label="ব্যবহারকারী" className="px-6 py-4">
-                <p className="font-medium text-slate-800 dark:text-slate-200">{userName}</p>
-                <span className="font-mono text-xs text-slate-500">{transaction.userId}</span>
-            </td>
-            <td data-label="বিবরণ" className="px-6 py-4">{transaction.description}</td>
-            <td data-label="পরিমাণ" className={`px-6 py-4 font-semibold ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</td>
-            <td data-label="স্ট্যাটাস" className="px-6 py-4">{statusText[transaction.status]}</td>
-            <td data-label="একশন" className="px-6 py-4">
-                <button onClick={() => onViewDetails(transaction)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition">
-                    <EyeIcon className="h-5 w-5" />
-                </button>
-            </td>
-        </tr>
+        <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md transition-all hover:shadow-lg hover:border-indigo-500/50 border border-transparent">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <Icon className={`h-10 w-10 flex-shrink-0 ${iconStyles[transaction.type]}`} />
+                    <div className="flex-1 min-w-0">
+                        <p className="font-bold text-slate-800 dark:text-slate-200 truncate" title={transaction.description}>{transaction.description}</p>
+                        <p className="text-xs text-slate-500">{transaction.date}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3 md:w-48 border-t md:border-none pt-3 md:pt-0">
+                    {user?.photoUrl ? (
+                        <img src={user.photoUrl} alt={user.name} className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                        <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600" />
+                    )}
+                    <div>
+                        <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 truncate">{user?.name || 'অজানা'}</p>
+                        <p className="text-xs font-mono text-slate-500">{transaction.userId}</p>
+                    </div>
+                </div>
+
+                <div className="text-left md:text-right md:w-32">
+                    <p className={`font-bold text-lg ${typeStyles[transaction.type]}`}>{sign}৳{toBengaliNumber(transaction.amount.toFixed(2))}</p>
+                    <p className={`text-xs font-medium ${statusStyles[transaction.status]}`}>{statusText[transaction.status]}</p>
+                </div>
+
+                <div className="flex justify-end md:w-16">
+                    <button onClick={() => onViewDetails(transaction)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="বিস্তারিত দেখুন">
+                        <EyeIcon className="h-5 w-5" />
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 };
+
 
 const AllTransactions: React.FC = () => {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -81,33 +139,22 @@ const AllTransactions: React.FC = () => {
     return (
         <div className="space-y-6">
             <h1 className="text-base font-bold text-slate-800 dark:text-slate-200">সকল লেনদেনের তালিকা</h1>
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg">
-                <div className="overflow-x-auto">
-                    {isLoading ? (
-                        <div className="flex justify-center items-center p-20"><Spinner size="lg" /></div>
-                    ) : (
-                        <table className="responsive-table w-full min-w-[800px] text-xs text-left text-slate-500 dark:text-slate-400">
-                            <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                                <tr>
-                                    <th scope="col" className="px-6 py-3">তারিখ</th>
-                                    <th scope="col" className="px-6 py-3">ব্যবহারকারী</th>
-                                    <th scope="col" className="px-6 py-3">বিবরণ</th>
-                                    <th scope="col" className="px-6 py-3">পরিমাণ</th>
-                                    <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                                    <th scope="col" className="px-6 py-3">একশন</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {transactions.map((tx) => (
-                                    <TransactionRow key={tx.id} transaction={tx} userName={userMap.get(tx.userId || '')?.name || 'অজানা'} onViewDetails={handleViewDetails} />
-                                ))}
-                            </tbody>
-                        </table>
-                    )}
-                    {!isLoading && transactions.length === 0 && <p className="text-center p-6 text-xs text-slate-500">কোনো লেনদেন পাওয়া যায়নি।</p>}
-                </div>
-                 {!isLoading && totalTransactions > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
+            
+            <div className="space-y-4">
+                {isLoading ? (
+                    [...Array(PAGE_SIZE)].map((_, i) => <TransactionCardSkeleton key={i} />)
+                ) : transactions.length > 0 ? (
+                    transactions.map((tx) => (
+                        <TransactionCard key={tx.id} transaction={tx} user={userMap.get(tx.userId || '')} onViewDetails={handleViewDetails} />
+                    ))
+                ) : (
+                    <div className="text-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow">
+                        <p className="text-slate-500">কোনো লেনদেন পাওয়া যায়নি।</p>
+                    </div>
+                )}
             </div>
+
+            {!isLoading && totalTransactions > 0 && <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={setCurrentPage} />}
             
             <Modal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} title="লেনদেনের বিবরণ">
                 {selectedTx && (
@@ -116,17 +163,16 @@ const AllTransactions: React.FC = () => {
                             const txUser = selectedTx.userId ? userMap.get(selectedTx.userId) : null;
                             if (txUser) {
                                 return (
-                                    <div className="pb-3 mb-3 border-b dark:border-slate-600">
-                                        <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারী</h4>
-                                        <div className="flex items-center space-x-3">
+                                     <div className="pb-4 mb-4 border-b dark:border-slate-600">
+                                        <div className="flex flex-col items-center text-center space-y-2">
                                             {txUser.photoUrl ? (
-                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
                                             ) : (
-                                                <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                                <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
                                             )}
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-200">{txUser.name}</p>
-                                                <p className="text-xs text-slate-500">{txUser.mobile}</p>
+                                                <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{txUser.name}</p>
+                                                <p className="text-sm text-slate-500">{txUser.mobile}</p>
                                             </div>
                                         </div>
                                     </div>

@@ -5,7 +5,7 @@ import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import Input from '../common/Input';
-import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon, CheckCircleIcon, UserCircleIcon } from '@heroicons/react/24/solid';
+import { DocumentArrowUpIcon, LinkIcon, EyeIcon, ArrowDownTrayIcon, PencilSquareIcon, XCircleIcon, PrinterIcon, CheckCircleIcon, UserCircleIcon, UserIcon, IdentificationIcon, CalendarIcon, DevicePhoneMobileIcon, WifiIcon, InformationCircleIcon, Squares2X2Icon } from '@heroicons/react/24/solid';
 import { printPdf } from '../../utils/formatters';
 import LoadingModal from '../common/LoadingModal';
 
@@ -26,6 +26,16 @@ const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
         </span>
     );
 };
+
+const DetailRow: React.FC<{ icon: React.FC<any>, label: string, value: string | React.ReactNode }> = ({ icon: Icon, label, value }) => (
+    <div className="flex items-start space-x-3 text-slate-600 dark:text-slate-300">
+        <Icon className="h-5 w-5 mt-0.5 text-slate-400" />
+        <div className="flex-1">
+            <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="font-semibold text-[15px]">{value}</p>
+        </div>
+    </div>
+);
 
 const OrderCardSkeleton: React.FC = () => (
     <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 space-y-3 animate-pulse">
@@ -319,22 +329,21 @@ const ManageOrders: React.FC = () => {
                 {selectedOrder && (
                     <>
                         {!isEditing ? (
-                            <div className="space-y-3 text-[13px] text-slate-600 dark:text-slate-300">
+                            <div className="space-y-4 text-[13px] text-slate-600 dark:text-slate-300">
                                 {(() => {
                                     const orderUser = users.find(u => u.id === selectedOrder.userId);
                                     if (orderUser) {
                                         return (
-                                            <div className="pb-3 mb-3 border-b dark:border-slate-600">
-                                                <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারী</h4>
-                                                <div className="flex items-center space-x-3">
+                                            <div className="pb-4 mb-4 border-b dark:border-slate-600">
+                                                <div className="flex flex-col items-center text-center space-y-2">
                                                     {orderUser.photoUrl ? (
-                                                        <img src={orderUser.photoUrl} alt={orderUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                                        <img src={orderUser.photoUrl} alt={orderUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
                                                     ) : (
-                                                        <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                                        <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
                                                     )}
                                                     <div>
-                                                        <p className="font-bold text-slate-800 dark:text-slate-200">{orderUser.name}</p>
-                                                        <p className="text-xs text-slate-500">{orderUser.mobile}</p>
+                                                        <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{orderUser.name}</p>
+                                                        <p className="text-sm text-slate-500">{orderUser.mobile}</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -356,15 +365,18 @@ const ManageOrders: React.FC = () => {
                                     )}
                                 </div>
                                 
-                                <p><strong>নাম:</strong> {selectedOrder.customerName || 'N/A'}</p>
-                                <p><strong>NID নাম্বার:</strong> {selectedOrder.nidNumber || 'N/A'}</p>
-                                <p><strong>জন্ম তারিখ:</strong> {selectedOrder.dateOfBirth ? new Date(selectedOrder.dateOfBirth).toLocaleDateString('bn-BD') : 'N/A'}</p>
-                                <p><strong>মোবাইল:</strong> {selectedOrder.mobile}</p>
-                                <p><strong>অপারেটর:</strong> {selectedOrder.operator}</p>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3 pt-2">
+                                    <DetailRow icon={InformationCircleIcon} label="অর্ডার আইডি" value={<span className="font-mono text-sm">{selectedOrder.id}</span>} />
+                                    <DetailRow icon={Squares2X2Icon} label="অর্ডারের ধরণ" value="বায়োমেট্রিক" />
+                                    <DetailRow icon={UserIcon} label="নাম" value={selectedOrder.customerName || 'N/A'} />
+                                    <DetailRow icon={IdentificationIcon} label="NID নাম্বার" value={selectedOrder.nidNumber || 'N/A'} />
+                                    <DetailRow icon={CalendarIcon} label="জন্ম তারিখ" value={selectedOrder.dateOfBirth ? new Date(selectedOrder.dateOfBirth).toLocaleDateString('bn-BD') : 'N/A'} />
+                                    <DetailRow icon={DevicePhoneMobileIcon} label="মোবাইল" value={selectedOrder.mobile} />
+                                    <DetailRow icon={WifiIcon} label="অপারেটর" value={selectedOrder.operator} />
+                                </div>
                                 
                                 <hr className="dark:border-slate-600 my-4"/>
                                 
-                                <p><strong>অর্ডার আইডি:</strong> {selectedOrder.id}</p>
                                 <div><strong>স্ট্যাটাস:</strong> <StatusBadge status={selectedOrder.status} /></div>
                                 
                                 {selectedOrder.status === OrderStatus.REJECTED && selectedOrder.rejectionReason && (

@@ -308,20 +308,18 @@ const RechargeRequests: React.FC = () => {
                             const txUser = users.find(u => u.id === selectedTx.userId);
                             if (txUser) {
                                 return (
-                                    <div>
-                                        <h4 className="font-semibold text-base text-slate-800 dark:text-slate-200 mb-2">ব্যবহারকারীর তথ্য</h4>
-                                        <div className="flex items-center space-x-3">
+                                     <div className="pb-4 mb-4 border-b dark:border-slate-600">
+                                        <div className="flex flex-col items-center text-center space-y-2">
                                             {txUser.photoUrl ? (
-                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-10 w-10 rounded-full object-cover"/>
+                                                <img src={txUser.photoUrl} alt={txUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
                                             ) : (
-                                                <UserCircleIcon className="h-10 w-10 text-slate-300 dark:text-slate-600"/>
+                                                <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
                                             )}
                                             <div>
-                                                <p className="font-bold text-slate-800 dark:text-slate-200">{txUser.name}</p>
-                                                <p className="text-xs text-slate-500">{txUser.mobile}</p>
+                                                <p className="font-bold text-lg text-slate-800 dark:text-slate-200">{txUser.name}</p>
+                                                <p className="text-sm text-slate-500">{txUser.mobile}</p>
                                             </div>
                                         </div>
-                                        <hr className="dark:border-slate-600 mt-4"/>
                                     </div>
                                 );
                             }
