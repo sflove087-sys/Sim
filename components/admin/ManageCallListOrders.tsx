@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { CallListOrder, OrderStatus, User } from '../../types';
 import { fetchCallListOrders, updateCallListOrderStatus, uploadCallListOrderPdf, fetchAllUsers } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../common/Modal';
 import Button from '../common/Button';
 import { toBengaliNumber, printPdf } from '../../utils/formatters';
-import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon, EyeIcon, UserCircleIcon, InformationCircleIcon, DevicePhoneMobileIcon, ClockIcon, WifiIcon } from '@heroicons/react/24/solid';
+import { DocumentArrowUpIcon, LinkIcon, PrinterIcon, MagnifyingGlassIcon, EyeIcon, UserCircleIcon, InformationCircleIcon, DevicePhoneMobileIcon, ClockIcon, WifiIcon, CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/solid';
 import LoadingModal from '../common/LoadingModal';
 
 const StatusBadge: React.FC<{ status: OrderStatus }> = ({ status }) => {
@@ -36,6 +36,90 @@ const DetailRow: React.FC<{ icon: React.FC<any>, label: string, value: string | 
     </div>
 );
 
+const OrderCardSkeleton: React.FC = () => (
+    <div className="bg-white dark:bg-slate-800 p-4 rounded-xl shadow-md animate-pulse">
+        <div className="flex justify-between items-start">
+            <div className="flex items-center space-x-3">
+                <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                <div>
+                    <div className="h-4 w-24 bg-slate-200 dark:bg-slate-700 rounded mb-1.5"></div>
+                    <div className="h-3 w-32 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            </div>
+            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">
+            {[...Array(4)].map((_, i) => (
+                <div key={i}>
+                    <div className="h-3 w-16 bg-slate-200 dark:bg-slate-700 rounded mb-1.5"></div>
+                    <div className="h-5 w-24 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                </div>
+            ))}
+        </div>
+        <div className="flex justify-end items-center mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 space-x-2">
+             <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+             <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+        </div>
+    </div>
+);
+
+const OrderCard: React.FC<{
+    order: CallListOrder;
+    user: User | undefined;
+    onViewDetails: (order: CallListOrder) => void;
+    onComplete: (order: CallListOrder) => void;
+    onReject: (order: CallListOrder) => void;
+    processingId: string | null;
+}> = ({ order, user, onViewDetails, onComplete, onReject, processingId }) => (
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 transition-all hover:shadow-lg border border-transparent hover:border-indigo-500/30">
+        <div className="flex justify-between items-start pb-3">
+            <div className="flex items-center space-x-3 group">
+                {user?.photoUrl ? (
+                    <img src={user.photoUrl} alt={user.name} className="h-10 w-10 rounded-full object-cover"/>
+                ) : (
+                    <div className="h-10 w-10 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-base">
+                        {user?.name.charAt(0)}
+                    </div>
+                )}
+                <div>
+                    <p className="font-bold text-base text-slate-800 dark:text-slate-200">{user?.name || 'অজানা'}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">{order.userId}</p>
+                </div>
+            </div>
+            <StatusBadge status={order.status} />
+        </div>
+        
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-slate-100 dark:border-slate-700/50 text-sm">
+            <div><p className="text-xs text-slate-500">মোবাইল</p><p className="font-semibold text-slate-700 dark:text-slate-300">{order.operator}-{order.mobile}</p></div>
+            <div><p className="text-xs text-slate-500">মেয়াদ</p><p className="font-semibold text-slate-700 dark:text-slate-300">{order.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</p></div>
+            <div><p className="text-xs text-slate-500">মূল্য</p><p className="font-bold text-indigo-600 dark:text-indigo-400">৳{toBengaliNumber(order.price)}</p></div>
+            <div><p className="text-xs text-slate-500">তারিখ</p><p className="font-semibold text-slate-700 dark:text-slate-300">{new Date(order.date).toLocaleDateString('bn-BD')}</p></div>
+        </div>
+
+        <div className="flex items-center justify-end space-x-2 pt-3">
+            <Button variant="secondary" onClick={() => onViewDetails(order)} className="!w-auto !px-2.5 !py-1" title="বিস্তারিত দেখুন"><EyeIcon className="h-4 w-4"/></Button>
+            {processingId === order.id ? (
+                <span className="text-xs animate-pulse">প্রসেসিং...</span>
+            ) : order.status === OrderStatus.PENDING ? (
+                <>
+                    <Button onClick={() => onComplete(order)} className="!w-auto !py-1 !px-2.5 !text-xs !font-semibold !bg-indigo-600 hover:!bg-indigo-700"><DocumentArrowUpIcon className="h-4 w-4 mr-1.5"/> PDF আপলোড</Button>
+                    <Button variant="danger" onClick={() => onReject(order)} className="!w-auto !py-1 !px-2.5 !text-xs !font-semibold !bg-red-600 hover:!bg-red-700"><XCircleIcon className="h-4 w-4 mr-1.5"/> বাতিল</Button>
+                </>
+            ) : order.status === OrderStatus.COMPLETED && order.pdfUrl ? (
+                <div className="flex items-center space-x-2">
+                    <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer">
+                        <Button className="!w-auto !py-1 !px-2.5 !text-xs !font-semibold"><LinkIcon className="h-4 w-4 mr-1.5"/> PDF দেখুন</Button>
+                    </a>
+                    <Button variant="secondary" onClick={() => order.pdfUrl && printPdf(order.pdfUrl)} className="!w-auto !px-2.5 !py-1" title="প্রিন্ট করুন">
+                        <PrinterIcon className="h-4 w-4"/>
+                    </Button>
+                </div>
+            ) : ( <span className="text-xs text-slate-400">N/A</span> )}
+        </div>
+    </div>
+);
+
+
 const ManageCallListOrders: React.FC = () => {
     const [orders, setOrders] = useState<CallListOrder[]>([]);
     const [users, setUsers] = useState<User[]>([]);
@@ -51,6 +135,10 @@ const ManageCallListOrders: React.FC = () => {
     const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const { addToast } = useToast();
+
+    // For PDF upload dropzone
+    const [dragActive, setDragActive] = useState(false);
+    const inputRef = useRef<HTMLInputElement>(null);
 
     const loadOrders = useCallback(async () => {
         setIsLoading(true);
@@ -103,6 +191,7 @@ const ManageCallListOrders: React.FC = () => {
         setIsPdfModalOpen(false);
         setSelectedFile(null);
         setSelectedOrder(null);
+        setDragActive(false);
     };
     
     const handleViewDetails = (order: CallListOrder) => {
@@ -128,26 +217,33 @@ const ManageCallListOrders: React.FC = () => {
         }
     };
     
-    const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
-        setUpdatingStatusId(orderId);
-        try {
-            await updateCallListOrderStatus(orderId, newStatus);
-            addToast('স্ট্যাটাস সফলভাবে পরিবর্তন করা হয়েছে।', 'success');
-            loadOrders();
-        } catch (error) {
-            addToast((error as Error).message || 'স্ট্যাটাস পরিবর্তন করা যায়নি।', 'error');
-        } finally {
-            setUpdatingStatusId(null);
-        }
-    };
-
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        event.preventDefault();
         if (event.target.files && event.target.files[0]) {
             if (event.target.files[0].type !== 'application/pdf') {
                 addToast('শুধুমাত্র PDF ফাইল আপলোড করা যাবে।', 'error');
                 return;
             }
             setSelectedFile(event.target.files[0]);
+        }
+    };
+
+    const handleDrag = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (e.type === "dragenter" || e.type === "dragover") {
+            setDragActive(true);
+        } else if (e.type === "dragleave") {
+            setDragActive(false);
+        }
+    };
+
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        setDragActive(false);
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+            handleFileChange({ target: { files: e.dataTransfer.files } } as any);
         }
     };
 
@@ -176,10 +272,6 @@ const ManageCallListOrders: React.FC = () => {
     };
 
 
-    if (isLoading) {
-        return <div className="text-center p-10">লোড হচ্ছে...</div>;
-    }
-
     return (
         <div className="space-y-6">
             <LoadingModal isOpen={isUploading} />
@@ -198,69 +290,33 @@ const ManageCallListOrders: React.FC = () => {
                 />
             </div>
             
-            <div className="bg-white dark:bg-slate-800 p-4 rounded-2xl shadow-lg overflow-x-auto">
-                <table className="responsive-table w-full min-w-[900px] text-sm text-left text-slate-500 dark:text-slate-400">
-                    <thead className="text-xs text-slate-700 uppercase bg-slate-50 dark:bg-slate-700 dark:text-slate-300">
-                        <tr>
-                            <th scope="col" className="px-6 py-3">তারিখ</th>
-                            <th scope="col" className="px-6 py-3">অর্ডার আইডি</th>
-                            <th scope="col" className="px-6 py-3">ইউজার আইডি</th>
-                            <th scope="col" className="px-6 py-3">মোবাইল</th>
-                            <th scope="col" className="px-6 py-3">মেয়াদ</th>
-                            <th scope="col" className="px-6 py-3">মূল্য</th>
-                            <th scope="col" className="px-6 py-3">স্ট্যাটাস</th>
-                            <th scope="col" className="px-6 py-3">একশন</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredOrders.map((order) => (
-                            <tr key={order.id} className="bg-white dark:bg-slate-800 border-b dark:border-slate-700">
-                                <td data-label="তারিখ" className="px-6 py-4">{new Date(order.date).toLocaleDateString('bn-BD')}</td>
-                                <td data-label="অর্ডার আইডি" className="px-6 py-4 font-mono">{order.id}</td>
-                                <td data-label="ইউজার আইডি" className="px-6 py-4 font-mono">{order.userId}</td>
-                                <td data-label="মোবাইল" className="px-6 py-4">{order.operator} - {order.mobile}</td>
-                                <td data-label="মেয়াদ" className="px-6 py-4">{order.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</td>
-                                <td data-label="মূল্য" className="px-6 py-4">৳{toBengaliNumber(order.price)}</td>
-                                <td data-label="স্ট্যাটাস" className="px-6 py-4"><StatusBadge status={order.status} /></td>
-                                <td data-label="একশন" className="px-6 py-4">
-                                    <div className="flex items-center space-x-2 justify-end">
-                                        <button onClick={() => handleViewDetails(order)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700 transition" title="বিস্তারিত দেখুন">
-                                            <EyeIcon className="h-5 w-5" />
-                                        </button>
-                                        {updatingStatusId === order.id ? (
-                                            <span className="text-xs animate-pulse">প্রসেসিং...</span>
-                                        ) : order.status === OrderStatus.PENDING ? (
-                                            <>
-                                                <button onClick={() => handleOpenPdfModal(order)} className="p-2 rounded-full text-indigo-600 hover:bg-indigo-100 dark:hover:bg-indigo-900/50" title="PDF আপলোড করুন">
-                                                    <DocumentArrowUpIcon className="h-5 w-5"/>
-                                                </button>
-                                                <button onClick={() => handleOpenRejectModal(order)} className="text-xs font-semibold text-red-600 hover:underline dark:text-red-500">রিজেক্ট</button>
-                                            </>
-                                        ) : order.status === OrderStatus.COMPLETED && order.pdfUrl ? (
-                                            <div className="flex items-center space-x-2">
-                                                <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer" className="p-2 rounded-full text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50" title="PDF দেখুন">
-                                                    <LinkIcon className="h-5 w-5"/>
-                                                </a>
-                                                <button onClick={() => order.pdfUrl && printPdf(order.pdfUrl)} className="p-2 rounded-full text-slate-500 hover:bg-slate-200 dark:text-slate-400 dark:hover:bg-slate-700 transition" title="প্রিন্ট করুন">
-                                                    <PrinterIcon className="h-5 w-5"/>
-                                                </button>
-                                            </div>
-                                        ) : (
-                                            <span className="text-xs text-slate-400">N/A</span>
-                                        )}
-                                    </div>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                 {filteredOrders.length === 0 && <p className="text-center p-6 text-slate-500">{searchTerm ? 'আপনার অনুসন্ধানের সাথে মেলে এমন কোনো অর্ডার পাওয়া যায়নি।' : 'কোনো অর্ডার পাওয়া যায়নি।'}</p>}
+            <div className="space-y-4">
+                {isLoading ? (
+                     [...Array(5)].map((_, i) => <OrderCardSkeleton key={i} />)
+                ) : filteredOrders.length > 0 ? (
+                    filteredOrders.map((order) => (
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            user={users.find(u => u.id === order.userId)}
+                            onViewDetails={handleViewDetails}
+                            onComplete={handleOpenPdfModal}
+                            onReject={handleOpenRejectModal}
+                            processingId={updatingStatusId}
+                        />
+                    ))
+                ) : (
+                    <div className="text-center p-10 bg-white dark:bg-slate-800 rounded-lg shadow">
+                        <p className="text-slate-500">{searchTerm ? 'আপনার অনুসন্ধানের সাথে মেলে এমন কোনো অর্ডার পাওয়া যায়নি।' : 'কোনো অর্ডার পাওয়া যায়নি।'}</p>
+                    </div>
+                )}
             </div>
 
-            <Modal isOpen={isRejectModalOpen} onClose={handleCloseRejectModal} title={`অর্ডার বাতিল করুন: ${selectedOrder?.id}`}>
+            <Modal isOpen={isRejectModalOpen} onClose={handleCloseRejectModal} title={`অর্ডার বাতিল করুন`}>
                 <div className="space-y-4">
+                    <p className="text-sm text-slate-500">অর্ডার আইডি: <span className="font-mono">{selectedOrder?.id}</span></p>
                     <div>
-                        <label htmlFor="rejectionReason" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        <label htmlFor="rejectionReason" className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
                            বাতিলের কারণ লিখুন
                         </label>
                         <textarea
@@ -268,7 +324,7 @@ const ManageCallListOrders: React.FC = () => {
                             rows={3}
                             value={rejectionReason}
                             onChange={(e) => setRejectionReason(e.target.value)}
-                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition"
+                            className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500"
                             placeholder="যেমন: ভুল মোবাইল নম্বর"
                         />
                     </div>
@@ -283,24 +339,43 @@ const ManageCallListOrders: React.FC = () => {
                 </div>
             </Modal>
 
-            <Modal isOpen={isPdfModalOpen} onClose={handleClosePdfModal} title={`PDF আপলোড: ${selectedOrder?.id}`}>
-                <div className="space-y-4">
-                    <div>
-                        <label htmlFor="pdf-upload" className="block text-[13px] font-medium text-slate-700 dark:text-slate-300 mb-2">
-                            একটি PDF ফাইল সিলেক্ট করুন
+            <Modal isOpen={isPdfModalOpen} onClose={handleClosePdfModal} title="PDF আপলোড করুন">
+                <div className="space-y-4 text-center">
+                    <p className="text-sm text-slate-500 dark:text-slate-400">অর্ডার আইডি: <span className="font-mono">{selectedOrder?.id}</span></p>
+                    
+                    <div onDragEnter={handleDrag} onDragLeave={handleDrag} onDragOver={handleDrag} onDrop={handleDrop} className="relative">
+                        <input ref={inputRef} type="file" id="pdf-upload" accept="application/pdf" className="hidden" onChange={handleFileChange} />
+                        <label 
+                            htmlFor="pdf-upload" 
+                            className={`flex flex-col items-center justify-center h-48 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${dragActive ? "border-indigo-600 bg-indigo-50 dark:bg-slate-700" : "border-slate-300 dark:border-slate-600 hover:border-slate-400 dark:hover:border-slate-500"}`}
+                        >
+                            <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                                <DocumentArrowUpIcon className="w-10 h-10 mb-3 text-slate-400" />
+                                <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                                    <span className="font-semibold">ফাইল সিলেক্ট করতে ক্লিক করুন</span> অথবা টেনে আনুন
+                                </p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">শুধু PDF ফাইল গ্রহণযোগ্য</p>
+                            </div>
                         </label>
-                        <input 
-                            id="pdf-upload"
-                            type="file" 
-                            accept="application/pdf"
-                            onChange={handleFileChange}
-                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100"
-                        />
                     </div>
-                    {selectedFile && <p className="text-[13px] text-slate-500 dark:text-slate-400">সিলেক্টেড ফাইল: {selectedFile.name}</p>}
+
+                    {selectedFile && (
+                        <div className="flex items-center justify-between p-2 mt-4 bg-slate-100 dark:bg-slate-700 rounded-lg text-left">
+                            <p className="text-sm text-slate-700 dark:text-slate-200 truncate">{selectedFile.name}</p>
+                            <button 
+                                onClick={() => {
+                                    setSelectedFile(null);
+                                    if(inputRef.current) inputRef.current.value = "";
+                                }} 
+                                className="p-1 rounded-full text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-600"
+                            >
+                                <XCircleIcon className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
                     <div className="pt-4">
                         <Button onClick={handlePdfUpload} isLoading={isUploading} disabled={!selectedFile || isUploading}>
-                            আপলোড করুন
+                            আপলোড ও সম্পন্ন করুন
                         </Button>
                     </div>
                 </div>
@@ -308,7 +383,7 @@ const ManageCallListOrders: React.FC = () => {
             
             <Modal isOpen={isDetailsModalOpen} onClose={() => setIsDetailsModalOpen(false)} title="কল লিস্ট অর্ডারের বিবরণ">
                 {selectedOrder && (
-                    <div className="space-y-4 text-[13px]">
+                    <div className="space-y-4 text-sm">
                         {(() => {
                             const orderUser = users.find(u => u.id === selectedOrder.userId);
                             if (orderUser) {
@@ -348,7 +423,6 @@ const ManageCallListOrders: React.FC = () => {
                         {selectedOrder.status === OrderStatus.REJECTED && selectedOrder.rejectionReason && (
                             <p><strong>বাতিলের কারণ:</strong> {selectedOrder.rejectionReason}</p>
                         )}
-
 
                         {selectedOrder.pdfUrl && (
                             <div className="pt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
