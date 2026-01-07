@@ -103,6 +103,17 @@ function getSetting(key) {
 
 // --- User Action Handlers ---
 
+// Helper to normalize mobile numbers from the sheet, which might be stored as numbers without a leading 0
+function normalizeSheetMobile(mobile) {
+  if (!mobile && mobile !== 0) return '';
+  let str = String(mobile).trim();
+  // If it's a 10-digit number like 17..., prepend 0. This is common when Sheets treats it as a number.
+  if (str.length === 10 && str.startsWith('1')) {
+    return '0' + str;
+  }
+  return str;
+}
+
 function handleSignup(payload) {
   const { name, mobile, email, pass, ipAddress } = payload;
   if (!name || !mobile || !email || !pass) throw new Error("অনুগ্রহ করে সকল ঘর পূরণ করুন।");
@@ -122,7 +133,12 @@ function handleLogin(payload) {
     const { loginId, pass } = payload;
     const usersData = usersSheet.getDataRange().getValues();
     
-    const userRowIndex1Based = usersData.findIndex(row => (row[3] === loginId || row[2] === loginId)) + 1;
+    const userRowIndex1Based = usersData.findIndex(row => {
+        const email = row[3] ? String(row[3]).toLowerCase().trim() : '';
+        const mobile = normalizeSheetMobile(row[2]);
+        const lowercasedLoginId = String(loginId).toLowerCase().trim();
+        return email === lowercasedLoginId || mobile === lowercasedLoginId;
+    }) + 1;
 
     if (userRowIndex1Based === 0) throw new Error("ভুল মোবাইল/ইমেইল অথবা পাসওয়ার্ড।");
     

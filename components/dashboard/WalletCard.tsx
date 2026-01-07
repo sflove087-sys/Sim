@@ -40,7 +40,7 @@ const WalletCard: React.FC = () => {
                 <div className="h-9 w-36 bg-white/20 animate-pulse rounded-md mt-1"></div>
             ) : (
                 <div className="flex items-center space-x-3 mt-1">
-                    <p className="text-3xl font-bold tracking-wider">
+                    <p className="text-2xl sm:text-3xl font-bold tracking-wider">
                         { wallet ?
                             (isBalanceVisible ? `৳ ${toBengaliNumber(wallet.balance.toFixed(2))}` : '•••••')
                             : <span className="text-lg text-amber-200">ব্যালেন্স পাওয়া যায়নি</span>

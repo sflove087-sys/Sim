@@ -28,7 +28,7 @@ const Button: React.FC<ButtonProps> = ({
       disabled={isLoading || props.disabled}
       {...props}
     >
-      {isLoading ? <Spinner /> : children}
+      {isLoading ? <Spinner size="sm" className={variant === 'secondary' ? 'text-slate-700 dark:text-slate-200' : 'text-white'} /> : children}
     </button>
   );
 };

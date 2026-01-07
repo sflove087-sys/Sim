@@ -4,7 +4,7 @@ import { safeLocalStorage, getSessionUser } from '../utils/storage';
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz6psSApG60-HkGkU6nBWnMqBfGgBbXRe3rguspEmbh8WDVnCLVZ4kpeOj5IaRxm7abYQ/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUP45vjXM3BrTTp5VB0Ia4A2Hm2OlzzpnWBFuKY85oMYt9-n3PnXj59fYEsTYe8jAm7w/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend

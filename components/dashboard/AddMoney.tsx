@@ -15,17 +15,17 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
 
     return (
         <nav aria-label="Progress">
-            <ol role="list" className="flex items-center">
+            <ol role="list" className="flex items-center justify-center">
                 {steps.map((stepName, stepIdx) => (
-                    <li key={stepName} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-8 sm:pr-20' : ''}`}>
+                    <li key={stepName} className={`relative ${stepIdx !== steps.length - 1 ? 'pr-6 sm:pr-12 md:pr-16' : ''}`}>
                         {stepIdx < currentStep - 1 ? ( // Completed step
                             <>
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                     <div className="h-0.5 w-full bg-indigo-600" />
                                 </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600">
+                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600" title={stepName}>
                                     <CheckIcon className="h-5 w-5 text-white" aria-hidden="true" />
-                                    <span className="absolute -bottom-7 text-xs font-medium text-slate-600 dark:text-slate-300 w-20 text-center">{stepName}</span>
+                                    <span className="absolute -bottom-6 text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 text-center w-24 left-1/2 -translate-x-1/2">{stepName}</span>
                                 </div>
                             </>
                         ) : stepIdx === currentStep - 1 ? ( // Current step
@@ -33,9 +33,9 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                     <div className="h-0.5 w-full bg-slate-200 dark:bg-slate-700" />
                                 </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-600 bg-white dark:bg-slate-800" aria-current="step">
+                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-600 bg-white dark:bg-slate-800" aria-current="step" title={stepName}>
                                     <span className="h-2.5 w-2.5 rounded-full bg-indigo-600" aria-hidden="true" />
-                                    <span className="absolute -bottom-7 text-xs font-bold text-indigo-600 dark:text-indigo-400 w-20 text-center">{stepName}</span>
+                                    <span className="absolute -bottom-6 text-[11px] sm:text-xs font-bold text-indigo-600 dark:text-indigo-400 text-center w-24 left-1/2 -translate-x-1/2">{stepName}</span>
                                 </div>
                             </>
                         ) : ( // Upcoming step
@@ -43,8 +43,8 @@ const Stepper: React.FC<{ currentStep: number }> = ({ currentStep }) => {
                                 <div className="absolute inset-0 flex items-center" aria-hidden="true">
                                     <div className="h-0.5 w-full bg-slate-200 dark:bg-slate-700" />
                                 </div>
-                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800">
-                                    <span className="absolute -bottom-7 text-xs font-medium text-slate-500 dark:text-slate-400 w-20 text-center">{stepName}</span>
+                                <div className="relative flex h-8 w-8 items-center justify-center rounded-full border-2 border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800" title={stepName}>
+                                    <span className="absolute -bottom-6 text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 text-center w-24 left-1/2 -translate-x-1/2">{stepName}</span>
                                 </div>
                             </>
                         )}
@@ -193,7 +193,7 @@ const AddMoney: React.FC = () => {
                 <h1 className="text-lg font-bold text-slate-800 dark:text-slate-200">টাকা যোগ করুন</h1>
             </div>
 
-            <div className="bg-white dark:bg-slate-800 p-6 sm:p-8 rounded-2xl shadow-lg">
+            <div className="bg-white dark:bg-slate-800 p-4 sm:p-8 rounded-2xl shadow-lg">
                 <div className="flex justify-center pb-8 pt-2 px-4 sm:px-0">
                     <Stepper currentStep={currentStep} />
                 </div>
@@ -252,14 +252,14 @@ const AddMoney: React.FC = () => {
                         </button>
                         
                         {/* Top Tabs */}
-                        <div className="flex items-center justify-center space-x-2 mb-6 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl">
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                        <div className="flex items-center justify-center space-x-1 sm:space-x-2 mb-6 p-1 bg-slate-100 dark:bg-slate-700 rounded-xl">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
                                 <CreditCardIcon className="h-5 w-5"/> <span>কার্ড</span>
                             </button>
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-bold bg-indigo-600 text-white shadow">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-bold bg-indigo-600 text-white shadow">
                                 <DevicePhoneMobileIcon className="h-5 w-5"/> <span>মোবাইল ব্যাংকিং</span>
                             </button>
-                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-2 rounded-lg text-sm font-semibold text-slate-600 dark:text-slate-300">
+                            <button className="flex-1 flex items-center justify-center space-x-2 text-center py-2 px-1 sm:px-2 rounded-lg text-xs sm:text-sm font-semibold text-slate-600 dark:text-slate-300">
                                 <BuildingLibraryIcon className="h-5 w-5"/> <span>নেট ব্যাংকিং</span>
                             </button>
                         </div>
@@ -269,7 +269,7 @@ const AddMoney: React.FC = () => {
                         </h3>
 
                         {isLoadingMethods ? (
-                            <div className="flex justify-center p-8"><Spinner size="lg" colorClass="border-indigo-500" /></div>
+                            <div className="flex justify-center p-8"><Spinner size="lg" /></div>
                         ) : paymentMethods.length > 0 ? (
                             <div>
                                 <div role="radiogroup" className="grid grid-cols-3 sm:grid-cols-4 gap-3">

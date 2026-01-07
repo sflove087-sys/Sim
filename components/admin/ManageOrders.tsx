@@ -38,18 +38,21 @@ const DetailRow: React.FC<{ icon: React.FC<any>, label: string, value: string | 
 );
 
 const OrderCardSkeleton: React.FC = () => (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 space-y-3 animate-pulse">
-        <div className="flex justify-between items-start">
-            <div>
-                <div className="h-4 w-32 bg-slate-200 dark:bg-slate-700 rounded mb-2"></div>
-                <div className="h-5 w-40 bg-slate-200 dark:bg-slate-700 rounded"></div>
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-3 animate-pulse">
+        <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0 space-y-1.5">
+                <div className="h-3 w-28 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                <div className="h-4 w-36 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
             </div>
-            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            <div className="flex-shrink-0 ml-3">
+                 <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+            </div>
         </div>
-        <div className="flex justify-end items-center space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-            <div className="h-8 w-8 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
-            <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
-            <div className="h-8 w-24 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+        <div className="flex items-center justify-end space-x-2 pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
+            <div className="h-6 w-8 bg-slate-200 dark:bg-slate-700 rounded"></div>
+            <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
+            <div className="h-6 w-16 bg-slate-200 dark:bg-slate-700 rounded-md"></div>
         </div>
     </div>
 );
@@ -60,26 +63,28 @@ const OrderCard: React.FC<{
     onComplete: (order: Order) => void;
     onReject: (order: Order) => void;
 }> = ({ order, onViewDetails, onComplete, onReject }) => (
-    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-4 space-y-3 transition-shadow hover:shadow-lg">
-        <div className="flex justify-between items-start">
-            <div>
-                <p className="font-mono text-xs text-slate-500 dark:text-slate-400">{order.id}</p>
-                <p className="font-bold text-base text-slate-800 dark:text-slate-200">{order.operator} - {order.mobile}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{order.date}</p>
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-md p-3 transition-shadow hover:shadow-lg">
+        <div className="flex items-center justify-between">
+            <div className="flex-1 min-w-0">
+                <p className="font-mono text-[11px] text-slate-500 dark:text-slate-400 truncate" title={order.id}>{order.id}</p>
+                <p className="font-bold text-sm text-slate-800 dark:text-slate-200 truncate" title={`${order.operator} - ${order.mobile}`}>{order.operator} - {order.mobile}</p>
+                <p className="text-[11px] text-slate-500 dark:text-slate-400">{order.date}</p>
             </div>
-            <StatusBadge status={order.status} />
+            <div className="flex-shrink-0 ml-3">
+                 <StatusBadge status={order.status} />
+            </div>
         </div>
-        <div className="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 dark:border-slate-700">
-            <Button variant="secondary" onClick={() => onViewDetails(order)} className="!w-auto !px-3 !py-1.5" title="বিস্তারিত দেখুন"><EyeIcon className="h-4 w-4"/></Button>
+        <div className="flex items-center justify-end space-x-2 pt-2 mt-2 border-t border-slate-100 dark:border-slate-700">
+            <Button variant="secondary" onClick={() => onViewDetails(order)} className="!w-auto !px-2.5 !py-1" title="বিস্তারিত দেখুন"><EyeIcon className="h-4 w-4"/></Button>
             {order.status === OrderStatus.PENDING && (
                 <>
-                    <Button onClick={() => onComplete(order)} className="!w-auto !py-1.5 !px-3 !text-xs !bg-green-600 hover:!bg-green-700"><CheckCircleIcon className="h-4 w-4 mr-1.5"/> সম্পন্ন করুন</Button>
-                    <Button variant="danger" onClick={() => onReject(order)} className="!w-auto !py-1.5 !px-3 !text-xs !bg-red-600 hover:!bg-red-700"><XCircleIcon className="h-4 w-4 mr-1.5"/> বাতিল করুন</Button>
+                    <Button onClick={() => onComplete(order)} className="!w-auto !py-1 !px-2.5 !text-[11px] !font-semibold !bg-green-600 hover:!bg-green-700"><CheckCircleIcon className="h-3.5 w-3.5 mr-1"/> সম্পন্ন</Button>
+                    <Button variant="danger" onClick={() => onReject(order)} className="!w-auto !py-1 !px-2.5 !text-[11px] !font-semibold !bg-red-600 hover:!bg-red-700"><XCircleIcon className="h-3.5 w-3.5 mr-1"/> বাতিল</Button>
                 </>
             )}
             {order.pdfUrl && (
                 <a href={order.pdfUrl} target="_blank" rel="noopener noreferrer">
-                    <Button className="!w-auto !py-1.5 !px-3 !text-xs"><LinkIcon className="h-4 w-4 mr-1.5"/> PDF দেখুন</Button>
+                    <Button className="!w-auto !py-1 !px-2.5 !text-[11px] !font-semibold"><LinkIcon className="h-3.5 w-3.5 mr-1"/> PDF</Button>
                 </a>
             )}
         </div>
@@ -337,7 +342,7 @@ const ManageOrders: React.FC = () => {
                                             <div className="pb-4 mb-4 border-b dark:border-slate-600">
                                                 <div className="flex flex-col items-center text-center space-y-2">
                                                     {orderUser.photoUrl ? (
-                                                        <img src={orderUser.photoUrl} alt={orderUser.name} className="h-16 w-16 rounded-full object-cover shadow-md"/>
+                                                        <img src={orderUser.photoUrl} alt={orderUser.name} referrerPolicy="no-referrer" className="h-16 w-16 rounded-full object-cover shadow-md"/>
                                                     ) : (
                                                         <UserCircleIcon className="h-16 w-16 text-slate-300 dark:text-slate-600"/>
                                                     )}

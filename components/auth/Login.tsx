@@ -54,11 +54,11 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
       <LoadingModal isOpen={isLoading} />
        <div className="text-center mb-8">
             <div className="mb-4">
-                <h1 className="text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
+                <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-indigo-500 animated-gradient-text">
                     ডিজিটাল সেবা
                 </h1>
             </div>
-            <h2 className="text-3xl font-bold text-slate-800 dark:text-slate-200">স্বাগতম!</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-slate-800 dark:text-slate-200">স্বাগতম!</h2>
             <p className="text-slate-500 dark:text-slate-400 mt-2">আপনার একাউন্টে লগইন করুন</p>
         </div>
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -74,7 +74,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                     }
                 </div>
                  {isMobileInput && (
-                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-12">
+                    <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-11 sm:pl-12">
                         <span className="text-slate-500 dark:text-slate-400 text-base">+880</span>
                         <div className="h-5 w-px bg-slate-300 dark:bg-slate-600 ml-2"></div>
                     </div>
@@ -86,7 +86,7 @@ const Login: React.FC<LoginProps> = ({ setView }) => {
                     autoComplete={isMobileInput ? "tel" : "email"}
                     value={loginId}
                     onChange={(e) => setLoginId(e.target.value)}
-                    className={`${baseInputClass} ${isMobileInput ? 'pl-28' : 'pl-12'} pr-4`}
+                    className={`${baseInputClass} ${isMobileInput ? 'pl-24 sm:pl-28' : 'pl-12'} pr-4`}
                     placeholder={isMobileInput ? "171 234 5678" : "example@email.com"}
                     required
                 />

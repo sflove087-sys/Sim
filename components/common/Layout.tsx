@@ -190,7 +190,7 @@ export default function Layout() {
             </aside>
 
             <div className="flex-1 flex flex-col overflow-hidden">
-                <Header onMenuClick={() => setIsMobileMenuOpen(true)} setActivePage={setActivePage} />
+                <Header onMenuClick={() => setIsMobileMenuOpen(prev => !prev)} setActivePage={setActivePage} />
                 <main className="flex-1 overflow-x-hidden overflow-y-auto bg-slate-100 dark:bg-slate-900 p-4 md:p-6 lg:p-8">
                     <div className="animate-fade-in-up">
                         <PageComponent setActivePage={setActivePage} />
