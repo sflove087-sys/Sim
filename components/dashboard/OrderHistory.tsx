@@ -35,7 +35,7 @@ const OrderProgressModal: React.FC<{ details: OrderHistoryItem; onClose: () => v
             <div className="space-y-6 pt-4 pb-4">
                  <div className="text-center mb-8">
                     <p className="text-sm text-slate-500 dark:text-slate-400">অর্ডার আইডি: <span className="font-mono">{details.id}</span></p>
-                    <p className="font-semibold text-lg text-slate-700 dark:text-slate-300">{details.mobile} ({details.operator})</p>
+                    <p className="font-semibold text-lg text-slate-700 dark:text-slate-300">{details.mobile} {details.operator ? `(${details.operator})` : ''}</p>
                 </div>
                 
                 <div className="flex justify-center pb-8 pt-2 px-4 sm:px-0">
@@ -139,8 +139,8 @@ const OrderDetailsModal: React.FC<{
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <DetailRow icon={InformationCircleIcon} label="অর্ডার আইডি" value={<span className="font-mono text-sm">{details.id}</span>} />
-                <DetailRow icon={SquaresPlusIcon} label="অর্ডারের ধরন" value={details.type === 'Biometric' ? 'বায়োমেট্রিক' : 'কল লিস্ট'} />
-                <DetailRow icon={DevicePhoneMobileIcon} label="মোবাইল" value={`${details.mobile} (${details.operator})`} />
+                <DetailRow icon={SquaresPlusIcon} label="অর্ডারের ধরন" value={details.type === 'Biometric' ? 'বায়োমেট্রিক' : details.type === 'Call List' ? 'কল লিস্ট' : 'লাইভ লোকেশন'} />
+                <DetailRow icon={DevicePhoneMobileIcon} label="মোবাইল" value={details.operator ? `${details.mobile} (${details.operator})` : details.mobile} />
                 
                 {details.type === 'Call List' && (
                     <DetailRow icon={ClockIcon} label="মেয়াদ" value={details.duration === '3 Months' ? '৩ মাস' : '৬ মাস'} />
@@ -285,13 +285,15 @@ const OrderHistory: React.FC = () => {
                                         <span className={`px-2 py-1 text-xs rounded-full ${
                                             order.type === 'Biometric' 
                                             ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
-                                            : 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300'
+                                            : order.type === 'Call List'
+                                            ? 'bg-teal-100 text-teal-800 dark:bg-teal-900/50 dark:text-teal-300'
+                                            : 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300'
                                         }`}>
-                                            {order.type === 'Biometric' ? 'বায়োমেট্রিক' : 'কল লিস্ট'}
+                                            {order.type === 'Biometric' ? 'বায়োমেট্রিক' : order.type === 'Call List' ? 'কল লিস্ট' : 'লাইভ লোকেশন'}
                                         </span>
                                     </td>
                                     <td className="px-6 py-4">
-                                        <p className="font-semibold">{order.mobile} ({order.operator})</p>
+                                        <p className="font-semibold">{order.mobile} {order.operator ? `(${order.operator})` : ''}</p>
                                         {order.type === 'Call List' && <p className="text-xs text-slate-500">{order.duration === '3 Months' ? '৩ মাস' : '৬ মাস'}</p>}
                                     </td>
                                     <td className="px-6 py-4 font-semibold">৳{toBengaliNumber(order.price)}</td>

@@ -1,7 +1,6 @@
 import React, { ErrorInfo, ReactNode } from 'react';
 import { safeLocalStorage } from '../../utils/storage';
 
-// FIX: Renamed Props to ErrorBoundaryProps for clarity and to avoid naming conflicts.
 interface ErrorBoundaryProps {
   children: ReactNode;
 }
@@ -12,22 +11,18 @@ interface State {
 }
 
 class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
-  // FIX: Using a constructor to initialize state. This can help prevent subtle type inference issues.
-  constructor(props: ErrorBoundaryProps) {
-    super(props);
-    this.state = {
-      hasError: false,
-      error: undefined
-    };
-  }
+  // FIX: All errors in this file were caused by incorrect state initialization.
+  // Switched to using a class property initializer for state, which is a modern and robust approach in React class components.
+  // This resolves the issue where TypeScript could not find `this.state` and `this.props`.
+  public state: State = {
+    hasError: false,
+    error: undefined
+  };
 
-  // FIX: Corrected return type from State to Partial<State> to align with React type definitions.
-  // FIX: Static methods are public by default. Removed explicit public modifier.
   static getDerivedStateFromError(error: Error): Partial<State> {
     return { hasError: true, error };
   }
 
-  // FIX: Class methods are public by default. Removed explicit public modifier.
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("Uncaught error:", error, errorInfo);
   }
@@ -43,7 +38,6 @@ class ErrorBoundary extends React.Component<ErrorBoundaryProps, State> {
     }
   };
 
-  // FIX: Class methods are public by default. Removing explicit 'public' modifier which may have caused type inference issues and is not standard practice in React components.
   render() {
     if (this.state.hasError) {
       return (

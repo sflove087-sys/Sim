@@ -82,6 +82,17 @@ export interface CallListOrder {
   pdfUrl?: string;
 }
 
+export interface LiveLocationOrder {
+  id: string;
+  userId: string;
+  date: string;
+  mobile: string;
+  price: number;
+  status: OrderStatus;
+  rejectionReason?: string;
+  locationUrl?: string;
+}
+
 export interface OrderDetails extends Order {
   nidNumber: string;
   customerName: string;
@@ -116,13 +127,16 @@ export interface Settings {
     biometricOrderPrice: number;
     callListPrice3Months: number;
     callListPrice6Months: number;
+    liveLocationOrderPrice: number;
     paymentMethods: PaymentMethod[];
     notificationEmail: string;
     isAddMoneyVisible: boolean;
     isBiometricOrderVisible: boolean;
     isCallListOrderVisible: boolean;
+    isLiveLocationOrderVisible: boolean;
     biometricOrderOffMessage: string;
     callListOrderOffMessage: string;
+    liveLocationOrderOffMessage: string;
     headlineNotices: string[];
     emailDetailsCharge: number;
 }
@@ -146,9 +160,9 @@ export interface OrderHistoryItem {
   price: number;
   status: OrderStatus;
   rejectionReason?: string;
-  type: 'Biometric' | 'Call List';
-  operator: Operator;
+  type: 'Biometric' | 'Call List' | 'Live Location';
   mobile: string;
+  operator?: Operator;
   // Biometric specific
   pdfUrl?: string;
   nidNumber?: string;
@@ -157,6 +171,8 @@ export interface OrderHistoryItem {
   // Call List specific
   duration?: '3 Months' | '6 Months';
   isEmailSent?: boolean;
+  // Live Location specific
+  locationUrl?: string;
 }
 
 export interface Notification {
@@ -175,12 +191,14 @@ export enum Page {
     ADD_MONEY = 'ADD_MONEY',
     BIOMETRIC_ORDER = 'BIOMETRIC_ORDER',
     CALL_LIST_ORDER = 'CALL_LIST_ORDER',
+    LIVE_LOCATION_ORDER = 'LIVE_LOCATION_ORDER',
     ORDER_HISTORY = 'ORDER_HISTORY',
     TRANSACTION_HISTORY = 'TRANSACTION_HISTORY',
     PROFILE = 'PROFILE',
     // Admin
     ADMIN_DASHBOARD = 'ADMIN_DASHBOARD',
     USER_MANAGEMENT = 'USER_MANAGEMENT',
+    CUSTOMER_LIST = 'CUSTOMER_LIST',
     RECHARGE_REQUESTS = 'RECHARGE_REQUESTS',
     MANAGE_ORDERS = 'MANAGE_ORDERS',
     MANAGE_CALL_LIST_ORDERS = 'MANAGE_CALL_LIST_ORDERS',

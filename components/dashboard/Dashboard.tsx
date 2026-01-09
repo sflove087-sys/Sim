@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import WalletCard from './WalletCard';
 import { Page } from '../../types';
-import { PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, InformationCircleIcon, PhoneArrowUpRightIcon, XMarkIcon } from '@heroicons/react/24/solid';
+import { PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, InformationCircleIcon, PhoneArrowUpRightIcon, XMarkIcon, MapPinIcon } from '@heroicons/react/24/solid';
 import RecentTransactions from './RecentTransactions';
 import { useSettings } from '../../context/SettingsContext';
 import { useAuth } from '../../context/AuthContext';
@@ -59,6 +59,7 @@ const Dashboard: React.FC<DashboardProps> = ({ setActivePage }) => {
         { page: Page.ADD_MONEY, label: 'টাকা যোগ করুন', icon: PlusCircleIcon, color: 'from-green-500 to-teal-500', visible: settings?.isAddMoneyVisible },
         { page: Page.BIOMETRIC_ORDER, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon, color: 'from-indigo-500 to-blue-500', visible: settings?.isBiometricOrderVisible },
         { page: Page.CALL_LIST_ORDER, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon, color: 'from-sky-500 to-cyan-500', visible: settings?.isCallListOrderVisible },
+        { page: Page.LIVE_LOCATION_ORDER, label: 'লাইভ লোকেশন', icon: MapPinIcon, color: 'from-purple-500 to-pink-500', visible: (settings as any)?.isLiveLocationOrderVisible },
         { page: Page.ORDER_HISTORY, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon, color: 'from-amber-500 to-orange-500', visible: true },
     ], [settings]);
 

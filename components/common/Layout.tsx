@@ -5,11 +5,13 @@ import Header from './Header';
 import AddMoney from '../dashboard/AddMoney';
 import BiometricOrder from '../dashboard/BiometricOrder';
 import CallListOrder from '../dashboard/CallListOrder';
+import LiveLocationOrder from '../dashboard/LiveLocationOrder';
 import OrderHistory from '../dashboard/OrderHistory';
 import TransactionHistory from '../dashboard/TransactionHistory';
 import Profile from '../dashboard/Profile';
 import AdminDashboard from '../admin/AdminDashboard';
 import UserManagement from '../admin/UserManagement';
+import CustomerList from '../admin/CustomerList';
 import ManageOrders from '../admin/ManageOrders';
 import ManageCallListOrders from '../admin/ManageCallListOrders';
 import AllTransactions from '../admin/AllTransactions';
@@ -20,7 +22,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useSettings } from '../../context/SettingsContext';
 import { apiUpdateUserActivity } from '../../services/api';
 import { 
-    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon, CircleStackIcon, MegaphoneIcon
+    HomeIcon, CreditCardIcon, PlusCircleIcon, ClipboardDocumentListIcon, Squares2X2Icon, UserCircleIcon, Cog6ToothIcon, UsersIcon, ClipboardDocumentCheckIcon, ArrowLeftOnRectangleIcon, ArchiveBoxIcon, WrenchScrewdriverIcon, CurrencyBangladeshiIcon, PhoneArrowUpRightIcon, PhoneIcon, BanknotesIcon, CircleStackIcon, MegaphoneIcon, MapPinIcon
 } from '@heroicons/react/24/outline';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import WelcomePopup from './WelcomePopup';
@@ -39,6 +41,7 @@ const allUserPages: PageInfo[] = [
     { id: Page.ADD_MONEY, component: AddMoney, label: 'টাকা যোগ করুন', icon: PlusCircleIcon },
     { id: Page.BIOMETRIC_ORDER, component: BiometricOrder, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentListIcon },
     { id: Page.CALL_LIST_ORDER, component: CallListOrder, label: 'কল লিস্ট অর্ডার', icon: PhoneArrowUpRightIcon },
+    { id: Page.LIVE_LOCATION_ORDER, component: LiveLocationOrder, label: 'লাইভ লোকেশন', icon: MapPinIcon },
     { id: Page.ORDER_HISTORY, component: OrderHistory, label: 'অর্ডার হিস্টোরি', icon: Squares2X2Icon },
     { id: Page.TRANSACTION_HISTORY, component: TransactionHistory, label: 'লেনদেন হিস্টোরি', icon: CreditCardIcon },
     { id: Page.PROFILE, component: Profile, label: 'প্রোফাইল', icon: UserCircleIcon },
@@ -47,6 +50,7 @@ const allUserPages: PageInfo[] = [
 const adminPages: Record<string, Omit<PageInfo, 'id'>> = {
     [Page.ADMIN_DASHBOARD]: { component: AdminDashboard, label: 'অ্যাডমিন ড্যাশবোর্ড', icon: Cog6ToothIcon },
     [Page.USER_MANAGEMENT]: { component: UserManagement, label: 'ইউজার ম্যানেজমেন্ট', icon: UsersIcon },
+    [Page.CUSTOMER_LIST]: { component: CustomerList, label: 'গ্রাহক তালিকা', icon: ClipboardDocumentListIcon },
     [Page.RECHARGE_REQUESTS]: { component: RechargeRequests, label: 'টাকা যোগের অনুরোধ', icon: BanknotesIcon },
     [Page.MANAGE_ORDERS]: { component: ManageOrders, label: 'বায়োমেট্রিক অর্ডার', icon: ClipboardDocumentCheckIcon },
     [Page.MANAGE_CALL_LIST_ORDERS]: { component: ManageCallListOrders, label: 'কল লিস্ট অর্ডার', icon: PhoneIcon },
@@ -88,6 +92,7 @@ export default function Layout() {
             if (page.id === Page.ADD_MONEY) return settings.isAddMoneyVisible;
             if (page.id === Page.BIOMETRIC_ORDER) return settings.isBiometricOrderVisible;
             if (page.id === Page.CALL_LIST_ORDER) return settings.isCallListOrderVisible;
+            if (page.id === Page.LIVE_LOCATION_ORDER) return (settings as any).isLiveLocationOrderVisible;
             return true;
         });
     }, [settings, isAdmin]);

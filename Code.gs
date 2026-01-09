@@ -5,6 +5,7 @@ const walletSheet = ss.getSheetByName("Wallet");
 const transactionsSheet = ss.getSheetByName("Transactions");
 const ordersSheet = ss.getSheetByName("Orders");
 const callListOrdersSheet = ss.getSheetByName("CallListOrders");
+const liveLocationOrdersSheet = ss.getSheetByName("LiveLocationOrders");
 const adminTransactionsSheet = ss.getSheetByName("AdminTransactions");
 const settingsSheet = ss.getSheetByName("Settings");
 const passwordResetsSheet = ss.getSheetByName("PasswordResets");
@@ -29,6 +30,7 @@ function doPost(e) {
         'signup': handleSignup, 'login': handleLogin, 'fetchWallet': handleFetchWallet,
         'addMoneyRequest': handleAddMoneyRequest, 'createBiometricOrder': handleCreateBiometricOrder,
         'createCallListOrder': handleCreateCallListOrder,
+        'createLiveLocationOrder': handleCreateLiveLocationOrder,
         'fetchTransactions': handleFetchTransactions, 
         'fetchOrders': handleFetchOrders, // For Admin
         'fetchOrderHistoryForUser': handleFetchOrderHistoryForUser, // For User
@@ -86,13 +88,16 @@ function getSetting(key) {
             'biometricOrderPrice': '350',
             'callListPrice3Months': '900',
             'callListPrice6Months': '1500',
+            'liveLocationOrderPrice': '700',
             'notificationEmail': '',
             'headlineNotices': '[]',
             'isAddMoneyVisible': 'true',
             'isBiometricOrderVisible': 'true',
             'isCallListOrderVisible': 'true',
+            'isLiveLocationOrderVisible': 'true',
             'biometricOrderOffMessage': 'বায়োমেট্রিক অর্ডার সুবিধা সাময়িকভাবে বন্ধ আছে।',
             'callListOrderOffMessage': 'কল লিস্ট অর্ডার সুবিধা সাময়িকভাবে বন্ধ আছে।',
+            'liveLocationOrderOffMessage': 'লাইভ লোকেশন অর্ডার সুবিধা সাময়িকভাবে বন্ধ আছে।',
         };
         if(key in defaults) return defaults[key];
         throw new Error(`Setting key "${key}" not found.`);
@@ -368,6 +373,41 @@ function handleCreateCallListOrder(payload) {
     return { message: "আপনার কল লিস্ট অর্ডার সফলভাবে তৈরি হয়েছে।" };
 }
 
+function handleCreateLiveLocationOrder(payload) {
+    const isVisible = getSetting('isLiveLocationOrderVisible') == true;
+    if (!isVisible) {
+      throw new Error("লাইভ লোকেশন অর্ডার করার সুবিধা সাময়িকভাবে বন্ধ আছে।");
+    }
+
+    const { userId, order } = payload;
+    const { mobile } = order;
+    if (!mobile) throw new Error("অনুগ্রহ করে মোবাইল নম্বর দিন।");
+    if(!liveLocationOrdersSheet) throw new Error("LiveLocationOrders sheet not found. Please create it.");
+
+    const price = Number(getSetting('liveLocationOrderPrice'));
+    if (!price || price <= 0) throw new Error("লাইভ লোকেশন অর্ডারের মূল্য নির্ধারণ করা হয়নি।");
+
+    const walletRowIndex = findRow(walletSheet, userId, 1);
+    if(walletRowIndex === -1) throw new Error("ওয়ালেট পাওয়া যায়নি।");
+    
+    const currentBalance = walletSheet.getRange(walletRowIndex, 2).getValue();
+    if (currentBalance < price) throw new Error("আপনার ওয়ালেটে পর্যাপ্ত ব্যালেন্স নেই।");
+
+    walletSheet.getRange(walletRowIndex, 2).setValue(currentBalance - price);
+
+    const orderId = "loc" + Date.now();
+    const date = new Date();
+    
+    liveLocationOrdersSheet.appendRow([orderId, userId, date.toISOString(), mobile, price, "Pending", "", ""]);
+    transactionsSheet.appendRow(["tx" + Date.now(), userId, date.toISOString(), `লাইভ লোকেশন অর্ডার (${mobile})`, "Debit", price, "Completed"]);
+
+    const subject = `নতুন লাইভ লোকেশন অর্ডার: ${mobile}`;
+    const body = `একটি নতুন লাইভ লোকেশন অর্ডার তৈরি করা হয়েছে।<br><br><b>অর্ডার আইডি:</b> ${orderId}<br><b>ব্যবহারকারী আইডি:</b> ${userId}<br><b>মোবাইল নম্বর:</b> ${mobile}<br><b>মূল্য:</b> ৳${price}<br><b>তারিখ:</b> ${date.toLocaleString('bn-BD')}<br><br>অনুগ্রহ করে অ্যাডমিন প্যানেল থেকে অর্ডারটি ম্যানেজ করুন।`;
+    sendNotificationEmail(subject, body);
+
+    return { message: "আপনার লাইভ লোকেশন অর্ডার সফলভাবে তৈরি হয়েছে।" };
+}
+
 function handleUpdateProfile(payload) {
   const { userId, name, photoBase64, mimeType } = payload;
   if (!name.trim()) throw new Error("Name cannot be empty.");
@@ -444,7 +484,19 @@ function handleFetchOrderHistoryForUser(payload) {
     });
   }
 
-  const allOrders = [...biometricOrders, ...callListOrders];
+  const liveLocationOrders = [];
+  if (liveLocationOrdersSheet && liveLocationOrdersSheet.getLastRow() > 1) {
+    const liveLocationData = liveLocationOrdersSheet.getRange(2, 1, liveLocationOrdersSheet.getLastRow() - 1, 8).getValues();
+    liveLocationData.filter(row => row[1] === userId).forEach(row => {
+      liveLocationOrders.push({
+        id: row[0], date: row[2], mobile: row[3], price: row[4], status: row[5],
+        rejectionReason: row[6], locationUrl: row[7],
+        type: 'Live Location'
+      });
+    });
+  }
+
+  const allOrders = [...biometricOrders, ...callListOrders, ...liveLocationOrders];
   allOrders.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   
   return allOrders.map(order => ({...order, date: new Date(order.date).toLocaleDateString('bn-BD')}));
@@ -678,14 +730,17 @@ function handleFetchSettings() {
       biometricOrderPrice: Number(getSetting('biometricOrderPrice')),
       callListPrice3Months: Number(getSetting('callListPrice3Months')),
       callListPrice6Months: Number(getSetting('callListPrice6Months')),
+      liveLocationOrderPrice: Number(getSetting('liveLocationOrderPrice')),
       paymentMethods: paymentMethods,
       notificationEmail: getSetting('notificationEmail'),
       headlineNotices: headlineNotices,
       isAddMoneyVisible: getSetting('isAddMoneyVisible') == true,
       isBiometricOrderVisible: getSetting('isBiometricOrderVisible') == true,
       isCallListOrderVisible: getSetting('isCallListOrderVisible') == true,
+      isLiveLocationOrderVisible: getSetting('isLiveLocationOrderVisible') == true,
       biometricOrderOffMessage: getSetting('biometricOrderOffMessage'),
       callListOrderOffMessage: getSetting('callListOrderOffMessage'),
+      liveLocationOrderOffMessage: getSetting('liveLocationOrderOffMessage'),
     };
 }
 

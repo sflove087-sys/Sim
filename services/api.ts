@@ -1,10 +1,10 @@
-import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData, Notification } from '../types';
+import { User, Wallet, Transaction, Order, OrderDetails, Operator, AdminTransaction, OrderStatus, Settings, CallListOrder, LiveLocationOrder, OrderHistoryItem, AdminDashboardAnalytics, AdminChartData, Notification } from '../types';
 import { safeLocalStorage, getSessionUser } from '../utils/storage';
 
 // =========================================================================
 // গুরুত্বপূর্ণ: আপনার ডিপ্লয় করা Apps Script Web App URL টি এখানে পেস্ট করুন
 // =========================================================================
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUP45vjXM3BrTTp5VB0Ia4A2Hm2OlzzpnWBFuKY85oMYt9-n3PnXj59fYEsTYe8jAm7w/exec"; 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbx98On--o6k9M5YMsOqKBBMzcIU2TU1LZl5rFenkQCv4h7KZicZGcQLbXHOz5XlCghx1g/exec"; 
 
 // --- Central API Handler ---
 // This function sends requests to our Google Apps Script backend
@@ -96,6 +96,10 @@ export const createBiometricOrder = async (order: { operator: Operator, mobile: 
 
 export const createCallListOrder = async (order: { operator: Operator, mobile: string, duration: '3 Months' | '6 Months' }) => {
     return callApi('createCallListOrder', { order });
+};
+
+export const createLiveLocationOrder = async (order: { mobile: string }) => {
+    return callApi('createLiveLocationOrder', { order });
 };
 
 export const fetchOrderDetails = async (orderId: string): Promise<OrderDetails> => {

@@ -27,6 +27,7 @@ const Settings: React.FC = () => {
     const [price, setPrice] = useState(0);
     const [callListPrice3Months, setCallListPrice3Months] = useState(0);
     const [callListPrice6Months, setCallListPrice6Months] = useState(0);
+    const [liveLocationOrderPrice, setLiveLocationOrderPrice] = useState(700);
     const [methods, setMethods] = useState<PaymentMethod[]>([]);
     const [notificationEmail, setNotificationEmail] = useState('');
     const [headlineNotices, setHeadlineNotices] = useState<string[]>([]);
@@ -35,8 +36,10 @@ const Settings: React.FC = () => {
     const [isAddMoneyVisible, setIsAddMoneyVisible] = useState(true);
     const [isBiometricOrderVisible, setIsBiometricOrderVisible] = useState(true);
     const [isCallListOrderVisible, setIsCallListOrderVisible] = useState(true);
+    const [isLiveLocationOrderVisible, setIsLiveLocationOrderVisible] = useState(true);
     const [biometricOrderOffMessage, setBiometricOrderOffMessage] = useState('');
     const [callListOrderOffMessage, setCallListOrderOffMessage] = useState('');
+    const [liveLocationOrderOffMessage, setLiveLocationOrderOffMessage] = useState('');
     const [emailDetailsCharge, setEmailDetailsCharge] = useState(3);
 
     const [isLoading, setIsLoading] = useState(true);
@@ -70,14 +73,17 @@ const Settings: React.FC = () => {
             setPrice(data.biometricOrderPrice);
             setCallListPrice3Months(data.callListPrice3Months || 900);
             setCallListPrice6Months(data.callListPrice6Months || 1500);
+            setLiveLocationOrderPrice(data.liveLocationOrderPrice || 700);
             setMethods(data.paymentMethods || []);
             setNotificationEmail(data.notificationEmail || '');
             setHeadlineNotices(data.headlineNotices || []);
             setIsAddMoneyVisible(data.isAddMoneyVisible ?? true);
             setIsBiometricOrderVisible(data.isBiometricOrderVisible ?? true);
             setIsCallListOrderVisible(data.isCallListOrderVisible ?? true);
+            setIsLiveLocationOrderVisible(data.isLiveLocationOrderVisible ?? true);
             setBiometricOrderOffMessage(data.biometricOrderOffMessage || '');
             setCallListOrderOffMessage(data.callListOrderOffMessage || '');
+            setLiveLocationOrderOffMessage(data.liveLocationOrderOffMessage || '');
             setEmailDetailsCharge(data.emailDetailsCharge || 3);
         } catch (error) {
             addToast('সেটিংস লোড করা যায়নি।', 'error');
@@ -165,14 +171,17 @@ const Settings: React.FC = () => {
             biometricOrderPrice: price,
             callListPrice3Months: callListPrice3Months,
             callListPrice6Months: callListPrice6Months,
+            liveLocationOrderPrice: liveLocationOrderPrice,
             paymentMethods: methods,
             notificationEmail: notificationEmail,
             headlineNotices: headlineNotices,
             isAddMoneyVisible: isAddMoneyVisible,
             isBiometricOrderVisible: isBiometricOrderVisible,
             isCallListOrderVisible: isCallListOrderVisible,
+            isLiveLocationOrderVisible: isLiveLocationOrderVisible,
             biometricOrderOffMessage: biometricOrderOffMessage,
             callListOrderOffMessage: callListOrderOffMessage,
+            liveLocationOrderOffMessage: liveLocationOrderOffMessage,
             emailDetailsCharge: emailDetailsCharge,
         };
 
@@ -239,6 +248,12 @@ const Settings: React.FC = () => {
                                 <Input id="callListOrderOffMessage" label="কল লিস্ট অর্ডার বন্ধের বার্তা" type="text" value={callListOrderOffMessage} onChange={e => setCallListOrderOffMessage(e.target.value)} />
                             )}
                         </div>
+                        <div className="space-y-2 p-3 border rounded-lg dark:border-slate-700">
+                            <ToggleSwitch label="লাইভ লোকেশন অর্ডার মেন্যু দেখান" enabled={isLiveLocationOrderVisible} onChange={setIsLiveLocationOrderVisible} />
+                             {!isLiveLocationOrderVisible && (
+                                <Input id="liveLocationOrderOffMessage" label="লাইভ লোকেশন অর্ডার বন্ধের বার্তা" type="text" value={liveLocationOrderOffMessage} onChange={e => setLiveLocationOrderOffMessage(e.target.value)} />
+                            )}
+                        </div>
                     </div>
                 </div>
 
@@ -283,6 +298,7 @@ const Settings: React.FC = () => {
                                 <Input id="biometricOrderPrice" name="biometricOrderPrice" label="বায়োমেট্রিক অর্ডার মূল্য (৳)" type="number" value={price} onChange={(e) => setPrice(Number(e.target.value))} required />
                                 <Input id="callListPrice3Months" name="callListPrice3Months" label="কল লিস্ট ৩ মাস মূল্য (৳)" type="number" value={callListPrice3Months} onChange={(e) => setCallListPrice3Months(Number(e.target.value))} required />
                                 <Input id="callListPrice6Months" name="callListPrice6Months" label="কল লিস্ট ৬ মাস মূল্য (৳)" type="number" value={callListPrice6Months} onChange={(e) => setCallListPrice6Months(Number(e.target.value))} required />
+                                <Input id="liveLocationOrderPrice" name="liveLocationOrderPrice" label="লাইভ লোকেশন অর্ডার মূল্য (৳)" type="number" value={liveLocationOrderPrice} onChange={(e) => setLiveLocationOrderPrice(Number(e.target.value))} required />
                                 <Input id="emailDetailsCharge" name="emailDetailsCharge" label="ইমেইল চার্জ (৳)" type="number" value={emailDetailsCharge} onChange={(e) => setEmailDetailsCharge(Number(e.target.value))} required />
                                 <Input id="notificationEmail" name="notificationEmail" label="নোটিফিকেশন ইমেইল" type="email" value={notificationEmail} onChange={(e) => setNotificationEmail(e.target.value)} placeholder="admin@example.com" />
                             </div>
